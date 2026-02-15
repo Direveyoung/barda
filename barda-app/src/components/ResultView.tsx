@@ -8,11 +8,19 @@ import {
   severityConfig,
   findCategory,
 } from "@/lib/analysis";
+import BlurOverlay from "@/components/BlurOverlay";
+import FeedbackButtons from "@/components/FeedbackButtons";
+import ShareRoutineModal from "@/components/ShareRoutineModal";
 
 interface Props {
   result: AnalysisResult;
+  isPaid: boolean;
+  skinType: string;
+  concerns: string[];
+  products: RoutineProduct[];
   onBack: () => void;
   onReset: () => void;
+  onPaymentRequest: () => void;
 }
 
 /* ─── Score Ring ─── */
@@ -54,10 +62,7 @@ function ScoreRing({ score }: { score: number }) {
           <span className="text-xs text-gray-500">/ 100</span>
         </div>
       </div>
-      <span
-        className="mt-2 text-lg font-semibold"
-        style={{ color }}
-      >
+      <span className="mt-2 text-lg font-semibold" style={{ color }}>
         {scoreLabel(score)}
       </span>
     </div>
@@ -72,13 +77,20 @@ function RoutineCard({
   bgClass,
   products,
   tips,
+  isPaid,
+  onPaymentRequest,
 }: {
   title: string;
   emoji: string;
   bgClass: string;
   products: RoutineProduct[];
   tips: string[];
+  isPaid: boolean;
+  onPaymentRequest: () => void;
 }) {
+  const visibleTips = isPaid ? tips : tips.slice(0, 1);
+  const hiddenTipCount = tips.length - visibleTips.length;
+
   return (
     <div className={`rounded-2xl p-5 ${bgClass}`}>
       <h3 className="text-lg font-bold text-gray-800 mb-4">
@@ -111,14 +123,22 @@ function RoutineCard({
         </div>
       )}
 
-      {tips.length > 0 && (
+      {visibleTips.length > 0 && (
         <div className="space-y-2 mt-3 pt-3 border-t border-white/50">
-          {tips.map((tip, i) => (
+          {visibleTips.map((tip, i) => (
             <div key={i} className="flex gap-2 text-sm text-gray-600">
               <span className="shrink-0">💡</span>
               <span>{tip}</span>
             </div>
           ))}
+          {hiddenTipCount > 0 && (
+            <button
+              onClick={onPaymentRequest}
+              className="flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+            >
+              🔒 팁 {hiddenTipCount}개 더 보기
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -175,6 +195,9 @@ function ConflictCard({
           >
             <span>✅</span>
             <span>{conflict.rule.tip}</span>
+          </div>
+          <div className="mt-2 flex justify-end">
+            <FeedbackButtons conflictId={conflict.rule.id} />
           </div>
         </div>
       </div>
@@ -260,8 +283,18 @@ function WeekCalendar({
 
 /* ─── Main ResultView ─── */
 
-export default function ResultView({ result, onBack, onReset }: Props) {
+export default function ResultView({
+  result,
+  isPaid,
+  skinType,
+  concerns,
+  products,
+  onBack,
+  onReset,
+  onPaymentRequest,
+}: Props) {
   const [activeTab, setActiveTab] = useState<"am" | "pm">("am");
+  const [showShareModal, setShowShareModal] = useState(false);
 
   return (
     <div className="animate-fade-up space-y-5">
@@ -301,6 +334,8 @@ export default function ResultView({ result, onBack, onReset }: Props) {
           bgClass="bg-gradient-to-br from-amber-50 to-yellow-50"
           products={result.amProducts}
           tips={result.amTips}
+          isPaid={isPaid}
+          onPaymentRequest={onPaymentRequest}
         />
       ) : (
         <RoutineCard
@@ -309,6 +344,8 @@ export default function ResultView({ result, onBack, onReset }: Props) {
           bgClass="bg-gradient-to-br from-purple-50 to-violet-50"
           products={result.pmProducts}
           tips={result.pmTips}
+          isPaid={isPaid}
+          onPaymentRequest={onPaymentRequest}
         />
       )}
 
@@ -319,9 +356,26 @@ export default function ResultView({ result, onBack, onReset }: Props) {
             ⚠️ 주의가 필요한 조합 ({result.conflicts.length})
           </h3>
           <div className="space-y-3">
-            {result.conflicts.map((conflict) => (
-              <ConflictCard key={conflict.rule.id} conflict={conflict} />
-            ))}
+            {/* First conflict is always visible */}
+            <ConflictCard conflict={result.conflicts[0]} />
+
+            {/* Remaining conflicts: blurred if not paid */}
+            {result.conflicts.length > 1 && (
+              <BlurOverlay
+                isLocked={!isPaid}
+                ctaText={`나머지 ${result.conflicts.length - 1}건 충돌 보기`}
+                onUnlock={onPaymentRequest}
+              >
+                <div className="space-y-3">
+                  {result.conflicts.slice(1).map((conflict) => (
+                    <ConflictCard
+                      key={conflict.rule.id}
+                      conflict={conflict}
+                    />
+                  ))}
+                </div>
+              </BlurOverlay>
+            )}
           </div>
         </div>
       )}
@@ -340,10 +394,24 @@ export default function ResultView({ result, onBack, onReset }: Props) {
         </div>
       )}
 
-      {/* Calendar */}
+      {/* Calendar - blurred if not paid */}
       {(result.hasRetinol || result.hasAHA) && (
-        <WeekCalendar calendar={result.calendar} />
+        <BlurOverlay
+          isLocked={!isPaid}
+          ctaText="7일 캘린더 잠금 해제"
+          onUnlock={onPaymentRequest}
+        >
+          <WeekCalendar calendar={result.calendar} />
+        </BlurOverlay>
       )}
+
+      {/* Share */}
+      <button
+        onClick={() => setShowShareModal(true)}
+        className="w-full py-3.5 rounded-2xl font-semibold border-2 border-primary text-primary hover:bg-primary/5 transition-colors"
+      >
+        내 루틴 공유하기
+      </button>
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
@@ -360,6 +428,20 @@ export default function ResultView({ result, onBack, onReset }: Props) {
           처음부터 다시
         </button>
       </div>
+
+      <ShareRoutineModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        skinType={skinType}
+        concerns={concerns}
+        score={result.score}
+        products={products.map((p) => ({
+          id: p.id,
+          brand: p.brand,
+          name: p.name,
+          categoryId: p.categoryId,
+        }))}
+      />
     </div>
   );
 }
