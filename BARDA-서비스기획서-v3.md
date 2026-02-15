@@ -1,6 +1,8 @@
-# BARDA (바르다) — 서비스 기획서 v2.2
+# BARDA (바르다) — 서비스 기획서 v3.0
 ### "바르게 바르다" | 화장품 루틴/성분 충돌 체크 + 루틴 커뮤니티 서비스
-**최종 업데이트: 2026.02.16**
+**최종 업데이트: 2026.02.15**
+
+> **v3.0 주요 변경사항**: 데이터 학습 전략 전면 보강 — active_flags/농도 레벨 설계, 3단계 검색 엔진(브랜드 약어 사전), 룰 엔진 진화 전략, 리포트 피드백 루프, 퍼널 이벤트 로깅, 루틴 히스토리 시계열 분석 추가
 
 ---
 
@@ -150,11 +152,66 @@ BARDA 앱
   "name": "이니스프리 그린티 클렌징폼",
   "brand": "이니스프리",
   "categoryId": "cleanser",
-  "tags": ["기초", "클렌저"]
+  "tags": ["기초", "클렌저"],
+  "active_flags": [],
+  "concentration_level": null
 }
 ```
 
-**검색 로직:**
+> **v3.0 추가**: `active_flags`와 `concentration_level`을 MVP DB 구조에 포함. 카테고리 ID만으로는 정확한 충돌 감지가 불가능하기 때문에 (예: 토너패드에 BHA가 포함된 경우) MVP부터 이 필드를 채워야 함. 자세한 설계는 [2-4. 성분 기반 정밀 분석 설계](#2-4-성분-기반-정밀-분석-설계-v30-신규) 참고.
+
+**검색 로직 (v3.0 — 3단계 검색 엔진):**
+
+검색 히트율이 사용자 만족도를 직접 좌우한다. 단순 문자열 매칭으로는 사용자가 실제로 입력하는 다양한 변형(약어, 줄임말, 오타)을 커버할 수 없다.
+
+```
+[1단계] Exact Match — name_normalized 기반 정확 매칭
+  "라운드랩 독도 토너" → "라운드랩독도토너" ✅ 즉시 매칭
+
+[2단계] 브랜드 약어 사전 매칭 — K-뷰티 커뮤니티 약어 대응
+  "라랩 독도" → 약어사전("라랩"→"라운드랩") → "라운드랩 독도" ✅ 매칭
+  "코알 레티놀" → 약어사전("코알"→"코스알엑스") → "코스알엑스 레티놀" ✅ 매칭
+
+[3단계] Fuzzy Match — 초성 검색 + 편집 거리 기반 유사도
+  "라운드렙 독도" → Levenshtein distance ≤ 2 → "라운드랩 독도 토너" ✅ 매칭
+  "ㄹㅇㄹ ㄷㄷ" → 초성 분해 매칭 → "라운드랩 독도" ✅ 매칭 (Phase 2)
+```
+
+**브랜드 약어 사전 (MVP 포함):**
+
+K-뷰티 커뮤니티(화해, 여성시대, 인스티즈, 디씨 화장품갤)에서 실제 사용되는 약어를 수집하여 사전화.
+
+```json
+{
+  "brand_aliases": {
+    "라랩": "라운드랩",
+    "코알": "코스알엑스",
+    "이니": "이니스프리",
+    "마공": "마녀공장",
+    "디오디": "디오디너리",
+    "폴초": "폴라초이스",
+    "라포제": "라로슈포제",
+    "닥자": "닥터자르트",
+    "썸바미": "썸바이미",
+    "넘즈": "넘버즈인",
+    "이즈트": "이즈앤트리",
+    "스아": "스킨아쿠아",
+    "에뛰": "에뛰드"
+  },
+  "product_aliases": {
+    "독도": "독도 토너",
+    "갈락": "갈락토미세스",
+    "클제": "클린잇제로",
+    "아토베": "아토배리어",
+    "시카플": "시카플라스트",
+    "멜라노": "멜라노CC"
+  }
+}
+```
+
+> **관리 전략**: 약어 사전은 `search_logs`에서 `fell_through=true`인 검색어를 주간 분석하여 지속 확장. 사용자가 많이 쓰는데 매칭 안 되는 약어를 자동 후보로 추출.
+
+**기본 검색 원칙:**
 - 제품명, 브랜드명 모두 검색 대상
 - 한 글자부터 자동완성 시작
 - 최대 8개 결과 표시
@@ -214,9 +271,145 @@ BARDA 앱
 - 각 날짜 이모지 + 라벨로 시각화
 - 액티브 제품 없으면: "제품을 추가하면 요일별 캘린더가 생겨요" (자연스러운 업셀링)
 
+**7. 리포트 피드백 수집 (v3.0 신규)**
+
+사용자 피드백을 통해 룰 가중치와 점수 시스템을 데이터 기반으로 진화시키는 핵심 장치.
+
+- 리포트 하단: `"이 분석이 도움이 됐나요?"  👍 / 👎`
+- 각 충돌 경고 카드: `"이 경고가 유용했나요?"  👍 / 👎`
+- 빠진 단계 알림 각각: `"이 추천이 도움이 됐나요?"  👍 / 👎`
+
+```sql
+CREATE TABLE report_feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  routine_id UUID REFERENCES user_routines,
+  user_id UUID REFERENCES auth.users,
+  feedback_type TEXT NOT NULL,      -- 'overall' | 'conflict' | 'missing_step' | 'tip'
+  target_rule_id TEXT,              -- 해당 룰 ID (예: 'B01', 'E01')
+  is_helpful BOOLEAN NOT NULL,      -- 👍 true / 👎 false
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**활용 방향:**
+- 룰별 `유용했다` 비율 추적 → 낮은 룰은 심각도 하향 또는 문구 개선
+- 점수 가중치 조정: 선크림 경고(-25점)의 유용 비율 90%면 유지, 50%면 재검토
+- "유용했다" 비율 높은 경고를 상단 배치 (결과 리포트 정렬 최적화)
+- 피부타입별 유용도 차이 분석 → 피부타입 맞춤 심각도 조정의 데이터 근거
+
+### 2-4. 성분 기반 정밀 분석 설계 (v3.0 신규)
+
+현재 룰 엔진은 **카테고리 ID 기반**으로 충돌을 판단한다. 하지만 실제 제품은 카테고리로 분류되지 않는 숨은 액티브 성분을 포함하는 경우가 많다.
+
+**문제 사례:**
+
+| 제품 | 카테고리 | 실제 포함 성분 | 카테고리만으로는? |
+|---|---|---|---|
+| 넘버즈인 5번 토너패드 | `toner_pad` | **BHA(살리실산)** 포함 | BHA 충돌 감지 불가 |
+| 닥터자르트 시카페어 크림 | `cica` | **나이아신아마이드** 포함 | 시너지 미반영 |
+| 썸바이미 AHA BHA PHA 토너 | `bha` | AHA+BHA+**PHA** 3종 포함 | 단일 카테고리로 축소 |
+| 구달 청귤 비타C 토너패드 | `toner_pad` | **비타민C** 포함 | 비타민C 충돌 감지 불가 |
+
+**해결: `active_flags` + `concentration_level` 2중 태그 시스템**
+
+```json
+{
+  "id": "p031",
+  "name": "넘버즈인 5번 토너패드",
+  "categoryId": "toner_pad",
+  "active_flags": ["bha"],
+  "concentration_level": "low",
+  "key_ingredients": ["살리실산", "판테놀"]
+}
+```
+
+```json
+{
+  "id": "p081",
+  "name": "디오디너리 AHA 30% + BHA 2% 필링솔루션",
+  "categoryId": "aha",
+  "active_flags": ["aha", "bha"],
+  "concentration_level": "high",
+  "key_ingredients": ["글리콜산 30%", "살리실산 2%"]
+}
+```
+
+**`concentration_level` 3단계 정의:**
+
+| 레벨 | 정의 | 예시 | 사용 빈도 권장 |
+|---|---|---|---|
+| `low` | 일상 사용 가능, 순한 농도 | 코스알엑스 BHA 4%, 클레어스 비타민C 5% | 매일 가능 |
+| `medium` | 주 2~3회 권장, 중간 농도 | 코스알엑스 레티놀 0.1%, 폴라초이스 BHA 2% | 주 2~4회 |
+| `high` | 주 1회 이하, 고농도/강한 자극 | 디오디너리 AHA 30%, 고농도 레티놀 0.5%+ | 주 1회 이하 |
+
+**충돌 심각도 동적 조정 로직:**
+
+```
+기존: B01 레티놀 × AHA → severity: "high" (고정)
+
+v3.0: B01 레티놀 × AHA → severity 동적 결정
+  IF 둘 다 low → severity: "medium" (주의하며 사용 가능)
+  IF 하나가 medium → severity: "high" (분리 사용 권장)
+  IF 하나라도 high → severity: "critical" (같은 날 절대 금지)
+  IF 사용자 피부타입 == "sensitive" → severity 한 단계 상향
+```
+
+**충돌 체크 로직 개선:**
+
+```
+기존: categoryId 배열에서만 충돌 매칭
+  products.map(p => p.categoryId) → CONFLICT_RULES 매칭
+
+v3.0: categoryId + active_flags 통합 매칭
+  products.flatMap(p => [p.categoryId, ...(p.active_flags || [])]) → CONFLICT_RULES 매칭
+```
+
+이렇게 하면 `toner_pad` 카테고리지만 `active_flags: ["bha"]`가 있는 제품이 BHA 관련 충돌 룰에 정상적으로 매칭된다.
+
+**MVP 큐레이션 시 `active_flags` 입력 가이드:**
+
+| 카테고리 | active_flags 입력 필요? | 기준 |
+|---|---|---|
+| `vitamin_c`, `retinol`, `aha`, `bha`, `pha` | 불필요 | 카테고리 자체가 액티브 |
+| `toner_pad`, `essence`, `serum`, `cream` | **필요** | 숨은 액티브 성분 확인 후 태그 |
+| `cleanser`, `sunscreen`, `mist` | 대부분 불필요 | 특수한 경우만 (예: BHA 클렌저) |
+
+> **작업량 추정**: 200개 제품 중 약 30~40개가 숨은 액티브 확인 필요. 제품당 추가 30초~1분. 총 30분 추가 작업으로 분석 정확도가 근본적으로 달라짐.
+
 ---
 
-## 3. 룰 엔진 (카테고리 기반 50개 룰)
+## 3. 룰 엔진 (카테고리 + 성분 기반 50개 룰)
+
+### 룰 엔진 진화 전략 (v3.0 신규)
+
+| 단계 | 시기 | 방식 | 룰 수 | 핵심 변화 |
+|---|---|---|---|---|
+| **Level 1** | MVP | JSON 파일 분리 (코드와 룰 데이터 분리) | 15~20개 | 배포 없이 룰 추가/수정 가능 |
+| **Level 2** | Month 1~2 | JSON + `active_flags`/`concentration_level` 동적 심각도 | 50개 | 농도·피부타입별 정밀 판단 |
+| **Level 3** | Month 6+ | 사용자 피드백 데이터 기반 가중치 자동 조정 | 100개+ | 룰 자동 생성·퇴출 |
+
+> **핵심 원칙**: MVP부터 룰을 JSON으로 분리한다. 하드코딩하면 룰 수정 때마다 배포가 필요하고, 비개발자가 룰을 관리할 수 없다. JSON 분리는 코드 변경 없이 `rules.json` 파일만 수정해 룰을 추가/변경/삭제할 수 있게 한다.
+
+### MVP 룰 구현 우선순위 (v3.0 신규)
+
+50개 룰을 한번에 구현하지 않는다. **사용자 체감 임팩트 기준**으로 3단계 분류:
+
+**🔴 MVP 필수 (15개) — "와 이거 유용하다" 반응을 만드는 룰:**
+- B01~B07 (성분 충돌 핵심 7개) — 프로토타입에 구현 완료
+- B10, B15 (레티놀×스크럽, 욕심 루틴) — 프로토타입에 구현 완료
+- A05 (선크림 필수) — 구현 완료
+- E01~E02 (선크림 경고, 레티놀+선크림) — 부분 구현
+- D04~D05 (비타민C AM, 레티놀 PM 배치) — 구현 완료
+- **C01, C03 (민감피부 AHA/레티놀 주의) — 미구현, 임팩트 큼, MVP에 반드시 포함**
+
+**🟡 Phase 2 (20개) — 정교함을 더하는 룰:**
+- C02~C10 나머지 피부타입별 주의 룰
+- D01~D03, D06~D10 루틴 최적화 룰
+- B08~B09, B11~B14 중간/낮은 충돌 룰
+
+**🟢 Phase 3 (15개+) — 데이터 축적 후 검증하며 추가:**
+- 나머지 룰 + 사용자 피드백 기반 신규 룰 자동 생성
+- report_feedback 데이터에서 `is_helpful` 비율이 낮은 룰 자동 비활성화
 
 ### A. 루틴 순서 룰 (10개)
 
@@ -310,38 +503,60 @@ BARDA 앱
 | 리포트 | 웹카드 (HTML/CSS) | PDF 생성보다 빠름, 캡처/공유 용이 |
 | 배포 | Vercel | Next.js 최적, 무료 시작 |
 
-### 4-2. 룰 엔진 JSON 구조
+### 4-2. 룰 엔진 JSON 구조 (v3.0 보강)
 
 ```json
 {
   "id": "B01",
   "name": "레티노이드 × AHA 충돌",
   "condition": {
-    "has_category": ["retinol"],
-    "and_has_category": ["aha"],
+    "has_active": ["retinol"],
+    "and_has_active": ["aha"],
+    "match_source": "category_or_active_flags",
     "same_routine": true
   },
   "severity": "high",
+  "concentration_modifier": {
+    "both_low": { "severity": "medium", "message_suffix": "저농도끼리는 주의하며 사용 가능해요." },
+    "any_medium": { "severity": "high" },
+    "any_high": { "severity": "critical", "message_suffix": "고농도 제품은 같은 날 절대 사용 금지!" }
+  },
+  "skin_type_modifier": {
+    "sensitive": { "severity_bump": "+1", "extra": "민감피부는 특히 주의해 주세요." }
+  },
   "message": "레티놀과 AHA(글리콜산)를 같은 날 사용하면 피부 자극이 심해질 수 있어요.",
   "suggestion": "레티놀은 화/목/토, AHA는 수/일에 사용해 보세요.",
-  "skin_type_modifier": {
-    "sensitive": { "severity": "critical", "extra": "민감피부는 특히 주의해 주세요." }
-  }
+  "enabled": true,
+  "priority": 1
 }
 ```
+
+> **v3.0 변경사항**: `condition.match_source`를 `"category_or_active_flags"`로 확장하여 카테고리 ID뿐 아니라 `active_flags` 필드도 충돌 매칭 대상에 포함. `concentration_modifier`로 농도에 따른 동적 심각도 조정. `enabled` 필드로 피드백 기반 룰 비활성화 지원. `priority` 필드로 결과 리포트 내 표시 순서 제어.
 
 ### 4-3. 제품 DB 테이블 설계
 
 ```sql
--- 제품 테이블
+-- 제품 테이블 (v3.0 보강: active_flags, concentration_level, name_normalized 추가)
 CREATE TABLE products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,               -- "이니스프리 그린티 클렌징폼"
-  brand TEXT NOT NULL,              -- "이니스프리"
-  category_id TEXT NOT NULL,        -- "cleanser"
-  tags TEXT[],                      -- ["기초", "클렌저"]
-  is_verified BOOLEAN DEFAULT false,-- 관리자 검증 여부
-  search_count INTEGER DEFAULT 0,   -- 검색 횟수 (인기도)
+  name TEXT NOT NULL,                  -- "이니스프리 그린티 클렌징폼"
+  name_normalized TEXT NOT NULL,       -- "이니스프리그린티클렌징폼" (검색 최적화)
+  brand TEXT NOT NULL,                 -- "이니스프리"
+  category_id TEXT NOT NULL,           -- "cleanser"
+  active_flags TEXT[],                 -- v3.0: 숨은 액티브 성분 ["bha", "niacinamide"]
+  concentration_level TEXT,            -- v3.0: "low" | "medium" | "high" | null
+  key_ingredients TEXT[],              -- 핵심 성분 ["살리실산", "판테놀"]
+  tags TEXT[],                         -- ["기초", "클렌저"]
+  is_verified BOOLEAN DEFAULT false,   -- 관리자 검증 여부
+  search_count INTEGER DEFAULT 0,      -- 검색 횟수 (인기도)
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 브랜드 약어 사전 (v3.0 신규)
+CREATE TABLE brand_aliases (
+  alias TEXT PRIMARY KEY,              -- "라랩", "코알", "마공"
+  brand_name TEXT NOT NULL,            -- "라운드랩", "코스알엑스", "마녀공장"
+  source TEXT DEFAULT 'manual',        -- "manual" | "search_log_analysis"
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -355,18 +570,41 @@ CREATE TABLE categories (
   is_active BOOLEAN DEFAULT false   -- 액티브 성분 여부
 );
 
--- 사용자 루틴 결과 테이블
+-- 사용자 루틴 결과 테이블 (v3.0 보강: 분석용 시그니처 필드 추가)
 CREATE TABLE user_routines (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users,
   skin_type TEXT NOT NULL,
   concerns TEXT[],
-  products JSONB NOT NULL,          -- 등록한 제품 목록
-  result JSONB NOT NULL,            -- 분석 결과 전체
+  products JSONB NOT NULL,             -- 등록한 제품 목록
+  result JSONB NOT NULL,               -- 분석 결과 전체
   score INTEGER,
+  category_signature TEXT[],           -- v3.0: ['cleanser','toner','serum','cream','sunscreen'] (패턴 분석용)
+  active_signature TEXT[],             -- v3.0: ['retinol','vitamin_c'] (충돌 패턴 분석용)
   is_paid BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
+
+> **v3.0 변경사항**: `products` 테이블에 `active_flags`, `concentration_level`, `key_ingredients`, `name_normalized` 필드 추가. `user_routines` 테이블에 `category_signature`, `active_signature` 분석용 필드 추가. `brand_aliases` 테이블 신규 추가. 이 필드들은 MVP부터 데이터를 수집하여 Month 3+ 패턴 분석과 AI 추천의 기반이 된다.
+
+**`category_signature` / `active_signature` 활용 예시:**
+
+```sql
+-- "건성+보습 사용자들이 가장 많이 쓰는 제품 카테고리 조합 패턴"
+SELECT category_signature, COUNT(*) as cnt
+FROM user_routines
+WHERE skin_type = 'dry' AND 'moisture' = ANY(concerns)
+GROUP BY category_signature
+ORDER BY cnt DESC LIMIT 10;
+
+-- "레티놀 사용자들의 평균 루틴 점수 vs 비사용자"
+SELECT
+  CASE WHEN 'retinol' = ANY(active_signature) THEN '레티놀 사용' ELSE '미사용' END as group,
+  AVG(score) as avg_score,
+  COUNT(*) as cnt
+FROM user_routines
+GROUP BY 1;
 ```
 
 ### 4-4. AM/PM TIP 시스템 구조
@@ -410,6 +648,204 @@ AHA/BHA 보유 시: 수(각질케어), 일(각질케어)
 레티놀만 보유 → 레티놀날 / 기본날로 분배
 AHA만 보유 → 각질날 / 기본날로 분배
 둘 다 없음 → "매일 같은 루틴" + 업셀링 안내
+```
+
+### 4-6. 퍼널 이벤트 로깅 시스템 (v3.0 신규)
+
+사용자가 어디서 이탈하는지, 어떤 단계에서 가장 오래 머무는지를 추적하여 UX 개선과 전환율 최적화의 데이터 근거를 확보한다.
+
+```
+Step 1 (피부타입) → Step 2 (고민) → Step 3 (제품등록) → Step 4 (결과) → 공유/결제
+                                         ↑ 대부분 여기서 이탈
+                                         검색 실패 3회+ → 이탈율 급증
+```
+
+```sql
+-- 퍼널 이벤트 로깅 테이블
+CREATE TABLE funnel_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id TEXT NOT NULL,            -- 비로그인도 추적 (UUID 쿠키)
+  user_id UUID,                        -- 로그인 사용자 (없으면 NULL)
+  step INTEGER NOT NULL,               -- 1, 2, 3, 4
+  action TEXT NOT NULL,                -- 'enter' | 'complete' | 'abandon'
+  products_count INTEGER,              -- step 3에서 등록한 제품 수
+  search_miss_count INTEGER,           -- step 3에서 검색 실패 횟수
+  time_spent_ms INTEGER,               -- 해당 step 체류 시간 (밀리초)
+  device_type TEXT,                    -- 'mobile' | 'tablet' | 'desktop'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 리포트 액션 로깅 (결과 화면 내 행동)
+CREATE TABLE report_actions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  routine_id UUID REFERENCES user_routines,
+  session_id TEXT NOT NULL,
+  action_type TEXT NOT NULL,           -- 'share_sns' | 'share_kakao' | 'save' | 'retry' | 'pay_click' | 'tab_calendar'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**핵심 모니터링 지표:**
+
+| 지표 | 산출 | 목표 | 의미 |
+|---|---|---|---|
+| **Step 3 이탈율** | step3 abandon / step3 enter | < 30% | 30%+ 이면 DB 확장 또는 검색 UX 개선 필요 |
+| **검색 실패 → 이탈 상관관계** | search_miss_count >= 3인 세션의 abandon 비율 | 추적 | DB 갭의 실제 비즈니스 임팩트 정량화 |
+| **Step 3 체류 시간** | AVG(time_spent_ms) WHERE step=3 | < 180초 | 3분+ 이면 검색 UX 병목 |
+| **결과 → 공유 전환율** | share 액션 / step4 complete | > 15% | 바이럴 잠재력 측정 |
+| **결과 → 결제 전환율** | pay_click / step4 complete | > 5% | 수익 모델 검증 핵심 |
+
+**주간 자동 리포트 쿼리 예시:**
+
+```sql
+-- Step별 이탈율 주간 추이
+SELECT
+  step,
+  COUNT(*) FILTER (WHERE action = 'enter') as enters,
+  COUNT(*) FILTER (WHERE action = 'complete') as completes,
+  COUNT(*) FILTER (WHERE action = 'abandon') as abandons,
+  ROUND(100.0 * COUNT(*) FILTER (WHERE action = 'abandon')
+    / NULLIF(COUNT(*) FILTER (WHERE action = 'enter'), 0), 1) as abandon_rate
+FROM funnel_events
+WHERE created_at > NOW() - INTERVAL '7 days'
+GROUP BY step ORDER BY step;
+
+-- 검색 실패 횟수별 이탈 상관관계
+SELECT
+  search_miss_count,
+  COUNT(*) as sessions,
+  COUNT(*) FILTER (WHERE action = 'abandon') as abandoned,
+  ROUND(100.0 * COUNT(*) FILTER (WHERE action = 'abandon') / COUNT(*), 1) as abandon_rate
+FROM funnel_events
+WHERE step = 3 AND search_miss_count IS NOT NULL
+GROUP BY search_miss_count ORDER BY search_miss_count;
+```
+
+### 4-7. 데이터 학습 파이프라인 (v3.0 신규)
+
+MVP부터 "학습에 필요한 데이터 구조"를 심어두는 것이 핵심. 나중에 테이블 구조를 바꾸는 것은 비용이 크지만, 처음부터 필드 몇 개를 추가하는 것은 비용이 거의 없다.
+
+#### ① 루틴 패턴 학습 (Month 3+)
+
+`category_signature`와 `active_signature` 필드를 활용한 패턴 클러스터링.
+
+```
+사용자 1,000명 루틴 데이터 축적
+    ↓
+피부타입 × 고민 × 제품 조합 패턴 클러스터링
+    ↓
+"건성+보습 사용자의 80%가 세라마이드 크림을 쓰고 있어요"
+    ↓
+"당신의 루틴에 세라마이드가 없네요 — 추천 제품 3개"
+```
+
+현재 기획서에 있는 "AI 인기 조합 추천(Phase 3)"의 기반 데이터이며, MVP에서 `category_signature` / `active_signature`만 저장해두면 별도 ML 없이 SQL 집계만으로도 유의미한 패턴을 발견할 수 있다.
+
+#### ② 점수 가중치 학습 (Month 3+)
+
+`report_feedback` 테이블의 피드백 데이터로 점수 가중치를 데이터 기반 튜닝.
+
+```
+현재: 선크림 미사용 = -25점 (고정, 직관 기반)
+학습 후: 선크림 미사용 경고의 유용 비율 92% → 가중치 유지
+         "각질케어 3종 경고"의 유용 비율 35% → 가중치 -15 → -8로 하향
+```
+
+```sql
+-- 룰별 유용도 분석 (점수 가중치 튜닝 근거)
+SELECT
+  target_rule_id,
+  COUNT(*) as total_feedback,
+  COUNT(*) FILTER (WHERE is_helpful = true) as helpful,
+  ROUND(100.0 * COUNT(*) FILTER (WHERE is_helpful = true) / COUNT(*), 1) as helpful_rate
+FROM report_feedback
+WHERE feedback_type = 'conflict'
+GROUP BY target_rule_id
+ORDER BY helpful_rate ASC;  -- 유용도 낮은 룰부터 → 개선/비활성화 후보
+```
+
+#### ③ 루틴 히스토리 시계열 (MVP부터 수집, Month 2+ 활용)
+
+사용자가 제품을 바꾸며 재분석할 때의 시계열 데이터. 1회성 스냅샷이 아닌 **변화 추적**.
+
+```
+1월: 점수 68점 (충돌 3건) → 레티놀+AHA 동시 사용
+2월: 레티놀 제거 → 점수 82점 (충돌 1건)
+3월: 비타민C 추가 → 점수 88점 (충돌 0건)
+```
+
+**사용자 가치**: "내 루틴이 개선되고 있다"는 동기부여 → 리텐션 + 구독 전환
+**서비스 가치**: "어떤 변경이 점수를 올리는가"의 학습 데이터
+
+> 별도 테이블 불필요. `user_routines`에 같은 `user_id`로 여러 레코드가 쌓이면 자연스럽게 시계열이 된다. 마이페이지에서 `created_at` 순으로 정렬하면 루틴 변화 타임라인 표시 가능.
+
+#### ④ 피드백 × 점수 크로스 분석 (Month 3+)
+
+커뮤니티 피드에서 루틴을 공유할 때 **피부 만족도**를 함께 수집.
+
+```
+루틴 A (BARDA 점수 92점) + 사용자 만족도 "매우 좋음" = 92점 룰의 신뢰도 ↑
+루틴 B (BARDA 점수 85점) + 사용자 만족도 "별로" = 85점 룰의 가중치 재검토
+```
+
+이 데이터가 축적되면 **"BARDA 점수가 실제 피부 만족도와 상관관계가 있다"**를 데이터로 증명할 수 있고, 이것은 마케팅에서 가장 강력한 신뢰 메시지가 된다.
+
+```sql
+-- BARDA 점수 vs 실제 만족도 상관관계
+SELECT
+  CASE
+    WHEN ur.score >= 90 THEN '90+'
+    WHEN ur.score >= 80 THEN '80-89'
+    WHEN ur.score >= 60 THEN '60-79'
+    ELSE '60 미만'
+  END as score_range,
+  AVG(CASE rp.satisfaction
+    WHEN 'very_good' THEN 5 WHEN 'good' THEN 4
+    WHEN 'normal' THEN 3 WHEN 'bad' THEN 2 ELSE 1
+  END) as avg_satisfaction,
+  COUNT(*) as sample_size
+FROM routine_posts rp
+JOIN user_routines ur ON rp.routine_id = ur.id
+WHERE rp.satisfaction IS NOT NULL
+GROUP BY 1 ORDER BY 1;
+```
+
+#### ⑤ 계절/환경 연동 (Phase 2)
+
+기획서 D09 "계절 전환 안내"를 수동에서 자동으로 진화.
+
+```
+사용자 위치(시/도) + 기상청 API → 자동 맞춤
+  - 겨울 건조기 (습도 < 40%) → "보습 강화 권장" 알림
+  - 여름 자외선 지수 높은 날 → "선크림 재도포 리마인더"
+  - 환절기 (기온 일교차 > 10도) → "민감 피부 주의보" 푸시
+```
+
+구독 모델의 차별 가치로 활용. 무료 사용자는 수동 계절 안내, 구독자는 날씨 기반 자동 알림.
+
+### 4-8. 데이터 학습 우선순위 요약 (v3.0 신규)
+
+```
+[MVP — 당장 해야 할 것] ← 데이터 "수집 구조" 심기
+ ├─ active_flags + concentration_level: 200개 제품 큐레이션에 포함
+ ├─ brand_aliases 테이블 + 약어 사전: 검색 히트율 직결
+ ├─ report_feedback 테이블: 리포트 하단 👍/👎 UI
+ ├─ funnel_events 테이블: 단계별 이벤트 로깅
+ ├─ category_signature / active_signature: user_routines 저장 시 자동 생성
+ └─ 룰 엔진 JSON 분리: rules.json으로 하드코딩 탈피
+
+[Month 1~2 — 학습 기반 구축] ← 데이터 "분석 자동화"
+ ├─ 검색 미스 주간 리포트 자동 쿼리
+ ├─ 퍼널 이탈율 대시보드
+ ├─ 사용자 입력 → 자동 승격 파이프라인 가동
+ └─ 약어 사전 자동 확장 (fell_through 검색어 분석)
+
+[Month 3+ — 데이터 활용] ← 데이터 "지능화"
+ ├─ 루틴 패턴 클러스터링 → "비슷한 피부타입 추천"
+ ├─ 점수 가중치 데이터 기반 튜닝
+ ├─ 루틴 히스토리 시계열 → 변화 타임라인 시각화
+ ├─ 피드백 × 점수 크로스 분석 → 룰 신뢰도 검증
+ └─ 계절/환경 자동 연동 (구독 차별 가치)
 ```
 
 ---
@@ -749,8 +1185,12 @@ DB 운영을 위해 관리자 대시보드에 필요한 핵심 기능:
 | 검색 미스 Top 20 | 가장 많이 검색했는데 없는 제품 목록 | 🔴 MVP |
 | 승격 대기 목록 | product_candidates 중 3회+ 입력 제품 | 🔴 MVP |
 | 1-click 승격 | 후보 제품 확인 → 정식 DB 등록 버튼 | 🔴 MVP |
+| **퍼널 이탈율 현황** (v3.0) | Step별 이탈율 추이 + 검색실패↔이탈 상관관계 | 🔴 MVP |
+| **룰 유용도 현황** (v3.0) | report_feedback 기반 룰별 👍비율 랭킹 | 🟡 Phase 2 |
+| **약어 사전 후보** (v3.0) | fell_through 검색어 중 약어 패턴 자동 추출 | 🟡 Phase 2 |
 | API 동기화 상태 | 식약처/OBF API 마지막 동기화 일시 | 🟡 Phase 2 |
 | 카테고리 커버리지 | 카테고리별 제품 수 + 목표 대비 달성률 | 🟡 Phase 2 |
+| **점수↔만족도 상관관계** (v3.0) | BARDA 점수 구간별 실제 피부 만족도 평균 | 🟢 Phase 3 |
 
 ---
 
@@ -779,9 +1219,16 @@ DB 운영을 위해 관리자 대시보드에 필요한 핵심 기능:
 
 | 기능 | 우선순위 | 설명 |
 |---|---|---|
-| 제품 DB 200개 확장 | 🔴 높음 | 검색 히트율 80%+ |
+| **데이터 기반 (v3.0 신규)** | | |
+| 제품 DB 200개 + active_flags/농도 | 🔴 높음 | 검색 히트율 80%+ / 숨은 액티브 태깅 포함 |
+| 브랜드 약어 사전 + 3단계 검색 | 🔴 높음 | 약어 매칭으로 히트율 추가 10%+ 확보 |
+| 리포트 피드백 UI (👍/👎) | 🔴 높음 | report_feedback 테이블 + 수집 UI |
+| 퍼널 이벤트 로깅 | 🔴 높음 | funnel_events + report_actions 테이블 |
+| 룰 엔진 JSON 분리 | 🔴 높음 | rules.json으로 하드코딩 탈피, 농도별 동적 심각도 |
+| category/active_signature 자동 생성 | 🟡 중간 | user_routines 저장 시 시그니처 필드 자동 채움 |
+| **기존 기능** | | |
 | Supabase 연동 | 🔴 높음 | 제품DB + 사용자 결과 + 커뮤니티 저장 |
-| 루틴 공유 피드 | 🔴 높음 | 루틴 카드 공유 + 필터 + 좋아요/저장/댓글 |
+| 루틴 공유 피드 | 🔴 높음 | 루틴 카드 공유 + 필터 + 좋아요/저장/댓글 + 만족도 수집 |
 | Q&A 게시판 | 🔴 높음 | 질문/답변 + BARDA 자동 가이드 보조 |
 | 성분사전 30종 | 🔴 높음 | 핵심 성분 페이지 + 충돌 룰 연동 |
 | 토스페이먼츠 결제 | 🔴 높음 | 9,900원 원타임 |
@@ -792,9 +1239,18 @@ DB 운영을 위해 관리자 대시보드에 필요한 핵심 기능:
 | 결과 URL 공유 | 🟡 중간 | 고유 URL로 결과 공유 |
 | 인기 루틴 랭킹 | 🟡 중간 | 피부타입별 주간/월간 Top 10 |
 | 반응형 최적화 | 🟡 중간 | 모바일 우선 (프로토타입은 480px 기준) |
+| **학습/분석 (v3.0 신규)** | | |
+| 검색 미스 주간 리포트 자동화 | 🟡 중간 | search_logs fell_through 분석 → 관리자 알림 |
+| 약어 사전 자동 확장 | 🟡 중간 | fell_through 검색어 → 약어 후보 추출 |
+| 퍼널 이탈율 대시보드 | 🟡 중간 | 단계별 이탈율 + 검색실패↔이탈 상관관계 |
+| 루틴 히스토리 타임라인 | 🟡 중간 | 마이페이지에서 점수 변화 시각화 |
 | 7일 챌린지 | 🟢 Phase 2 | 캘린더 기반 체크인 + 기록 + 배지 |
 | 50개 룰 전체 구현 | 🟢 Phase 2 | 프로토타입은 핵심 8개, 나머지 확장 |
+| 점수 가중치 데이터 기반 튜닝 | 🟢 Phase 2 | report_feedback 분석 → 가중치 조정 |
+| 계절/환경 자동 알림 | 🟢 Phase 2 | 기상청 API + 위치 기반 (구독 차별 가치) |
+| 루틴 패턴 클러스터링 | 🟢 Phase 3 | category_signature 기반 "비슷한 피부타입" 추천 |
 | AI 인기 조합 추천 | 🟢 Phase 3 | 커뮤니티 데이터 기반 |
+| 룰 자동 생성/퇴출 | 🟢 Phase 3 | 피드백 데이터 기반 룰 자동 관리 |
 
 ---
 
@@ -851,6 +1307,7 @@ BARDA에서 분석받은 루틴 카드 자체가 콘텐츠가 되는 구조.
 - AM/PM 제품 목록 요약
 - 충돌 경고 수 (예: "충돌 0건 ✅")
 - 한 줄 코멘트 (사용자 작성)
+- **피부 만족도 (v3.0 신규)**: 공유 시 "이 루틴 사용 후 피부 만족도" 선택 (😊매우좋음 / 🙂좋음 / 😐보통 / 😟별로 / 😣나쁨) → BARDA 점수 vs 실제 만족도 크로스 분석의 핵심 데이터
 
 **피드 기능:**
 - 피부타입·고민별 필터링 ("나와 같은 건성+보습 루틴만 보기")
@@ -984,6 +1441,7 @@ CREATE TABLE routine_posts (
   score INTEGER,
   product_count INTEGER,
   conflict_count INTEGER,
+  satisfaction TEXT,                          -- v3.0: 'very_good'|'good'|'normal'|'bad'|'very_bad' (피부 만족도)
   likes_count INTEGER DEFAULT 0,
   saves_count INTEGER DEFAULT 0,
   is_public BOOLEAN DEFAULT true,
@@ -1093,18 +1551,27 @@ CREATE TABLE ingredients (
 | Week 1 | 제품 자동검색 + AM/PM 차별화 | Claude Chat 프로토타입 | ✅ 완료 |
 | Week 1 | 커뮤니티 구조 설계 | 서비스 기획 | ✅ 완료 |
 | Week 1 | DB 구축 전략 + API 연동 계획 | 서비스 기획 | ✅ 완료 |
-| Week 2~3 | 초기 제품 DB 200개 수동 큐레이션 | 올리브영 베스트 기반 + Claude Code 반자동화 | 🔜 다음 단계 |
+| Week 1 | 데이터 학습 전략 설계 + 기획서 v3.0 업데이트 | 서비스 기획 | ✅ 완료 |
+| Week 2~3 | 초기 제품 DB 200개 큐레이션 (**active_flags/농도 포함**) | 올리브영 베스트 기반 + Claude Code 반자동화 | 🔜 다음 단계 |
+| Week 2~3 | **브랜드 약어 사전 구축 + 3단계 검색 엔진** | K-뷰티 커뮤니티 약어 수집 | 🔜 다음 단계 |
+| Week 2~3 | **룰 엔진 JSON 분리 + 농도 기반 동적 심각도** | rules.json 구조화 | 🔜 다음 단계 |
 | Week 2~3 | MVP 본격 개발 (루틴 체크 + 피드 + Q&A + 성분사전) | Claude Code + Git/GitHub | 🔜 다음 단계 |
-| Week 2~3 | 검색 로그 + 사용자 입력 수집 파이프라인 구축 | Supabase 테이블 + 로깅 | 🔜 다음 단계 |
+| Week 2~3 | **퍼널 이벤트 로깅 + 리포트 피드백 UI + 검색 로그** | Supabase 테이블 + 수집 UI | 🔜 다음 단계 |
 | Week 4 | 결제 연동 + 베타 테스트 | 토스페이먼츠 + 지인 30명 | |
 | Week 5~6 | 피드백 반영 + 정식 출시 | 커뮤니티 마케팅 시작 | |
-| Month 1~2 | 식약처 OpenAPI 연동 (기능성 제품 성분 보강) | API 연동 + 자동 매칭 | |
+| Month 1~2 | 식약처 OpenAPI 연동 (기능성 제품 성분 보강) | API 연동 + active_flags 자동 보강 | |
+| Month 1~2 | **퍼널 이탈율 대시보드 + 검색 미스 주간 리포트** | 데이터 분석 자동화 | |
 | Month 2 | Open Beauty Facts + 공공데이터포털 연동 | 글로벌 K-뷰티 + 성분사전 | |
-| Month 2~3 | 사용자 입력 자동 승격 파이프라인 가동 | 3회+ 입력 → 승격 후보 | |
+| Month 2~3 | 사용자 입력 자동 승격 + **약어 사전 자동 확장** | 3회+ 입력 → 승격 / fell_through → 약어 후보 | |
 | Month 2~3 | 관리자 대시보드 (DB 현황 + 히트율 + 승격 관리) | Next.js 관리자 페이지 | |
-| Month 2~3 | 7일 챌린지 기능 오픈 | 리텐션 강화 | |
+| Month 2~3 | 7일 챌린지 + **루틴 히스토리 타임라인** | 리텐션 강화 + 변화 시각화 | |
+| Month 3+ | **점수 가중치 데이터 기반 튜닝** | report_feedback 분석 → 가중치 조정 | |
+| Month 3+ | **루틴 패턴 클러스터링 → "비슷한 피부타입" 추천** | category_signature 기반 SQL 집계 | |
 | Month 3+ | 제품 DB 500개+ / 자동 확장 파이프라인 안정화 | 데이터 플라이휠 가동 | |
+| Month 3+ | **BARDA 점수 vs 실제 만족도 상관관계 분석** | 마케팅 신뢰 메시지 데이터 확보 | |
 | Month 6+ | 전성분 파싱 + OCR + AI 매칭 | 프리미엄 ₩19,900 기능 | |
+| Month 6+ | **계절/환경 자동 알림 (기상청 API)** | 구독 차별 가치 | |
+| Month 6+ | **룰 자동 생성/퇴출 시스템** | 피드백 기반 룰 자동 관리 | |
 | Month 6+ | 글로벌 버전 (영문) | K-뷰티 해외 수요 공략 | |
 
 ---
