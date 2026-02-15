@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AnalysisResult, RoutineProduct } from "@/lib/analysis";
 import {
   scoreColor,
@@ -295,6 +295,25 @@ export default function ResultView({
 }: Props) {
   const [activeTab, setActiveTab] = useState<"am" | "pm">("am");
   const [showShareModal, setShowShareModal] = useState(false);
+
+  // Save routine to localStorage for checklist
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "barda_last_routine",
+        JSON.stringify({
+          score: result.score,
+          amRoutine: result.amProducts,
+          pmRoutine: result.pmProducts,
+          skinType,
+          concerns,
+          savedAt: new Date().toISOString(),
+        })
+      );
+    } catch {
+      // ignore storage errors
+    }
+  }, [result, skinType, concerns]);
 
   return (
     <div className="animate-fade-up space-y-5">

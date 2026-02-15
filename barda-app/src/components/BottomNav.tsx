@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const tabs = [
   {
-    label: "분석",
+    label: "홈",
     href: "/",
     icon: (active: boolean) => (
       <svg
@@ -43,6 +43,45 @@ const tabs = [
     ),
   },
   {
+    label: "분석",
+    href: "/analyze",
+    isCenter: true,
+    icon: (active: boolean) => (
+      <svg
+        className={`w-7 h-7 ${active ? "text-white" : "text-white"}`}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 4.5v15m7.5-7.5h-15"
+        />
+      </svg>
+    ),
+  },
+  {
+    label: "가이드",
+    href: "/guide",
+    icon: (active: boolean) => (
+      <svg
+        className={`w-6 h-6 ${active ? "text-primary" : "text-gray-400"}`}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+        />
+      </svg>
+    ),
+  },
+  {
     label: "마이",
     href: "/mypage",
     icon: (active: boolean) => (
@@ -68,12 +107,35 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around max-w-lg mx-auto h-14">
+      <div className="flex items-center justify-around max-w-lg mx-auto h-16">
         {tabs.map((tab) => {
           const isActive =
             tab.href === "/"
               ? pathname === "/"
               : pathname.startsWith(tab.href);
+
+          if ("isCenter" in tab && tab.isCenter) {
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className="flex flex-col items-center gap-0.5 -mt-4"
+              >
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
+                    isActive
+                      ? "bg-primary"
+                      : "bg-primary"
+                  }`}
+                >
+                  {tab.icon(isActive)}
+                </div>
+                <span className="text-[10px] text-primary font-semibold">
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          }
 
           return (
             <Link
@@ -83,7 +145,7 @@ export default function BottomNav() {
             >
               {tab.icon(isActive)}
               <span
-                className={`text-xs ${
+                className={`text-[10px] ${
                   isActive
                     ? "text-primary font-semibold"
                     : "text-gray-400"

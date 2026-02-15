@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 
 export interface RoutinePost {
   id: string;
@@ -98,6 +99,9 @@ export default function RoutinePostCard({
         <span className="text-xs text-gray-400">{timeAgo}</span>
       </div>
 
+      {/* Clickable area for detail page */}
+      <Link href={`/feed/${post.id}`} className="block">
+
       {/* Badges */}
       <div className="flex flex-wrap gap-1.5 mb-3">
         <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary-bg text-primary">
@@ -127,6 +131,8 @@ export default function RoutinePostCard({
           {post.comment}
         </p>
       )}
+
+      </Link>
 
       {/* Actions */}
       <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
