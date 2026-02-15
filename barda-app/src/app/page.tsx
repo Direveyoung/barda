@@ -628,6 +628,25 @@ function LoggedInHome() {
           </div>
         </section>
 
+        {/* 🏆 챌린지 배너 */}
+        <section className="py-4">
+          <Link
+            href="/challenge"
+            className="block bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border border-amber-200/50 p-4"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🏆</span>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-gray-800">7일 스킨케어 챌린지</p>
+                <p className="text-xs text-gray-500">매일 미션 수행하며 올바른 루틴 만들기</p>
+              </div>
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </div>
+          </Link>
+        </section>
+
         {/* 📱 최근 피드 */}
         <section className="py-4">
           <div className="flex items-center justify-between mb-3">
