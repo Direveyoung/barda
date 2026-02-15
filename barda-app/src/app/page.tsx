@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
+import NotificationBell from "@/components/NotificationBell";
 import RoutinePostCard, { type RoutinePost } from "@/components/RoutinePostCard";
 
 /* ─── 요일 이름 ─── */
@@ -382,16 +383,11 @@ function LoggedInHome() {
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold text-primary">BARDA</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <NotificationBell />
             <span className="text-xs text-gray-500 hidden sm:inline">
               {user?.email?.split("@")[0]}
             </span>
-            <button
-              onClick={() => signOut()}
-              className="text-xs text-gray-400 hover:text-gray-600"
-            >
-              로그아웃
-            </button>
           </div>
         </div>
       </header>

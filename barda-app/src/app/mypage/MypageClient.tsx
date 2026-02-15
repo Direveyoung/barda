@@ -186,10 +186,16 @@ export default function MypageClient() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
               </svg>
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-800">{user.email}</p>
               <p className="text-xs text-gray-400">{formatDate(user.created_at)}</p>
             </div>
+            <Link
+              href="/mypage/profile"
+              className="px-3 py-1.5 text-xs font-medium text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              프로필 설정
+            </Link>
           </div>
         </div>
 
