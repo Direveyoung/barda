@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #D4726A;
+  --color-primary-light: #E8927C;
+  --color-primary-bg: #FFF1EE;
+  --color-am: #FDE68A;
+  --color-am-deep: #F59E0B;
+  --color-pm: #C4B5FD;
+  --color-pm-deep: #7C3AED;
+  --color-danger: #DC2626;
+  --color-warning: #D97706;
+  --color-success: #059669;
+  --color-gray-50: #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB;
+  --color-gray-400: #9CA3AF;
+  --color-gray-500: #6B7280;
+  --color-gray-700: #374151;
+  --color-gray-800: #1F2937;
+  --color-gray-900: #111827;
+}
+
+body {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(180deg, #FFF5F0 0%, #F0F5FF 100%);
+  min-height: 100vh;
+  color: #1F2937;
+}
+
+/* Score reveal animation */
+@keyframes scoreReveal {
+  from { stroke-dasharray: 0 314; }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.5s ease-out;
+}
+
+.animate-score {
+  animation: scoreReveal 1.5s ease-out;
+}
