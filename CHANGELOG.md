@@ -3,6 +3,44 @@
 
 ---
 
+## [데이터전략] 외부 API 3종 + 자동 학습 파이프라인 + 관리자 강화 — 2026.02.16
+
+### 변경 사항
+- **외부 API 연동 3종** (`lib/external-apis.ts`)
+  - 식약처 OpenAPI: 기능성화장품 성분 조회 (배합한도, 규제사항)
+  - Open Beauty Facts: 글로벌 K-뷰티 전성분 DB (바코드/제품명 검색, API키 불필요)
+  - 공공데이터포털 성분사전: 한글↔INCI 성분명 매핑 + EWG 등급
+  - 통합 `APIResult<T>` 타입 + `checkAPIHealth()` 헬스체크
+- **자동 학습 파이프라인** (`lib/pipeline.ts`)
+  - `runAutoPromotePipeline()`: submit_count >= 3 후보 자동 승격 (pending → auto_promoted)
+  - `generateSearchMissReport()`: 주간 검색 미스 Top 20 + 히트율 분석
+  - `analyzeCommunityProducts()`: 커뮤니티 인기 제품 추출 + 피부타입별 다양성
+  - `generateWeeklyReport()`: 검색 + 후보 + 커뮤니티 종합 주간 리포트
+  - SQL 참고 쿼리 (Supabase cron 실행용)
+- **관리자 대시보드 강화** (`app/admin/page.tsx`)
+  - 3탭 구조: 개요 / 파이프라인 / 외부 API
+  - 파이프라인 탭: 3계층 아키텍처 다이어그램 (수집→분석→실행) + 4개 파이프라인 실행 버튼 + 결과 표시 + 주간 리포트 뷰
+  - 외부 API 탭: 3종 API 헬스체크 (상태 dot) + API 테스트 콘솔 (select + input + JSON 결과) + 연동 플로우 설명
+  - 제품 후보 필터에 `auto_promoted` 상태 추가
+- **관리자 API 라우트 2개 신규**
+  - `/api/admin/pipeline`: POST (자동승격/미스분석/커뮤니티/주간리포트)
+  - `/api/admin/external-apis`: GET (헬스체크) + POST (테스트 쿼리)
+
+### 파일
+- `src/lib/external-apis.ts` — 신규 (외부 API 3종 커넥터)
+- `src/lib/pipeline.ts` — 신규 (자동 학습 파이프라인)
+- `src/app/api/admin/pipeline/route.ts` — 신규 (파이프라인 API)
+- `src/app/api/admin/external-apis/route.ts` — 신규 (외부 API 테스트)
+- `src/app/admin/page.tsx` — 3탭 대시보드로 대폭 강화
+- `docs/features.md` — 외부 API + 자동학습 섹션 추가
+- `docs/architecture.md` — API 라우트 10개, lib 파일 추가, 파이프라인/API 플로우 추가
+
+### 아키텍처 근거
+- 3계층 자동 학습: 수집(search_logs + product_candidates + routine_posts) → 분석(미스/승격/커뮤니티) → 실행(DB확장/별칭/리포트)
+- 외부 API는 관리자 테스트 후 점진적 통합 (헬스체크 + 테스트 콘솔)
+
+---
+
 ## [벤치마킹] 날씨 루틴 + 제품 서랍 + 듀프 파인더 — 2026.02.16
 
 ### 변경 사항

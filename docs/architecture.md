@@ -28,7 +28,7 @@ src/app/
 └── admin/page.tsx              ← 관리자 대시보드
 ```
 
-### API 라우트 (8개)
+### API 라우트 (10개)
 ```
 src/app/api/
 ├── routines/
@@ -38,7 +38,10 @@ src/app/api/
 │       └── comments/route.ts   ← GET + POST + DELETE (댓글)
 ├── search-logs/route.ts        ← POST (검색 로그) + GET (통계)
 ├── product-candidates/route.ts ← POST + GET + PATCH (제품 후보)
-├── admin/stats/route.ts        ← GET (관리자 통계 집계)
+├── admin/
+│   ├── stats/route.ts          ← GET (관리자 통계 집계)
+│   ├── pipeline/route.ts       ← POST (파이프라인 실행: 자동승격/미스분석/커뮤니티/주간리포트)
+│   └── external-apis/route.ts  ← GET (API 헬스체크) + POST (API 테스트 쿼리)
 ├── events/route.ts             ← POST (퍼널 이벤트 배치)
 ├── feedback/route.ts           ← POST (👍/👎 피드백)
 └── payments/confirm/route.ts   ← POST (토스 결제 확인)
@@ -70,6 +73,8 @@ src/lib/
 ├── analysis.ts                 ← 분석 엔진 (충돌, 점수, 캘린더, 팁)
 ├── search.ts                   ← 3단계 검색 (정확→별칭→퍼지)
 ├── weather.ts                  ← 날씨 기반 루틴 TIP (Open-Meteo API)
+├── external-apis.ts            ← 외부 API 3종 (식약처/OBF/성분사전)
+├── pipeline.ts                 ← 자동 학습 파이프라인 (승격/미스/커뮤니티/리포트)
 ├── events.ts                   ← 퍼널 이벤트 트래킹
 ├── payments.ts                 ← 토스페이먼츠 SDK
 ├── notifications.ts            ← 알림 로직
@@ -135,4 +140,29 @@ ProductStep 검색 → search.ts 3단계 매칭
 제품 검색 → 같은 카테고리 제품 필터
           → key_ingredients 유사도 계산 (겹치는 성분 비율 70% + 태그 유사도 30%)
           → 유사도 15%+ 제품 최대 10개 표시
+```
+
+### 자동 학습 파이프라인 (수집 → 분석 → 실행)
+```
+[1] 수집 (Collection)
+  ├─ search_logs        ← 유저 검색 쿼리 + 결과수
+  ├─ product_candidates ← 직접입력 (브랜드 + 제품명)
+  └─ routine_posts      ← 커뮤니티 제품 언급 데이터
+         ↓
+[2] 분석 (Analysis)
+  ├─ 미스 분석          ← 주간 Top 20 미스 쿼리 + 히트율 트렌드
+  ├─ 자동 승격          ← submit_count >= 3 → auto_promoted 상태
+  └─ 커뮤니티 분석      ← 인기 제품 추출 + 피부타입별 다양성
+         ↓
+[3] 실행 (Execution)
+  ├─ DB 확장            ← 관리자 승인 후 products.ts 업데이트
+  ├─ 별칭 추가          ← 미스 쿼리 기반 aliases.ts 업데이트
+  └─ 주간 리포트        ← 검색 + 후보 + 커뮤니티 종합 현황
+```
+
+### 외부 API 연동 플로우
+```
+1. 식약처 OpenAPI → 성분명 → 기능성화장품 성분 DB → 배합한도/규제 → 분석 엔진
+2. Open Beauty Facts → 바코드/제품명 → 전성분 목록 → 미등록 제품 보강 → 제품 DB
+3. 공공데이터포털 → 한글 성분명 → INCI 국제명 + EWG 등급 → 성분 가이드
 ```

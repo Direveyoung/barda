@@ -72,6 +72,20 @@
 | 제품 서랍/트래커 | `app/drawer/page.tsx` | 보유제품 관리 + 개봉일 + 사용완료 |
 | 듀프 파인더 | `app/dupe/page.tsx` | 성분 유사도 기반 대안 제품 찾기 |
 
+### 외부 API + 자동 학습 (2026.02.16)
+| 기능 | 파일 | 설명 |
+|------|------|------|
+| 식약처 OpenAPI | `lib/external-apis.ts` | 기능성화장품 성분 조회 (배합한도/규제) |
+| Open Beauty Facts | `lib/external-apis.ts` | 글로벌 K-뷰티 전성분 DB (바코드/검색) |
+| 공공데이터포털 성분사전 | `lib/external-apis.ts` | 한글↔INCI 성분명 매핑 + EWG 등급 |
+| API 헬스체크 | `api/admin/external-apis/route.ts` | 3종 API 가용성 확인 + 테스트 쿼리 |
+| 자동 승격 파이프라인 | `lib/pipeline.ts` | submit_count >= 3 후보 자동 승격 |
+| 검색 미스 리포트 | `lib/pipeline.ts` | 주간 Top 20 미스 쿼리 + 히트율 |
+| 커뮤니티 분석 | `lib/pipeline.ts` | 인기 제품 추출 + 피부타입별 다양성 |
+| 주간 종합 리포트 | `lib/pipeline.ts` | 검색+후보+커뮤니티 종합 현황 |
+| 파이프라인 API | `api/admin/pipeline/route.ts` | 관리자 파이프라인 실행 엔드포인트 |
+| 관리자 대시보드 강화 | `app/admin/page.tsx` | 3탭 (개요/파이프라인/외부API) + 아키텍처 다이어그램 |
+
 ---
 
 ## 미구현 (Phase 3+)
