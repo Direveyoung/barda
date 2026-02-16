@@ -1,5 +1,19 @@
 # BARDA 개발 로그 (CHANGELOG)
-> 모든 기획/업데이트 히스토리를 기록합니다. 나중에 봐도 흐름을 파악할 수 있게.
+
+> 모든 주요 변경사항을 기록합니다. 포맷: `[버전] - YYYY-MM-DD` + Added / Fixed / Changed / Removed
+
+---
+
+## [0.9.0] - 2026-02-16
+
+### Added
+- 문서 관리 체계 도입: `check-docs.sh` (문서 규칙 체크 스크립트)
+- `TODO.md` 작업 목록 파일
+- CLAUDE.md에 문서 관리 규칙 강화 (필수 섹션, CHANGELOG 포맷 규정, check-docs.sh 안내)
+
+### Changed
+- CHANGELOG.md 포맷을 `[버전] - YYYY-MM-DD` + Added/Fixed/Changed 섹션 구분으로 통일
+- CLAUDE.md 디렉토리 구조에 `TODO.md`, `check-docs.sh` 추가
 
 ---
 

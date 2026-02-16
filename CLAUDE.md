@@ -22,8 +22,10 @@ npm run lint         # ESLint
 ```
 barda/
 ├── CLAUDE.md                 ← 이 파일 (500줄 이하 유지)
-├── CHANGELOG.md              ← 개발 히스토리 로그
-├── docs/                     ← 스킬별 상세 문서
+├── CHANGELOG.md              ← 버전별 변경이력 (날짜 필수)
+├── TODO.md                   ← 작업 목록
+├── check-docs.sh             ← 문서 규칙 체크 스크립트
+├── docs/                     ← 상세 문서 (architecture, api, features, decisions)
 │   ├── architecture.md       ← 아키텍처 + 파일 맵
 │   ├── product-db.md         ← 제품 DB 전략/구조
 │   ├── features.md           ← 기능 인벤토리 + 구현 상태
@@ -42,9 +44,14 @@ barda/
 ## 주요 규칙
 
 ### 문서 관리
-- **CLAUDE.md는 항상 500줄 이하** 유지. 필수항목만.
+- **CLAUDE.md는 항상 500줄 이하** 유지 — 초과 시 즉시 `docs/`로 분리.
 - 기능 상세, API 명세, 아키텍처 등은 `docs/` 폴더에 분리.
-- 기획/업데이트 시 **CHANGELOG.md** 반드시 업데이트.
+- 기능 추가/수정 시 **CHANGELOG.md** 필수 업데이트 (날짜, 버전, 변경내용).
+- 새 세션 시작 시 **CLAUDE.md 먼저 읽기**.
+- 문서 비대화 감지 시 자동으로 구조개선 진행.
+- `bash check-docs.sh`로 문서 규칙 준수 여부 확인 가능.
+- **CLAUDE.md 필수 섹션**: 프로젝트 개요, 기술 스택, 핵심 명령어, 현재 상태, 주요 규칙, 상세 문서 링크.
+- **CHANGELOG.md 포맷**: `[버전] - YYYY-MM-DD` + Added/Fixed/Changed 섹션 구분.
 
 ### 코딩 컨벤션
 - TypeScript strict, no `any`
