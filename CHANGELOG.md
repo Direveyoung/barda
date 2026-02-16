@@ -3,6 +3,48 @@
 
 ---
 
+## [벤치마킹] 날씨 루틴 + 제품 서랍 + 듀프 파인더 — 2026.02.16
+
+### 변경 사항
+- **날씨 기반 루틴 추천** (`lib/weather.ts`)
+  - Open-Meteo API 연동 (무료, API키 불필요)
+  - 브라우저 위치 자동 감지 (서울 기본값)
+  - 기온/습도/UV/날씨코드 기반 스킨케어 TIP 생성
+  - 피부타입·레티놀/AHA 사용 여부 반영한 맞춤 TIP
+  - 1시간 캐시 (`barda_weather`)
+  - 홈 화면 체크리스트 상단에 날씨 TIP 카드 통합
+- **제품 서랍/트래커** (`app/drawer/page.tsx`)
+  - 보유 제품 등록 (DB 검색 연동)
+  - 상태 관리: 미개봉 → 사용 중 → 다 씀
+  - 개봉일 자동 기록 + 경과일 표시
+  - 180일 초과 시 유통기한 경고
+  - 상태별 필터 (전체/사용 중/미개봉/다 씀)
+  - "사용 중인 제품으로 루틴 분석하기" CTA
+- **듀프 파인더** (`app/dupe/page.tsx`)
+  - 성분 유사도 기반 대안 제품 찾기 (같은 카테고리)
+  - key_ingredients 겹침 비율(70%) + 태그 유사도(30%) = 종합 유사도
+  - 유사도 15%+ 제품 최대 10개 표시
+  - 매칭 성분 하이라이트, 카테고리별 브라우징
+  - 인기 검색어 + 설명 섹션 (SEO)
+- **홈 화면 업데이트**
+  - 비로그인 랜딩: 듀프 파인더 CTA 추가
+  - 로그인 홈: 날씨 TIP 카드 + 내 서랍/듀프 파인더 배너
+
+### 파일
+- `src/lib/weather.ts` — 신규 (날씨 API + TIP 생성)
+- `src/app/drawer/page.tsx` — 신규 (제품 서랍)
+- `src/app/dupe/page.tsx` — 신규 (듀프 파인더)
+- `src/app/page.tsx` — 날씨 TIP + 서랍/듀프 링크 추가
+- `docs/features.md` — 벤치마킹 기능 섹션 추가
+- `docs/architecture.md` — 페이지 15개, weather.ts, localStorage 키 추가
+
+### 벤치마킹 근거
+- 날씨 기반 루틴: Skin Bliss의 "쉬운 차별화" 기능
+- 제품 서랍: FeelinMySkin/SkinSort의 제품 트래커 (마지막 🔴 핵심 갭)
+- 듀프 파인더: SkinSort의 듀프 파인더 (SEO 가치 높음)
+
+---
+
 ## [DB전략] 제품 DB 전략 구현 — 2026.02.16
 
 ### 변경 사항
@@ -164,11 +206,11 @@
 ├── README.md                       ← 프로젝트 README
 └── barda-app/                      ← Next.js 앱
     └── src/
-        ├── app/                    ← 라우트 (13개 페이지)
+        ├── app/                    ← 라우트 (15개 페이지)
         ├── components/             ← 컴포넌트 (12개)
         ├── contexts/               ← 상태 (AuthContext)
         ├── data/                   ← 데이터 (products, rules, aliases)
-        └── lib/                    ← 유틸 (analysis, search, events, payments, notifications)
+        └── lib/                    ← 유틸 (analysis, search, weather, events, payments, notifications)
 ```
 
 ---

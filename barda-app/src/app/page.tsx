@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import NotificationBell from "@/components/NotificationBell";
 import RoutinePostCard, { type RoutinePost } from "@/components/RoutinePostCard";
+import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip } from "@/lib/weather";
 
 /* ─── 요일 이름 ─── */
 const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
@@ -165,8 +166,8 @@ function LandingHome() {
           )}
         </section>
 
-        {/* 성분 가이드 CTA */}
-        <section className="py-6">
+        {/* 성분 가이드 + 듀프 파인더 CTA */}
+        <section className="py-6 space-y-3">
           <Link
             href="/guide"
             className="block bg-white rounded-2xl border border-gray-100 p-5 hover:border-primary/30 transition-colors"
@@ -181,6 +182,37 @@ function LandingHome() {
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   레티놀, AHA, 비타민C... 궁금한 성분을 알아보세요
+                </p>
+              </div>
+              <svg
+                className="w-5 h-5 text-gray-300 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                />
+              </svg>
+            </div>
+          </Link>
+          <Link
+            href="/dupe"
+            className="block bg-white rounded-2xl border border-gray-100 p-5 hover:border-primary/30 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-100/80 flex items-center justify-center text-lg shrink-0">
+                🔍
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800">
+                  듀프 파인더
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  비싼 제품의 저렴한 대안을 찾아보세요
                 </p>
               </div>
               <svg
@@ -263,6 +295,10 @@ function LoggedInHome() {
   const [challengeActive, setChallengeActive] = useState(false);
   const [challengeDay, setChallengeDay] = useState(0);
   const [challengeCompleted, setChallengeCompleted] = useState(0);
+
+  /* ── 날씨 기반 루틴 TIP ── */
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherTips, setWeatherTips] = useState<WeatherTip[]>([]);
 
   /* ── 최근 피드 ── */
   const [recentPosts, setRecentPosts] = useState<RoutinePost[]>([]);
@@ -371,6 +407,25 @@ function LoggedInHome() {
       .then((r) => r.json())
       .then((json) => setRecentPosts(json.posts ?? []))
       .catch(() => {});
+
+    // Fetch weather data
+    fetchWeather().then((data) => {
+      if (data) {
+        setWeather(data);
+        // Get retinol/AHA info from saved routine
+        try {
+          const saved = localStorage.getItem("barda_last_routine");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setWeatherTips(generateWeatherTips(data, parsed.skinType, parsed.hasRetinol, parsed.hasAHA));
+          } else {
+            setWeatherTips(generateWeatherTips(data));
+          }
+        } catch {
+          setWeatherTips(generateWeatherTips(data));
+        }
+      }
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Toggle checklist item
@@ -499,6 +554,41 @@ function LoggedInHome() {
               재분석 →
             </Link>
           </div>
+        )}
+
+        {/* 날씨 기반 루틴 TIP */}
+        {weather && weatherTips.length > 0 && (
+          <section className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base">{weather.icon}</span>
+                <span className="text-sm font-semibold text-gray-800">오늘의 날씨 TIP</span>
+              </div>
+              <span className="text-xs text-gray-400">
+                {weather.temperature}°C · {weather.description}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {weatherTips.slice(0, 3).map((tip, i) => (
+                <div
+                  key={i}
+                  className={`flex items-start gap-2.5 px-3 py-2 rounded-xl ${
+                    tip.priority === "high"
+                      ? "bg-red-50/60"
+                      : tip.priority === "medium"
+                      ? "bg-amber-50/60"
+                      : "bg-gray-50"
+                  }`}
+                >
+                  <span className="text-sm mt-0.5">{tip.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-700">{tip.title}</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5 leading-relaxed">{tip.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* 체크리스트 없으면 분석 유도 */}
@@ -706,6 +796,34 @@ function LoggedInHome() {
               저장
             </button>
           </div>
+        </section>
+
+        {/* 🧴 내 서랍 + 듀프 파인더 배너 */}
+        <section className="grid grid-cols-2 gap-2 mb-4">
+          <Link
+            href="/drawer"
+            className="bg-white rounded-2xl border border-gray-100 p-3.5 hover:border-primary/30 transition-colors"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-lg">🧴</span>
+              <span className="text-xs font-semibold text-gray-800">내 서랍</span>
+            </div>
+            <p className="text-[10px] text-gray-400 leading-relaxed">
+              보유 제품 관리 + 개봉일 트래킹
+            </p>
+          </Link>
+          <Link
+            href="/dupe"
+            className="bg-white rounded-2xl border border-gray-100 p-3.5 hover:border-primary/30 transition-colors"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-lg">🔍</span>
+              <span className="text-xs font-semibold text-gray-800">듀프 파인더</span>
+            </div>
+            <p className="text-[10px] text-gray-400 leading-relaxed">
+              비슷한 성분의 대안 제품 찾기
+            </p>
+          </Link>
         </section>
 
         {/* 🏆 챌린지 배너 */}

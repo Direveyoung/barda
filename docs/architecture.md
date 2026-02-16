@@ -2,10 +2,10 @@
 
 ## 파일 맵
 
-### 페이지 라우트 (13개)
+### 페이지 라우트 (15개)
 ```
 src/app/
-├── page.tsx                    ← 홈 (비로그인: 랜딩 / 로그인: 체크리스트+다이어리)
+├── page.tsx                    ← 홈 (비로그인: 랜딩 / 로그인: 체크리스트+다이어리+날씨TIP)
 ├── analyze/page.tsx            ← 루틴 분석 위자드 (4단계)
 ├── feed/
 │   ├── page.tsx                ← 커뮤니티 피드 (SSR)
@@ -16,6 +16,8 @@ src/app/
 ├── guide/page.tsx              ← 성분 가이드 30종
 ├── challenge/page.tsx          ← 7일 스킨케어 챌린지
 ├── ranking/page.tsx            ← 인기 루틴 랭킹
+├── drawer/page.tsx             ← 내 서랍 (제품 트래커)
+├── dupe/page.tsx               ← 듀프 파인더 (대안 제품)
 ├── mypage/
 │   ├── page.tsx                ← 마이페이지
 │   ├── MypageClient.tsx        ← 마이페이지 인터랙션
@@ -67,6 +69,7 @@ src/data/
 src/lib/
 ├── analysis.ts                 ← 분석 엔진 (충돌, 점수, 캘린더, 팁)
 ├── search.ts                   ← 3단계 검색 (정확→별칭→퍼지)
+├── weather.ts                  ← 날씨 기반 루틴 TIP (Open-Meteo API)
 ├── events.ts                   ← 퍼널 이벤트 트래킹
 ├── payments.ts                 ← 토스페이먼츠 SDK
 ├── notifications.ts            ← 알림 로직
@@ -88,6 +91,8 @@ src/middleware.ts                ← 세션 갱신 + /admin 보호
 | `barda_diary_YYYY-MM-DD` | 스킨 다이어리 | `{condition: string, memo: string}` |
 | `barda_challenge` | 7일 챌린지 상태 | `{startDate: string, completedDays: boolean[]}` |
 | `barda_dev_unlock` | 개발용 페이월 해제 | `"true"` |
+| `barda_drawer` | 내 서랍 (보유 제품) | `DrawerItem[]` |
+| `barda_weather` | 날씨 캐시 (1시간 TTL) | `{data: WeatherData, timestamp: number}` |
 
 ## 데이터 흐름
 
@@ -115,4 +120,19 @@ ProductStep 검색 → search.ts 3단계 매칭
 홈 피부 컨디션 저장 → barda_diary_날짜 저장
                     → barda_challenge 해당 Day 자동 완료
                     → 챌린지 페이지에서 다이어리 기록 표시
+```
+
+### 날씨 → 루틴 TIP 플로우
+```
+홈 화면 로드 → Open-Meteo API (위치 자동 감지, 서울 기본)
+            → 기온/습도/UV/날씨코드 → generateWeatherTips()
+            → skinType/hasRetinol/hasAHA 반영한 맞춤 TIP 표시
+            → 1시간 캐시 (barda_weather)
+```
+
+### 듀프 파인더 플로우
+```
+제품 검색 → 같은 카테고리 제품 필터
+          → key_ingredients 유사도 계산 (겹치는 성분 비율 70% + 태그 유사도 30%)
+          → 유사도 15%+ 제품 최대 10개 표시
 ```
