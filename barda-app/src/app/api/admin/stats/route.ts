@@ -57,11 +57,28 @@ export async function GET() {
       .from("report_feedback")
       .select("*", { count: "exact", head: true });
 
+    // --- Search Stats ---
+    const { count: totalSearches } = await supabase
+      .from("search_logs")
+      .select("*", { count: "exact", head: true });
+
+    const { count: missedSearches } = await supabase
+      .from("search_logs")
+      .select("*", { count: "exact", head: true })
+      .eq("results_count", 0);
+
+    const searchHitRate =
+      (totalSearches ?? 0) > 0
+        ? Math.round(
+            ((1 - (missedSearches ?? 0) / (totalSearches ?? 1)) * 100) * 10
+          ) / 10
+        : 0;
+
     // --- Recent Search Misses (top 10 queries with 0 results) ---
     const { data: searchMissesRaw } = await supabase
       .from("search_logs")
       .select("query")
-      .eq("result_count", 0);
+      .eq("results_count", 0);
 
     const missMap = new Map<string, number>();
     for (const row of searchMissesRaw ?? []) {
@@ -87,12 +104,13 @@ export async function GET() {
       ([event_name, count]) => ({ event_name, count }),
     );
 
-    // --- Product Candidates (latest 20) ---
+    // --- Product Candidates (latest 30, sorted by submit_count) ---
     const { data: productCandidates } = await supabase
       .from("product_candidates")
       .select("*")
+      .order("submit_count", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(30);
 
     return NextResponse.json({
       totalUsers,
@@ -101,6 +119,9 @@ export async function GET() {
       totalRevenue,
       totalPosts: totalPosts ?? 0,
       totalFeedback: totalFeedback ?? 0,
+      totalSearches: totalSearches ?? 0,
+      missedSearches: missedSearches ?? 0,
+      searchHitRate,
       recentSearchMisses,
       funnelData,
       productCandidates: productCandidates ?? [],

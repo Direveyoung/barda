@@ -22,12 +22,28 @@ interface ChallengeState {
   completedDays: boolean[];
 }
 
+interface DiaryEntry {
+  condition: string;
+  memo: string;
+}
+
+const conditionEmojis: Record<string, string> = {
+  good: "😊",
+  normal: "🙂",
+  meh: "😐",
+  bad: "😟",
+  terrible: "😣",
+};
+
 export default function ChallengePage() {
   const { user } = useAuth();
   const [challenge, setChallenge] = useState<ChallengeState | null>(null);
   const [isActive, setIsActive] = useState(false);
+  const [diaryEntries, setDiaryEntries] = useState<(DiaryEntry | null)[]>(
+    Array(7).fill(null)
+  );
 
-  // Load challenge state
+  // Load challenge state + diary entries for each challenge day
   useEffect(() => {
     try {
       const data = localStorage.getItem("barda_challenge");
@@ -39,6 +55,17 @@ export default function ChallengePage() {
         const startDate = new Date(parsed.startDate);
         const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
         setIsActive(daysSince < 7);
+
+        // Load diary entries for each challenge day
+        const entries: (DiaryEntry | null)[] = [];
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(startDate);
+          d.setDate(d.getDate() + i);
+          const key = d.toISOString().slice(0, 10);
+          const diary = localStorage.getItem(`barda_diary_${key}`);
+          entries.push(diary ? JSON.parse(diary) : null);
+        }
+        setDiaryEntries(entries);
       }
     } catch { /* ignore */ }
   }, []);
@@ -195,6 +222,16 @@ export default function ChallengePage() {
                           {tip.title}
                         </p>
                         <p className="text-xs text-gray-500">{tip.desc}</p>
+                        {/* Show diary entry if exists for this day */}
+                        {diaryEntries[i] && (
+                          <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-gray-400">
+                            <span>{conditionEmojis[diaryEntries[i].condition] ?? "📝"}</span>
+                            <span>피부: {diaryEntries[i].condition === "good" ? "좋음" : diaryEntries[i].condition === "normal" ? "보통" : diaryEntries[i].condition === "meh" ? "그저그럭" : diaryEntries[i].condition === "bad" ? "별로" : "나쁨"}</span>
+                            {diaryEntries[i].memo && (
+                              <span className="truncate max-w-[120px]">· {diaryEntries[i].memo}</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       {(isToday || isPast) && !isFuture && (
                         <button
