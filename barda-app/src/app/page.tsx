@@ -243,6 +243,14 @@ function LoggedInHome() {
   const [routineLoaded, setRoutineLoaded] = useState(false);
   const [hasRoutine, setHasRoutine] = useState(false);
 
+  /* ── 오늘의 캘린더 정보 (레티놀 Day / 각질케어 Day / 기본) ── */
+  const [todaySchedule, setTodaySchedule] = useState<{
+    pmEmoji: string;
+    pmLabel: string;
+    isRetinolDay: boolean;
+    isExfoliateDay: boolean;
+  } | null>(null);
+
   /* ── 다이어리 상태 ── */
   const [todayCondition, setTodayCondition] = useState<string | null>(null);
   const [diaryMemo, setDiaryMemo] = useState("");
@@ -250,6 +258,11 @@ function LoggedInHome() {
 
   /* ── 연속 체크 카운트 ── */
   const [streak, setStreak] = useState(0);
+
+  /* ── 챌린지 진행 상태 ── */
+  const [challengeActive, setChallengeActive] = useState(false);
+  const [challengeDay, setChallengeDay] = useState(0);
+  const [challengeCompleted, setChallengeCompleted] = useState(0);
 
   /* ── 최근 피드 ── */
   const [recentPosts, setRecentPosts] = useState<RoutinePost[]>([]);
@@ -286,11 +299,44 @@ function LoggedInHome() {
 
         setChecklist({ am: amProducts, pm: pmProducts });
         setHasRoutine(true);
+
+        // Load 7-day calendar schedule for today
+        const calendarData = parsed.calendar as Array<{
+          day: string;
+          isRetinolDay: boolean;
+          isExfoliateDay: boolean;
+          pmEmoji: string;
+          pmLabel: string;
+        }> | undefined;
+        if (calendarData && calendarData.length === 7) {
+          // Calendar is 월(0)~일(6), JS getDay() is 일(0)~토(6)
+          // Map: JS 일(0)→cal 6, 월(1)→cal 0, 화(2)→cal 1, ...
+          const jsDay = today.getDay();
+          const calIndex = jsDay === 0 ? 6 : jsDay - 1;
+          setTodaySchedule(calendarData[calIndex]);
+        }
       } catch {
         // ignore
       }
     }
     setRoutineLoaded(true);
+
+    // Load challenge state
+    try {
+      const challengeData = localStorage.getItem("barda_challenge");
+      if (challengeData) {
+        const parsed = JSON.parse(challengeData);
+        const startDate = new Date(parsed.startDate);
+        const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
+        if (daysSince < 7) {
+          setChallengeActive(true);
+          setChallengeDay(daysSince + 1);
+          setChallengeCompleted(
+            (parsed.completedDays as boolean[]).filter(Boolean).length
+          );
+        }
+      }
+    } catch { /* ignore */ }
 
     // Load today's diary
     const savedDiary = localStorage.getItem(`barda_diary_${todayKey}`);
@@ -352,7 +398,7 @@ function LoggedInHome() {
     []
   );
 
-  // Save diary
+  // Save diary + auto-update challenge
   const saveDiary = useCallback(() => {
     if (!todayCondition) return;
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -361,6 +407,21 @@ function LoggedInHome() {
       JSON.stringify({ condition: todayCondition, memo: diaryMemo })
     );
     setDiarySaved(true);
+
+    // Auto-complete today's challenge day if active
+    try {
+      const challengeData = localStorage.getItem("barda_challenge");
+      if (challengeData) {
+        const parsed = JSON.parse(challengeData);
+        const startDate = new Date(parsed.startDate);
+        const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
+        if (daysSince >= 0 && daysSince < 7 && !parsed.completedDays[daysSince]) {
+          parsed.completedDays[daysSince] = true;
+          localStorage.setItem("barda_challenge", JSON.stringify(parsed));
+          setChallengeCompleted((prev) => prev + 1);
+        }
+      }
+    } catch { /* ignore */ }
   }, [todayCondition, diaryMemo]);
 
   // Score for last analysis
@@ -467,9 +528,16 @@ function LoggedInHome() {
                 <span className="text-base">☀️</span>
                 <span className="text-sm font-semibold text-gray-800">아침 루틴</span>
               </div>
-              <span className="text-xs text-gray-400">
-                {amDone}/{amTotal}
-              </span>
+              <div className="flex items-center gap-2">
+                {todaySchedule && (todaySchedule.isRetinolDay || todaySchedule.isExfoliateDay) && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium">
+                    선크림 필수
+                  </span>
+                )}
+                <span className="text-xs text-gray-400">
+                  {amDone}/{amTotal}
+                </span>
+              </div>
             </div>
             {/* Progress */}
             <div className="h-1.5 bg-gray-100 rounded-full mb-3 overflow-hidden">
@@ -523,8 +591,17 @@ function LoggedInHome() {
           <section className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-base">🌙</span>
+                <span className="text-base">{todaySchedule?.pmEmoji ?? "🌙"}</span>
                 <span className="text-sm font-semibold text-gray-800">저녁 루틴</span>
+                {todaySchedule && todaySchedule.pmLabel !== "기본 루틴" && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                    todaySchedule.isRetinolDay
+                      ? "bg-purple-50 text-purple-600"
+                      : "bg-blue-50 text-blue-600"
+                  }`}>
+                    오늘은 {todaySchedule.pmLabel} Day
+                  </span>
+                )}
               </div>
               <span className="text-xs text-gray-400">
                 {pmDone}/{pmTotal}
@@ -585,6 +662,9 @@ function LoggedInHome() {
             {diarySaved && (
               <span className="text-[10px] text-success font-medium bg-green-50 px-2 py-0.5 rounded-full">저장됨</span>
             )}
+            {diarySaved && challengeActive && (
+              <span className="text-[10px] text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">챌린지 Day {challengeDay} 완료!</span>
+            )}
           </div>
           <div className="flex gap-2 mb-3">
             {conditionOptions.map((opt) => (
@@ -638,7 +718,26 @@ function LoggedInHome() {
               <span className="text-2xl">🏆</span>
               <div className="flex-1">
                 <p className="text-sm font-bold text-gray-800">7일 스킨케어 챌린지</p>
-                <p className="text-xs text-gray-500">매일 미션 수행하며 올바른 루틴 만들기</p>
+                {challengeActive ? (
+                  <div className="mt-1">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-amber-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber-500 rounded-full transition-all"
+                          style={{ width: `${(challengeCompleted / 7) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-semibold text-amber-600">
+                        Day {challengeDay} · {challengeCompleted}/7
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-0.5">
+                      피부 컨디션 기록하면 오늘 미션 자동 완료!
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">매일 미션 수행하며 올바른 루틴 만들기</p>
+                )}
               </div>
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
