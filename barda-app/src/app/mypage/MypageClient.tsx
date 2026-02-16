@@ -56,6 +56,8 @@ export default function MypageClient() {
 
   // Load analysis history + diary from localStorage
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
       const saved = localStorage.getItem("barda_last_routine");
       if (saved) {
@@ -70,13 +72,13 @@ export default function MypageClient() {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const key = d.toISOString().slice(0, 10);
-      const data = localStorage.getItem(`barda_diary_${key}`);
-      if (data) {
-        try {
+      try {
+        const data = localStorage.getItem(`barda_diary_${key}`);
+        if (data) {
           const parsed = JSON.parse(data);
           entries.push({ date: key, condition: parsed.condition, memo: parsed.memo ?? "" });
-        } catch { /* ignore */ }
-      }
+        }
+      } catch { /* ignore */ }
     }
     setDiaryEntries(entries);
   }, []);

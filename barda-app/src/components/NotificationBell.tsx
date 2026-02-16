@@ -38,7 +38,7 @@ export default function NotificationBell() {
 
   // Load notifications from localStorage
   useEffect(() => {
-    if (!user) return;
+    if (!user || typeof window === "undefined") return;
     try {
       const data = localStorage.getItem(`barda_notifications_${user.id}`);
       if (data) {

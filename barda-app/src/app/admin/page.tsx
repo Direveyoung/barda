@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /* ---------- Types ---------- */
 
@@ -360,11 +360,11 @@ export default function AdminDashboard() {
   const funnelMax = Math.max(...orderedFunnel.map((f) => f.count), 1);
 
   /* ---- Candidate filter ---- */
-  const filteredCandidates = stats
-    ? candidateFilter === "all"
-      ? stats.productCandidates
-      : stats.productCandidates.filter((pc) => pc.status === candidateFilter)
-    : [];
+  const filteredCandidates = useMemo(() => {
+    if (!stats) return [];
+    if (candidateFilter === "all") return stats.productCandidates;
+    return stats.productCandidates.filter((pc) => pc.status === candidateFilter);
+  }, [stats, candidateFilter]);
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -11,6 +11,8 @@ export interface NotificationData {
 }
 
 export function pushNotification(userId: string, notification: NotificationData) {
+  if (typeof window === "undefined") return;
+
   try {
     const key = `barda_notifications_${userId}`;
     const existing = JSON.parse(localStorage.getItem(key) ?? "[]");
@@ -31,6 +33,8 @@ export function pushNotification(userId: string, notification: NotificationData)
 }
 
 export function getUnreadCount(userId: string): number {
+  if (typeof window === "undefined") return 0;
+
   try {
     const key = `barda_notifications_${userId}`;
     const data = JSON.parse(localStorage.getItem(key) ?? "[]");

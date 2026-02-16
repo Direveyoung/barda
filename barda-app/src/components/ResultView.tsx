@@ -298,6 +298,8 @@ export default function ResultView({
 
   // Save routine to localStorage for checklist
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
       localStorage.setItem(
         "barda_last_routine",

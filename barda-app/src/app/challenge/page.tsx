@@ -45,6 +45,8 @@ export default function ChallengePage() {
 
   // Load challenge state + diary entries for each challenge day
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
       const data = localStorage.getItem("barda_challenge");
       if (data) {

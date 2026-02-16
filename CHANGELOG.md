@@ -4,6 +4,18 @@
 
 ---
 
+## [0.9.1] - 2026-02-16
+
+### Fixed
+- (P0) localStorage SSR 방지: MypageClient, challenge, page, drawer, profile, ResultView, NotificationBell에 `typeof window` 가드 추가
+- (P0) admin/page.tsx candidateFilter를 `useMemo`로 최적화
+
+### Changed
+- (P1) localStorage 접근 방식 전체 통일: lib/notifications.ts, lib/weather.ts에도 SSR 가드 추가
+- (P2) next.config.ts에 `reactStrictMode`, `poweredByHeader: false`, `images.formats` 설정 추가
+
+---
+
 ## [0.9.0] - 2026-02-16
 
 ### Added

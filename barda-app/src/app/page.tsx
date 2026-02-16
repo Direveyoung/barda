@@ -305,6 +305,8 @@ function LoggedInHome() {
 
   // Load saved checklist & diary from localStorage
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const todayKey = today.toISOString().slice(0, 10);
 
     // Load last routine analysis result

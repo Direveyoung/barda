@@ -44,6 +44,8 @@ export default function ProfileSettingsPage() {
 
   // Load profile from localStorage
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
       const data = localStorage.getItem("barda_profile");
       if (data) {

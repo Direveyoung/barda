@@ -75,6 +75,8 @@ function getLocation(): Promise<{ lat: number; lon: number }> {
 
 /** Fetch weather data from Open-Meteo API */
 export async function fetchWeather(): Promise<WeatherData | null> {
+  if (typeof window === "undefined") return null;
+
   // Check cache first
   try {
     const cached = localStorage.getItem(CACHE_KEY);
