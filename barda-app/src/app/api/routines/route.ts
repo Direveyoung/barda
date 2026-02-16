@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "10", 10)));
   const skinType = searchParams.get("skin_type") ?? searchParams.get("skinType");
+  const concern = searchParams.get("concern");
+  const searchQ = searchParams.get("q");
   const userId = searchParams.get("userId");
   const sort = searchParams.get("sort") ?? "latest";
   const offset = (page - 1) * limit;
@@ -28,6 +30,14 @@ export async function GET(request: NextRequest) {
 
   if (skinType) {
     query = query.eq("skin_type", skinType);
+  }
+
+  if (concern) {
+    query = query.contains("concerns", [concern]);
+  }
+
+  if (searchQ) {
+    query = query.ilike("comment", `%${searchQ}%`);
   }
 
   if (userId) {

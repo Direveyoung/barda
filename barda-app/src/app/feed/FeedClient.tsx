@@ -16,6 +16,18 @@ const skinTypes = [
   { value: "normal", label: "중성" },
 ] as const;
 
+const concerns = [
+  { value: "acne", label: "여드름" },
+  { value: "wrinkle", label: "주름" },
+  { value: "pigmentation", label: "색소침착" },
+  { value: "dryness", label: "건조" },
+  { value: "sensitivity", label: "민감" },
+  { value: "pore", label: "모공" },
+  { value: "blackhead", label: "블랙헤드" },
+  { value: "redness", label: "홍조" },
+  { value: "darkCircle", label: "다크서클" },
+] as const;
+
 const PAGE_SIZE = 10;
 
 export default function FeedClient() {
@@ -24,16 +36,28 @@ export default function FeedClient() {
   const [posts, setPosts] = useState<RoutinePost[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [skinTypeFilter, setSkinTypeFilter] = useState("");
+  const [concernFilter, setConcernFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [sort, setSort] = useState<"latest" | "popular">("latest");
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const fetchPosts = useCallback(
     async (pageNum: number, replace: boolean) => {
       const params = new URLSearchParams();
       if (skinTypeFilter) params.set("skin_type", skinTypeFilter);
+      if (concernFilter) params.set("concern", concernFilter);
+      if (debouncedQuery.trim()) params.set("q", debouncedQuery.trim());
       params.set("sort", sort);
       params.set("page", String(pageNum + 1));
       params.set("limit", String(PAGE_SIZE));
@@ -51,7 +75,7 @@ export default function FeedClient() {
         console.error("Fetch posts error:", err);
       }
     },
-    [skinTypeFilter, sort]
+    [skinTypeFilter, concernFilter, debouncedQuery, sort]
   );
 
   // Initial load & filter/sort changes
@@ -115,14 +139,51 @@ export default function FeedClient() {
     }
   }
 
+  const hasActiveFilter = skinTypeFilter || concernFilter || debouncedQuery;
+
   return (
     <div className="min-h-screen pb-20">
       <div className="max-w-lg mx-auto px-4 pt-6">
         {/* Page title */}
         <h1 className="text-xl font-bold text-gray-800 mb-4">커뮤니티 피드</h1>
 
+        {/* Search bar */}
+        <div className="relative mb-3">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            />
+          </svg>
+          <input
+            type="text"
+            placeholder="루틴 검색 (키워드, 제품명...)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-primary/50 transition-colors"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+
         {/* Skin type filter pills */}
-        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide mb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {skinTypes.map((st) => (
             <button
               key={st.value}
@@ -139,27 +200,60 @@ export default function FeedClient() {
           ))}
         </div>
 
-        {/* Sort toggle */}
-        <div className="flex gap-2 mb-4">
-          <button
-            type="button"
-            onClick={() => setSort("latest")}
-            className={`text-xs font-medium ${
-              sort === "latest" ? "text-gray-800" : "text-gray-400"
-            }`}
-          >
-            최신순
-          </button>
-          <span className="text-gray-300">|</span>
-          <button
-            type="button"
-            onClick={() => setSort("popular")}
-            className={`text-xs font-medium ${
-              sort === "popular" ? "text-gray-800" : "text-gray-400"
-            }`}
-          >
-            인기순
-          </button>
+        {/* Concern filter pills */}
+        <div className="flex gap-1.5 overflow-x-auto pb-3 scrollbar-hide mt-2 mb-2">
+          {concerns.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              onClick={() => setConcernFilter(concernFilter === c.value ? "" : c.value)}
+              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                concernFilter === c.value
+                  ? "bg-gray-700 text-white border-gray-700"
+                  : "bg-white text-gray-400 border-gray-100 hover:border-gray-300"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort toggle + active filter indicator */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSort("latest")}
+              className={`text-xs font-medium ${
+                sort === "latest" ? "text-gray-800" : "text-gray-400"
+              }`}
+            >
+              최신순
+            </button>
+            <span className="text-gray-300">|</span>
+            <button
+              type="button"
+              onClick={() => setSort("popular")}
+              className={`text-xs font-medium ${
+                sort === "popular" ? "text-gray-800" : "text-gray-400"
+              }`}
+            >
+              인기순
+            </button>
+          </div>
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={() => {
+                setSkinTypeFilter("");
+                setConcernFilter("");
+                setSearchQuery("");
+              }}
+              className="text-[11px] text-primary font-medium"
+            >
+              필터 초기화
+            </button>
+          )}
         </div>
 
         {/* Content */}
