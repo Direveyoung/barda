@@ -44,6 +44,20 @@ const concernLabel: Record<string, string> = {
   blackhead: "블랙헤드", redness: "홍조", darkCircle: "다크서클",
 };
 
+// Log search to backend
+function logSearch(query: string, resultsCount: number, selectedId?: string) {
+  fetch("/api/search-logs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query,
+      results_count: resultsCount,
+      selected_product_id: selectedId ?? null,
+      fell_through: resultsCount === 0,
+    }),
+  }).catch(() => {});
+}
+
 export default function ProductStep({
   products,
   skinType,
@@ -58,8 +72,14 @@ export default function ProductStep({
   const [showResults, setShowResults] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showRecs, setShowRecs] = useState(true);
+  const [showDirectInput, setShowDirectInput] = useState(false);
+  const [directBrand, setDirectBrand] = useState("");
+  const [directName, setDirectName] = useState("");
+  const [directCategory, setDirectCategory] = useState("");
+  const [directSubmitted, setDirectSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchLogTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
   // Build contextual recommendations
   const recommendations = useMemo(() => {
@@ -110,10 +130,18 @@ export default function ProductStep({
   const handleSearch = useCallback(
     (value: string) => {
       setQuery(value);
+      setShowDirectInput(false);
+      setDirectSubmitted(false);
       if (value.trim().length >= 1) {
         const found = searchProducts(value, ALL_PRODUCTS);
         setResults(found);
         setShowResults(true);
+
+        // Debounced search log (logs after 1.5s of inactivity)
+        if (searchLogTimer.current) clearTimeout(searchLogTimer.current);
+        searchLogTimer.current = setTimeout(() => {
+          logSearch(value.trim(), found.length);
+        }, 1500);
       } else {
         setResults([]);
         setShowResults(false);
@@ -126,12 +154,45 @@ export default function ProductStep({
     (product: Product) => {
       if (products.some((p) => p.id === product.id)) return;
       onAdd({ ...product, frequency: "daily" });
+      // Log product selection
+      if (query.trim()) logSearch(query.trim(), results.length, product.id);
       setQuery("");
       setResults([]);
       setShowResults(false);
     },
-    [products, onAdd]
+    [products, onAdd, query, results.length]
   );
+
+  // Submit direct input as product candidate
+  const handleDirectSubmit = useCallback(async () => {
+    if (!directBrand.trim() || !directName.trim()) return;
+    try {
+      await fetch("/api/product-candidates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brand: directBrand.trim(),
+          name: directName.trim(),
+          category_guess: directCategory || null,
+        }),
+      });
+      setDirectSubmitted(true);
+
+      // Add as temporary product for this session
+      const tempProduct: Product = {
+        id: `user-${Date.now()}`,
+        brand: directBrand.trim(),
+        name: directName.trim(),
+        categoryId: directCategory || "cream",
+      };
+      onAdd({ ...tempProduct, frequency: "daily" });
+      setDirectBrand("");
+      setDirectName("");
+      setDirectCategory("");
+      setShowDirectInput(false);
+      setQuery("");
+    } catch { /* ignore */ }
+  }, [directBrand, directName, directCategory, onAdd]);
 
   const handleCategorySelect = useCallback(
     (categoryId: string) => {
@@ -299,11 +360,93 @@ export default function ProductStep({
         )}
 
         {showResults && query.trim().length >= 1 && results.length === 0 && (
-          <div className="absolute z-10 mt-2 w-full bg-white rounded-2xl border border-gray-200 shadow-lg p-4 text-center text-gray-500 text-sm">
-            검색 결과가 없어요. 카테고리에서 직접 선택해 보세요.
+          <div className="absolute z-10 mt-2 w-full bg-white rounded-2xl border border-gray-200 shadow-lg p-4 text-center">
+            <p className="text-sm text-gray-500 mb-2">
+              검색 결과가 없어요
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setShowResults(false);
+                setShowDirectInput(true);
+                setDirectBrand("");
+                setDirectName(query.trim());
+              }}
+              className="text-xs text-primary font-medium"
+            >
+              직접 입력하기 →
+            </button>
           </div>
         )}
       </div>
+
+      {/* Direct Input Form */}
+      {showDirectInput && (
+        <div className="mb-4 bg-gray-50 rounded-2xl p-4 border border-gray-200">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-gray-700">제품 직접 입력</h4>
+            <button
+              type="button"
+              onClick={() => setShowDirectInput(false)}
+              className="text-xs text-gray-400"
+            >
+              닫기
+            </button>
+          </div>
+
+          {directSubmitted ? (
+            <div className="text-center py-2">
+              <p className="text-xs text-green-600 font-medium">
+                등록되었어요! 제품 DB에 반영될 예정이에요
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              <input
+                type="text"
+                value={directBrand}
+                onChange={(e) => setDirectBrand(e.target.value)}
+                placeholder="브랜드명 (예: 라운드랩)"
+                maxLength={50}
+                className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-primary/50"
+              />
+              <input
+                type="text"
+                value={directName}
+                onChange={(e) => setDirectName(e.target.value)}
+                placeholder="제품명 (예: 독도 토너)"
+                maxLength={100}
+                className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-primary/50"
+              />
+              <select
+                value={directCategory}
+                onChange={(e) => setDirectCategory(e.target.value)}
+                className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-primary/50 text-gray-600"
+              >
+                <option value="">카테고리 선택 (선택사항)</option>
+                {Object.entries(CATEGORIES).map(([, group]) =>
+                  group.items.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.emoji} {cat.label}
+                    </option>
+                  ))
+                )}
+              </select>
+              <button
+                type="button"
+                onClick={handleDirectSubmit}
+                disabled={!directBrand.trim() || !directName.trim()}
+                className="w-full py-2.5 text-sm font-medium rounded-xl bg-primary text-white disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
+              >
+                등록하기
+              </button>
+              <p className="text-[10px] text-gray-400 text-center">
+                입력하신 제품은 검토 후 정식 DB에 추가됩니다
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Category Browse */}
       <div className="mb-4">

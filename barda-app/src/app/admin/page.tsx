@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /* ---------- Types ---------- */
 
@@ -16,10 +16,11 @@ interface FunnelItem {
 
 interface ProductCandidate {
   id: string;
-  brand_name?: string;
-  product_name?: string;
-  category?: string;
-  submitted_by?: string;
+  brand: string;
+  name: string;
+  category_guess: string | null;
+  submit_count: number;
+  status: string;
   created_at: string;
 }
 
@@ -30,6 +31,9 @@ interface AdminStats {
   totalRevenue: number;
   totalPosts: number;
   totalFeedback: number;
+  totalSearches: number;
+  missedSearches: number;
+  searchHitRate: number;
   recentSearchMisses: SearchMiss[];
   funnelData: FunnelItem[];
   productCandidates: ProductCandidate[];
@@ -49,6 +53,18 @@ const FUNNEL_LABELS: Record<string, string> = {
   result_viewed: "결과 조회",
   paywall_shown: "페이월 노출",
   payment_completed: "결제 완료",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: "대기",
+  approved: "승인",
+  rejected: "거절",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-700",
+  approved: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-600",
 };
 
 /* ---------- Skeleton ---------- */
@@ -81,20 +97,27 @@ function StatCard({
   label,
   value,
   format,
+  subtitle,
 }: {
   label: string;
   value: number;
-  format?: "number" | "currency";
+  format?: "number" | "currency" | "percent";
+  subtitle?: string;
 }) {
   const display =
     format === "currency"
       ? `${value.toLocaleString("ko-KR")}원`
-      : value.toLocaleString("ko-KR");
+      : format === "percent"
+        ? `${value}%`
+        : value.toLocaleString("ko-KR");
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
       <p className="text-sm text-gray-500 mb-1">{label}</p>
       <p className="text-2xl font-bold text-gray-900">{display}</p>
+      {subtitle && (
+        <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
+      )}
     </div>
   );
 }
@@ -143,6 +166,8 @@ function FunnelBar({
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [candidateFilter, setCandidateFilter] = useState<string>("pending");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/stats")
@@ -153,6 +178,37 @@ export default function AdminDashboard() {
       .then((data) => setStats(data))
       .catch((err) => setError(err.message));
   }, []);
+
+  // Update candidate status (approve / reject)
+  const updateCandidateStatus = useCallback(
+    async (id: string, status: "approved" | "rejected" | "pending") => {
+      setUpdatingId(id);
+      try {
+        const res = await fetch("/api/product-candidates", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, status }),
+        });
+        if (!res.ok) throw new Error("Failed");
+
+        // Update local state
+        setStats((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            productCandidates: prev.productCandidates.map((pc) =>
+              pc.id === id ? { ...pc, status } : pc
+            ),
+          };
+        });
+      } catch {
+        // Silently fail, could add toast
+      } finally {
+        setUpdatingId(null);
+      }
+    },
+    []
+  );
 
   /* ---- Error state ---- */
   if (error) {
@@ -176,6 +232,13 @@ export default function AdminDashboard() {
       }))
     : [];
   const funnelMax = Math.max(...orderedFunnel.map((f) => f.count), 1);
+
+  /* ---- Candidate filter ---- */
+  const filteredCandidates = stats
+    ? candidateFilter === "all"
+      ? stats.productCandidates
+      : stats.productCandidates.filter((pc) => pc.status === candidateFilter)
+    : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -224,15 +287,40 @@ export default function AdminDashboard() {
           )}
         </section>
 
+        {/* ---- Search Stats ---- */}
+        <section>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            검색 통계
+          </h2>
+          {stats ? (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <StatCard label="총 검색" value={stats.totalSearches} />
+              <StatCard label="미스 검색" value={stats.missedSearches} />
+              <StatCard
+                label="검색 히트율"
+                value={stats.searchHitRate}
+                format="percent"
+                subtitle={`${stats.totalSearches - stats.missedSearches}건 히트 / ${stats.totalSearches}건 총 검색`}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
+          )}
+        </section>
+
         {/* ---- Two-column: Search Misses + Funnel ---- */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Search Misses */}
           <section className="bg-white rounded-2xl border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-1">
-              검색 미스
+              검색 미스 Top 10
             </h2>
             <p className="text-xs text-gray-400 mb-4">
-              사용자가 검색했지만 DB에 없는 제품 (상위 10개)
+              DB에 없어서 결과 0건인 검색어
             </p>
             {stats ? (
               stats.recentSearchMisses.length > 0 ? (
@@ -300,14 +388,49 @@ export default function AdminDashboard() {
 
         {/* ---- Product Candidates ---- */}
         <section className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">
-            제품 후보
-          </h2>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-lg font-semibold text-gray-800">
+              제품 후보 관리
+            </h2>
+            {stats && (
+              <span className="text-xs text-gray-400">
+                총 {stats.productCandidates.length}건
+              </span>
+            )}
+          </div>
           <p className="text-xs text-gray-400 mb-4">
-            사용자가 제출한 승인 대기 제품 (최근 20개)
+            사용자가 직접 입력한 제품 후보 (submit_count 높은 순)
           </p>
+
+          {/* Status filter tabs */}
+          <div className="flex gap-2 mb-4">
+            {["pending", "approved", "rejected", "all"].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setCandidateFilter(s)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  candidateFilter === s
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                {s === "all" ? "전체" : STATUS_LABELS[s] ?? s}
+                {stats && (
+                  <span className="ml-1 opacity-70">
+                    (
+                    {s === "all"
+                      ? stats.productCandidates.length
+                      : stats.productCandidates.filter((pc) => pc.status === s).length}
+                    )
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
           {stats ? (
-            stats.productCandidates.length > 0 ? (
+            filteredCandidates.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -321,28 +444,83 @@ export default function AdminDashboard() {
                       <th className="text-left py-2 text-gray-500 font-medium hidden sm:table-cell">
                         카테고리
                       </th>
-                      <th className="text-right py-2 text-gray-500 font-medium">
-                        등록일
+                      <th className="text-center py-2 text-gray-500 font-medium w-16">
+                        요청수
+                      </th>
+                      <th className="text-center py-2 text-gray-500 font-medium w-16">
+                        상태
+                      </th>
+                      <th className="text-right py-2 text-gray-500 font-medium w-28">
+                        액션
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {stats.productCandidates.map((pc) => (
+                    {filteredCandidates.map((pc) => (
                       <tr
                         key={pc.id}
                         className="border-b border-gray-50 last:border-0"
                       >
-                        <td className="py-2 text-gray-800">
-                          {pc.brand_name ?? "-"}
+                        <td className="py-2.5 text-gray-800 font-medium">
+                          {pc.brand || "-"}
                         </td>
-                        <td className="py-2 text-gray-800">
-                          {pc.product_name ?? "-"}
+                        <td className="py-2.5 text-gray-800">
+                          {pc.name || "-"}
                         </td>
-                        <td className="py-2 text-gray-500 hidden sm:table-cell">
-                          {pc.category ?? "-"}
+                        <td className="py-2.5 text-gray-500 hidden sm:table-cell">
+                          {pc.category_guess || "-"}
                         </td>
-                        <td className="py-2 text-right text-gray-500">
-                          {new Date(pc.created_at).toLocaleDateString("ko-KR")}
+                        <td className="py-2.5 text-center">
+                          <span className={`inline-block min-w-[1.5rem] px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                            pc.submit_count >= 3
+                              ? "bg-red-100 text-red-600"
+                              : pc.submit_count >= 2
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-gray-100 text-gray-500"
+                          }`}>
+                            {pc.submit_count}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-center">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                            STATUS_COLORS[pc.status] ?? "bg-gray-100 text-gray-500"
+                          }`}>
+                            {STATUS_LABELS[pc.status] ?? pc.status}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {pc.status !== "approved" && (
+                              <button
+                                type="button"
+                                onClick={() => updateCandidateStatus(pc.id, "approved")}
+                                disabled={updatingId === pc.id}
+                                className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50 transition-colors"
+                              >
+                                승인
+                              </button>
+                            )}
+                            {pc.status !== "rejected" && (
+                              <button
+                                type="button"
+                                onClick={() => updateCandidateStatus(pc.id, "rejected")}
+                                disabled={updatingId === pc.id}
+                                className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                              >
+                                거절
+                              </button>
+                            )}
+                            {pc.status !== "pending" && (
+                              <button
+                                type="button"
+                                onClick={() => updateCandidateStatus(pc.id, "pending")}
+                                disabled={updatingId === pc.id}
+                                className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                              >
+                                대기
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -351,7 +529,9 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <p className="text-sm text-gray-400 py-4 text-center">
-                등록된 제품 후보가 없습니다.
+                {candidateFilter === "all"
+                  ? "등록된 제품 후보가 없습니다."
+                  : `${STATUS_LABELS[candidateFilter] ?? candidateFilter} 상태의 후보가 없습니다.`}
               </p>
             )
           ) : (
