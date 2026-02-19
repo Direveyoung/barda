@@ -116,8 +116,16 @@ NEXT_PUBLIC_TOSS_CLIENT_KEY=
 TOSS_SECRET_KEY=
 ```
 
-## 현재 상태 (2026.02.16)
-- MVP-1 ~ Phase 2 + DB전략 **전체 구현 완료**
-- 벤치마킹 🔴/🟡 항목 전부 완료
-- 남은 과제: Phase 3 (AI, 스캐너, 날씨, 듀프파인더)
-- 상세: `docs/features.md` 참고
+## 현재 상태 (2026.02.19)
+- 버전: **v0.9.1**
+- MVP-1 ~ Phase 2 + DB전략 + 벤치마킹 **전체 구현 완료**
+- 품평단 피드백 P0/P1/P2 **전부 반영 완료**
+- 문서 관리 체계 도입 완료 (`check-docs.sh`, `TODO.md`, `CHANGELOG.md` 포맷 통일)
+- 남은 과제: Phase 3 (AI, 스캐너), 테스트 코드 작성, Supabase cron 연동
+- 상세: `docs/features.md`, `TODO.md` 참고
+
+## 상세 문서 링크
+- `docs/architecture.md` — 아키텍처 + 파일 맵
+- `docs/features.md` — 기능 인벤토리 + 구현 상태
+- `docs/api-routes.md` — API 라우트 명세
+- `docs/product-db.md` — 제품 DB 전략/구조
