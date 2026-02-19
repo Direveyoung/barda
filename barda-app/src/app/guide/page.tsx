@@ -127,8 +127,35 @@ export default function GuidePage() {
           ))}
         </div>
 
+        {/* 도구 모음 */}
+        <section className="mt-8 mb-4">
+          <h3 className="text-sm font-bold text-gray-800 mb-3">스킨케어 도구</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <Link href="/ingredient-analysis" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
+              <span className="text-xl mb-1.5 block">🔬</span>
+              <p className="text-xs font-semibold text-gray-800">성분 분석</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">제품별 성분 안전도 분석</p>
+            </Link>
+            <Link href="/scanner" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
+              <span className="text-xl mb-1.5 block">📷</span>
+              <p className="text-xs font-semibold text-gray-800">스캐너</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">바코드/성분 스캔</p>
+            </Link>
+            <Link href="/dupe" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
+              <span className="text-xl mb-1.5 block">🔄</span>
+              <p className="text-xs font-semibold text-gray-800">듀프 파인더</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">저렴한 대안 제품 찾기</p>
+            </Link>
+            <Link href="/analyze" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
+              <span className="text-xl mb-1.5 block">🧴</span>
+              <p className="text-xs font-semibold text-gray-800">루틴 분석</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">성분 충돌 체크</p>
+            </Link>
+          </div>
+        </section>
+
         {/* Q&A 섹션 CTA */}
-        <section className="mt-8 mb-6">
+        <section className="mb-6">
           <div className="bg-primary-bg rounded-2xl p-5 text-center">
             <p className="text-sm font-semibold text-gray-800 mb-2">
               궁금한 성분 조합이 있나요?

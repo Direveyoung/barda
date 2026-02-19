@@ -117,11 +117,11 @@ TOSS_SECRET_KEY=
 ```
 
 ## 현재 상태 (2026.02.19)
-- 버전: **v0.9.1**
-- MVP-1 ~ Phase 2 + DB전략 + 벤치마킹 **전체 구현 완료**
-- 품평단 피드백 P0/P1/P2 **전부 반영 완료**
-- 문서 관리 체계 도입 완료 (`check-docs.sh`, `TODO.md`, `CHANGELOG.md` 포맷 통일)
-- 남은 과제: Phase 3 (AI, 스캐너), 테스트 코드 작성, Supabase cron 연동
+- 버전: **v1.0.0**
+- MVP-1 ~ Phase 3 **전체 구현 완료**
+- Phase 3: 날씨 고도화, 듀프 파인더 고도화, AI 성분 분석, 바코드 스캐너
+- 30종 성분 DB (`ingredients.ts`), 300+ 제품 DB (`products.ts`)
+- 남은 과제: 테스트 코드 작성, Supabase cron 연동, 제품 DB 추가 확장
 - 상세: `docs/features.md`, `TODO.md` 참고
 
 ## 상세 문서 링크

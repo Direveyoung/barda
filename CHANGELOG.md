@@ -4,6 +4,41 @@
 
 ---
 
+## [1.0.0] - 2026-02-19
+
+### Added
+- **Phase 3-1: 날씨 기반 루틴 고도화** (`lib/weather.ts`)
+  - 미세먼지(PM2.5/PM10) 데이터 추가 (Open-Meteo Air Quality API 병렬 호출)
+  - 시간대별 추천 (morning/afternoon/evening `timeTag`)
+  - 계절별 추천 (spring/summer/autumn/winter `season`)
+  - 최대 TIP 수 4 → 6개 확장
+  - 홈 화면 날씨 카드에 PM2.5/UV/습도 배지 추가
+- **Phase 3-2: 듀프 파인더 고도화** (`app/dupe/page.tsx`)
+  - 가격대 필터 (`PriceTier`: budget/mid/premium/luxury)
+  - 브랜드별 가격 매핑 (60+ 브랜드)
+  - 성분 비교 모달 (사이드 바이 사이드)
+  - 가격 티어 배지 및 필터 카운트
+- **Phase 3-3: AI 성분 분석 강화**
+  - `data/ingredients.ts`: 30종 성분 DB (safetyScore 1-5, goodWith/avoidWith, skinTypes)
+  - `app/ingredient-analysis/page.tsx`: 성분별 상세 분석, 시너지/충돌 맵, 맞춤 추천
+  - 카테고리별 이모지/라벨, 피부타입별 라벨
+  - SafetyLevel 타입 + getSafetyLevel/toEwgScore 헬퍼
+- **Phase 3-4: 바코드 스캐너** (`app/scanner/page.tsx`)
+  - 카메라 탭: 웹캠 바코드 촬영 + 스캔 애니메이션
+  - 수동 입력 탭: 전성분 목록 붙여넣기 → 성분 분석
+  - `/api/barcode` 라우트: Open Beauty Facts 바코드 조회
+  - 예시 성분 목록 (보습 크림/미백 세럼/레티놀 크림)
+  - BARDA DB 자동 매칭 + 루틴 분석 CTA
+- **가이드 페이지 업데이트** (`app/guide/page.tsx`)
+  - "스킨케어 도구" 섹션 추가 (성분 분석/스캐너/듀프/루틴 4개 카드)
+
+### Fixed
+- scanner/page.tsx: `fetchOBFByBarcode` 직접 import → `/api/barcode` fetch로 변경 (클라이언트/서버 분리)
+- scanner/page.tsx: ingredients.ts 신규 API에 맞게 필드명 수정 (koreanName→name, ewgScore→safetyScore 등)
+- `INGREDIENT_DB.length` → `Object.keys(INGREDIENT_DB).length` (Record 타입 대응)
+
+---
+
 ## [0.9.1] - 2026-02-16
 
 ### Fixed

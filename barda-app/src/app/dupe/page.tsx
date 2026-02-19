@@ -8,12 +8,41 @@ import BottomNav from "@/components/BottomNav";
 
 /* ─── Types ─── */
 
+type PriceTier = "budget" | "mid" | "premium" | "luxury";
+
 interface DupeResult {
   product: Product;
   similarity: number; // 0~100
   matchedIngredients: string[];
   totalIngredients: number;
+  priceTier: PriceTier;
 }
+
+/* ─── Brand Price Tier Mapping ─── */
+const LUXURY_BRANDS = new Set(["설화수", "헤라", "오휘", "SK-II", "에스티로더", "랑콤", "시슬리", "라메르", "스킨수티컬즈", "달팡", "바이레도"]);
+const PREMIUM_BRANDS = new Set(["아이오페", "프리메라", "탬버린즈", "달바", "AHC", "폴라초이스", "라로슈포제", "바이오더마", "유세린", "비쉬", "DHC", "판클", "쿠라이온"]);
+const BUDGET_BRANDS = new Set(["코스알엑스", "이즈앤트리", "퓨리토", "원씽", "바닐라코", "스킨푸드", "에뛰드", "더페이스샵", "미샤", "더인키리스트", "디오디너리", "세라비", "바니크림"]);
+
+function getBrandPriceTier(brand: string): PriceTier {
+  if (LUXURY_BRANDS.has(brand)) return "luxury";
+  if (PREMIUM_BRANDS.has(brand)) return "premium";
+  if (BUDGET_BRANDS.has(brand)) return "budget";
+  return "mid";
+}
+
+const PRICE_TIER_LABEL: Record<PriceTier, string> = {
+  budget: "가성비",
+  mid: "중가",
+  premium: "프리미엄",
+  luxury: "럭셔리",
+};
+
+const PRICE_TIER_STYLE: Record<PriceTier, string> = {
+  budget: "bg-green-50 text-green-600",
+  mid: "bg-blue-50 text-blue-600",
+  premium: "bg-purple-50 text-purple-600",
+  luxury: "bg-amber-50 text-amber-700",
+};
 
 /* ─── Helpers ─── */
 
@@ -89,13 +118,14 @@ function findDupes(target: Product, allProducts: Product[]): DupeResult[] {
         similarity,
         matchedIngredients: matched,
         totalIngredients: productIngredients.length,
+        priceTier: getBrandPriceTier(product.brand),
       });
     }
   }
 
   // Sort by similarity (highest first)
   results.sort((a, b) => b.similarity - a.similarity);
-  return results.slice(0, 10);
+  return results.slice(0, 15);
 }
 
 /* ─── Popular search suggestions ─── */
@@ -113,6 +143,8 @@ export default function DupePage() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [dupeResults, setDupeResults] = useState<DupeResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [priceFilter, setPriceFilter] = useState<PriceTier | "all">("all");
+  const [compareTarget, setCompareTarget] = useState<DupeResult | null>(null);
 
   // Search products
   const handleSearch = useCallback((query: string) => {
@@ -258,14 +290,92 @@ export default function DupePage() {
             {/* Dupe results */}
             {dupeResults.length > 0 ? (
               <>
-                <div className="flex items-center gap-2 mb-3">
-                  <h3 className="text-sm font-bold text-gray-800">
-                    대안 제품 {dupeResults.length}개
-                  </h3>
-                  <span className="text-[10px] text-gray-400">성분 유사도 기준</span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-gray-800">
+                      대안 제품 {dupeResults.length}개
+                    </h3>
+                    <span className="text-[10px] text-gray-400">성분 유사도 기준</span>
+                  </div>
                 </div>
+
+                {/* Price tier filter */}
+                <div className="flex gap-1.5 mb-3 flex-wrap">
+                  {(["all", "budget", "mid", "premium", "luxury"] as const).map((tier) => (
+                    <button
+                      key={tier}
+                      type="button"
+                      onClick={() => setPriceFilter(tier)}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors ${
+                        priceFilter === tier
+                          ? "bg-primary text-white border-primary"
+                          : "bg-white text-gray-500 border-gray-200"
+                      }`}
+                    >
+                      {tier === "all" ? "전체" : PRICE_TIER_LABEL[tier]}
+                      <span className="ml-0.5 opacity-70">
+                        ({tier === "all" ? dupeResults.length : dupeResults.filter(d => d.priceTier === tier).length})
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Comparison modal */}
+                {compareTarget && selectedProduct && (
+                  <div className="bg-white rounded-2xl border-2 border-primary/20 p-4 mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-xs font-bold text-gray-800">성분 비교</h4>
+                      <button type="button" onClick={() => setCompareTarget(null)} className="text-gray-400 hover:text-gray-600">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] text-gray-400 mb-1">원본</p>
+                        <p className="text-xs font-semibold text-gray-800 mb-1">{selectedProduct.brand} {selectedProduct.name}</p>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[getBrandPriceTier(selectedProduct.brand)]}`}>
+                          {PRICE_TIER_LABEL[getBrandPriceTier(selectedProduct.brand)]}
+                        </span>
+                        <div className="mt-2 space-y-0.5">
+                          {(selectedProduct.key_ingredients ?? []).map((ing) => {
+                            const isMatched = compareTarget.matchedIngredients.some(
+                              m => normalizeIngredient(m) === normalizeIngredient(ing) || normalizeIngredient(m).includes(normalizeIngredient(ing)) || normalizeIngredient(ing).includes(normalizeIngredient(m))
+                            );
+                            return (
+                              <p key={ing} className={`text-[10px] ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
+                                {isMatched ? "✓ " : "· "}{ing}
+                              </p>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gray-400 mb-1">대안 (유사도 {compareTarget.similarity}%)</p>
+                        <p className="text-xs font-semibold text-gray-800 mb-1">{compareTarget.product.brand} {compareTarget.product.name}</p>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[compareTarget.priceTier]}`}>
+                          {PRICE_TIER_LABEL[compareTarget.priceTier]}
+                        </span>
+                        <div className="mt-2 space-y-0.5">
+                          {(compareTarget.product.key_ingredients ?? []).map((ing) => {
+                            const isMatched = compareTarget.matchedIngredients.some(
+                              m => normalizeIngredient(m) === normalizeIngredient(ing) || normalizeIngredient(m).includes(normalizeIngredient(ing)) || normalizeIngredient(ing).includes(normalizeIngredient(m))
+                            );
+                            return (
+                              <p key={ing} className={`text-[10px] ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
+                                {isMatched ? "✓ " : "· "}{ing}
+                              </p>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  {dupeResults.map((dupe) => (
+                  {dupeResults
+                    .filter(d => priceFilter === "all" || d.priceTier === priceFilter)
+                    .map((dupe) => (
                     <div
                       key={dupe.product.id}
                       className="bg-white rounded-xl border border-gray-100 p-3.5"
@@ -273,7 +383,7 @@ export default function DupePage() {
                       <div className="flex items-start gap-3">
                         <span className="text-xl mt-0.5">{getCategoryEmoji(dupe.product.categoryId)}</span>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
+                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                             <span className="text-xs text-gray-400">{dupe.product.brand}</span>
                             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                               dupe.similarity >= 70
@@ -283,6 +393,9 @@ export default function DupePage() {
                                 : "bg-gray-50 text-gray-500"
                             }`}>
                               유사도 {dupe.similarity}%
+                            </span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[dupe.priceTier]}`}>
+                              {PRICE_TIER_LABEL[dupe.priceTier]}
                             </span>
                           </div>
                           <p className="text-sm font-medium text-gray-800">{dupe.product.name}</p>
@@ -309,9 +422,9 @@ export default function DupePage() {
                               ))}
                           </div>
 
-                          {/* Tags */}
-                          {(dupe.product.tags?.length ?? 0) > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1.5">
+                          {/* Tags + Compare button */}
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex flex-wrap gap-1">
                               {dupe.product.tags?.slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
@@ -321,7 +434,18 @@ export default function DupePage() {
                                 </span>
                               ))}
                             </div>
-                          )}
+                            <button
+                              type="button"
+                              onClick={() => setCompareTarget(compareTarget?.product.id === dupe.product.id ? null : dupe)}
+                              className={`text-[10px] px-2 py-1 rounded-lg font-medium transition-colors ${
+                                compareTarget?.product.id === dupe.product.id
+                                  ? "bg-primary text-white"
+                                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                              }`}
+                            >
+                              {compareTarget?.product.id === dupe.product.id ? "비교 중" : "비교"}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

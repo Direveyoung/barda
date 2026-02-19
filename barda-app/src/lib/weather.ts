@@ -8,6 +8,16 @@ export interface WeatherData {
   weatherCode: number;
   description: string;
   icon: string;
+  /** 미세먼지 PM2.5 (µg/m³), null if unavailable */
+  pm25: number | null;
+  /** 미세먼지 PM10 (µg/m³), null if unavailable */
+  pm10: number | null;
+  /** 시간대별 기온 (0~23시), null if unavailable */
+  hourlyTemp: number[] | null;
+  /** 시간대별 UV 인덱스 (0~23시), null if unavailable */
+  hourlyUV: number[] | null;
+  /** 현재 계절 */
+  season: "spring" | "summer" | "autumn" | "winter";
 }
 
 export interface WeatherTip {
@@ -15,6 +25,8 @@ export interface WeatherTip {
   title: string;
   description: string;
   priority: "high" | "medium" | "low";
+  /** 시간대 태그 (optional) */
+  timeTag?: "morning" | "afternoon" | "evening";
 }
 
 /* ─── Weather code → description mapping ─── */
@@ -58,6 +70,14 @@ interface CachedWeather {
   timestamp: number;
 }
 
+/** Determine season from month */
+function getSeason(month: number): WeatherData["season"] {
+  if (month >= 3 && month <= 5) return "spring";
+  if (month >= 6 && month <= 8) return "summer";
+  if (month >= 9 && month <= 11) return "autumn";
+  return "winter";
+}
+
 /** Try to get user's location, fallback to Seoul */
 function getLocation(): Promise<{ lat: number; lon: number }> {
   return new Promise((resolve) => {
@@ -73,7 +93,7 @@ function getLocation(): Promise<{ lat: number; lon: number }> {
   });
 }
 
-/** Fetch weather data from Open-Meteo API */
+/** Fetch weather data from Open-Meteo API (enhanced with hourly + air quality) */
 export async function fetchWeather(): Promise<WeatherData | null> {
   if (typeof window === "undefined") return null;
 
@@ -90,23 +110,53 @@ export async function fetchWeather(): Promise<WeatherData | null> {
 
   try {
     const { lat, lon } = await getLocation();
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=uv_index_max&timezone=Asia%2FSeoul&forecast_days=1`;
 
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
+    // Fetch weather + hourly forecast in parallel with air quality
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&hourly=temperature_2m,uv_index&daily=uv_index_max&timezone=Asia%2FSeoul&forecast_days=1`;
+    const airUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,pm10&timezone=Asia%2FSeoul`;
 
-    const json = await res.json();
+    const [weatherRes, airRes] = await Promise.all([
+      fetch(weatherUrl, { signal: AbortSignal.timeout(8000) }),
+      fetch(airUrl, { signal: AbortSignal.timeout(8000) }).catch(() => null),
+    ]);
 
-    const weatherCode = json.current?.weather_code ?? 0;
+    if (!weatherRes.ok) return null;
+    const weatherJson = await weatherRes.json();
+
+    // Air quality (optional, may fail)
+    let pm25: number | null = null;
+    let pm10: number | null = null;
+    if (airRes?.ok) {
+      try {
+        const airJson = await airRes.json();
+        pm25 = airJson.current?.pm2_5 != null ? Math.round(airJson.current.pm2_5) : null;
+        pm10 = airJson.current?.pm10 != null ? Math.round(airJson.current.pm10) : null;
+      } catch { /* ignore */ }
+    }
+
+    const weatherCode = weatherJson.current?.weather_code ?? 0;
     const weatherInfo = WEATHER_DESCRIPTIONS[weatherCode] ?? { desc: "알 수 없음", icon: "🌡️" };
 
+    // Parse hourly data
+    const hourlyTemp: number[] | null = weatherJson.hourly?.temperature_2m
+      ? (weatherJson.hourly.temperature_2m as number[]).slice(0, 24).map(Math.round)
+      : null;
+    const hourlyUV: number[] | null = weatherJson.hourly?.uv_index
+      ? (weatherJson.hourly.uv_index as number[]).slice(0, 24).map(Math.round)
+      : null;
+
     const data: WeatherData = {
-      temperature: Math.round(json.current?.temperature_2m ?? 0),
-      humidity: Math.round(json.current?.relative_humidity_2m ?? 0),
-      uvIndex: Math.round(json.daily?.uv_index_max?.[0] ?? 0),
+      temperature: Math.round(weatherJson.current?.temperature_2m ?? 0),
+      humidity: Math.round(weatherJson.current?.relative_humidity_2m ?? 0),
+      uvIndex: Math.round(weatherJson.daily?.uv_index_max?.[0] ?? 0),
       weatherCode,
       description: weatherInfo.desc,
       icon: weatherInfo.icon,
+      pm25,
+      pm10,
+      hourlyTemp,
+      hourlyUV,
+      season: getSeason(new Date().getMonth() + 1),
     };
 
     // Cache the result
@@ -259,9 +309,135 @@ export function generateWeatherTips(
     });
   }
 
+  // ── 미세먼지 TIP ──
+  if (weather.pm25 !== null || weather.pm10 !== null) {
+    const pm25 = weather.pm25 ?? 0;
+    const pm10 = weather.pm10 ?? 0;
+    if (pm25 > 75 || pm10 > 150) {
+      tips.push({
+        emoji: "😷",
+        title: `미세먼지 매우 나쁨 (PM2.5: ${pm25})`,
+        description: "외출 자제! 귀가 후 꼼꼼한 이중세안 + 진정 마스크팩을 추천해요.",
+        priority: "high",
+      });
+    } else if (pm25 > 35 || pm10 > 80) {
+      tips.push({
+        emoji: "🌫️",
+        title: `미세먼지 나쁨 (PM2.5: ${pm25})`,
+        description: "외출 후 클렌징을 꼼꼼히! 시카 성분으로 진정 케어하세요.",
+        priority: "high",
+      });
+    } else if (pm25 > 15 || pm10 > 50) {
+      tips.push({
+        emoji: "💨",
+        title: `미세먼지 보통 (PM2.5: ${pm25})`,
+        description: "저녁 이중세안으로 모공 속 미세먼지를 제거해 주세요.",
+        priority: "medium",
+      });
+    }
+  }
+
+  // ── 시간대별 TIP ──
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    // 아침 시간대
+    if (weather.hourlyUV) {
+      const afternoonUV = Math.max(...weather.hourlyUV.slice(11, 15));
+      if (afternoonUV >= 6) {
+        tips.push({
+          emoji: "🕐",
+          title: `오후에 UV ${afternoonUV}까지 올라갈 예정`,
+          description: "점심 외출 전 선크림을 한 번 더 덧바르세요!",
+          priority: "high",
+          timeTag: "morning",
+        });
+      }
+    }
+    if (weather.hourlyTemp) {
+      const afternoonMax = Math.max(...weather.hourlyTemp.slice(12, 18));
+      const tempDiff = afternoonMax - weather.temperature;
+      if (tempDiff >= 10) {
+        tips.push({
+          emoji: "🌡️",
+          title: `일교차 ${tempDiff}°C 주의`,
+          description: "아침엔 보습 크림, 오후엔 가벼운 제형으로 조절하세요.",
+          priority: "medium",
+          timeTag: "morning",
+        });
+      }
+    }
+  } else if (hour < 18) {
+    // 오후 시간대
+    tips.push({
+      emoji: "🔄",
+      title: "오후 선크림 리터치 시간",
+      description: "아침에 바른 선크림 효과가 줄어들 시간이에요. 덧바르세요!",
+      priority: "medium",
+      timeTag: "afternoon",
+    });
+  } else {
+    // 저녁 시간대
+    tips.push({
+      emoji: "🌙",
+      title: "저녁 루틴 시작할 시간",
+      description: "클렌징 → 토너 → 세럼 → 크림 순서로 케어하세요.",
+      priority: "low",
+      timeTag: "evening",
+    });
+    if ((hasRetinol) && (new Date().getDay() % 2 === 0)) {
+      tips.push({
+        emoji: "💜",
+        title: "오늘은 레티놀 사용 가능한 날",
+        description: "레티놀은 세안 후 피부가 완전히 건조된 상태에서 발라주세요.",
+        priority: "medium",
+        timeTag: "evening",
+      });
+    }
+  }
+
+  // ── 계절별 TIP ──
+  switch (weather.season) {
+    case "spring":
+      tips.push({
+        emoji: "🌸",
+        title: "봄철 스킨케어",
+        description: "꽃가루 + 미세먼지 시즌! 저자극 클렌저 + 진정 토너로 피부를 보호하세요.",
+        priority: "medium",
+      });
+      break;
+    case "summer":
+      if (weather.humidity > 70 && skinType === "oily") {
+        tips.push({
+          emoji: "🧊",
+          title: "여름 지성피부 관리",
+          description: "클레이 마스크로 주 1~2회 모공 관리, 가벼운 수분젤로 유수분 밸런스를 맞추세요.",
+          priority: "medium",
+        });
+      }
+      break;
+    case "autumn":
+      tips.push({
+        emoji: "🍂",
+        title: "가을 환절기 주의",
+        description: "급격히 건조해지는 시기! 세라마이드 크림으로 장벽을 강화하세요.",
+        priority: "medium",
+      });
+      break;
+    case "winter":
+      if (skinType === "dry" || skinType === "sensitive") {
+        tips.push({
+          emoji: "🧣",
+          title: "겨울 집중 보습",
+          description: "수분크림 → 오일 → 슬리핑팩 레이어링으로 수분 증발을 막으세요.",
+          priority: "high",
+        });
+      }
+      break;
+  }
+
   // Sort by priority
   const priorityOrder = { high: 0, medium: 1, low: 2 };
   tips.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
-  return tips.slice(0, 4); // max 4 tips
+  return tips.slice(0, 6); // max 6 tips (expanded from 4)
 }

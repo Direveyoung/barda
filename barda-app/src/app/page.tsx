@@ -558,10 +558,10 @@ function LoggedInHome() {
           </div>
         )}
 
-        {/* 날씨 기반 루틴 TIP */}
+        {/* 날씨 기반 루틴 TIP (고도화) */}
         {weather && weatherTips.length > 0 && (
           <section className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-base">{weather.icon}</span>
                 <span className="text-sm font-semibold text-gray-800">오늘의 날씨 TIP</span>
@@ -570,8 +570,30 @@ function LoggedInHome() {
                 {weather.temperature}°C · {weather.description}
               </span>
             </div>
+            {/* Weather summary badges */}
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+                습도 {weather.humidity}%
+              </span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                weather.uvIndex >= 6 ? "bg-red-50 text-red-600" :
+                weather.uvIndex >= 3 ? "bg-amber-50 text-amber-600" :
+                "bg-green-50 text-green-600"
+              }`}>
+                UV {weather.uvIndex}
+              </span>
+              {weather.pm25 !== null && (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                  weather.pm25 > 35 ? "bg-red-50 text-red-600" :
+                  weather.pm25 > 15 ? "bg-amber-50 text-amber-600" :
+                  "bg-green-50 text-green-600"
+                }`}>
+                  PM2.5 {weather.pm25}
+                </span>
+              )}
+            </div>
             <div className="space-y-2">
-              {weatherTips.slice(0, 3).map((tip, i) => (
+              {weatherTips.slice(0, 4).map((tip, i) => (
                 <div
                   key={i}
                   className={`flex items-start gap-2.5 px-3 py-2 rounded-xl ${
@@ -584,7 +606,18 @@ function LoggedInHome() {
                 >
                   <span className="text-sm mt-0.5">{tip.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-700">{tip.title}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-semibold text-gray-700">{tip.title}</p>
+                      {tip.timeTag && (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                          tip.timeTag === "morning" ? "bg-amber-100 text-amber-700" :
+                          tip.timeTag === "afternoon" ? "bg-orange-100 text-orange-700" :
+                          "bg-indigo-100 text-indigo-700"
+                        }`}>
+                          {tip.timeTag === "morning" ? "아침" : tip.timeTag === "afternoon" ? "오후" : "저녁"}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] text-gray-500 mt-0.5 leading-relaxed">{tip.description}</p>
                   </div>
                 </div>
