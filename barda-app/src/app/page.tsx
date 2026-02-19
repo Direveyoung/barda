@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import NotificationBell from "@/components/NotificationBell";
 import RoutinePostCard, { type RoutinePost } from "@/components/RoutinePostCard";
-import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip } from "@/lib/weather";
+import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip, type DailyForecast } from "@/lib/weather";
 
 /* ─── 요일 이름 ─── */
 const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
@@ -166,70 +166,59 @@ function LandingHome() {
           )}
         </section>
 
-        {/* 성분 가이드 + 듀프 파인더 CTA */}
-        <section className="py-6 space-y-3">
-          <Link
-            href="/guide"
-            className="block bg-white rounded-2xl border border-gray-100 p-5 hover:border-primary/30 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-am/30 flex items-center justify-center text-lg shrink-0">
-                📖
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800">
-                  성분 가이드
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  레티놀, AHA, 비타민C... 궁금한 성분을 알아보세요
-                </p>
-              </div>
-              <svg
-                className="w-5 h-5 text-gray-300 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                />
-              </svg>
-            </div>
-          </Link>
-          <Link
-            href="/dupe"
-            className="block bg-white rounded-2xl border border-gray-100 p-5 hover:border-primary/30 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-100/80 flex items-center justify-center text-lg shrink-0">
-                🔍
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800">
-                  듀프 파인더
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  비싼 제품의 저렴한 대안을 찾아보세요
-                </p>
-              </div>
-              <svg
-                className="w-5 h-5 text-gray-300 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                />
-              </svg>
-            </div>
-          </Link>
+        {/* 스킨케어 도구 모음 */}
+        <section className="py-6">
+          <h3 className="text-sm font-bold text-gray-800 mb-3">스킨케어 도구</h3>
+          <div className="grid grid-cols-3 gap-2">
+            <Link
+              href="/guide"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors text-center"
+            >
+              <span className="text-lg block mb-1">📖</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">성분 가이드</span>
+              <p className="text-[9px] text-gray-400 mt-0.5">30종 상세</p>
+            </Link>
+            <Link
+              href="/dupe"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors text-center"
+            >
+              <span className="text-lg block mb-1">🔍</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">듀프 파인더</span>
+              <p className="text-[9px] text-gray-400 mt-0.5">대안 제품</p>
+            </Link>
+            <Link
+              href="/ranking"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors text-center"
+            >
+              <span className="text-lg block mb-1">🏅</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">인기 랭킹</span>
+              <p className="text-[9px] text-gray-400 mt-0.5">TOP 10</p>
+            </Link>
+            <Link
+              href="/scanner"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors text-center"
+            >
+              <span className="text-lg block mb-1">📷</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">바코드 스캐너</span>
+              <p className="text-[9px] text-gray-400 mt-0.5">제품 스캔</p>
+            </Link>
+            <Link
+              href="/ingredient-analysis"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors text-center"
+            >
+              <span className="text-lg block mb-1">🧬</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">성분 분석</span>
+              <p className="text-[9px] text-gray-400 mt-0.5">AI 분석</p>
+            </Link>
+            <Link
+              href="/drawer"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors text-center"
+            >
+              <span className="text-lg block mb-1">🧴</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">내 서랍</span>
+              <p className="text-[9px] text-gray-400 mt-0.5">제품 관리</p>
+            </Link>
+          </div>
         </section>
 
         {/* 두 번째 CTA */}
@@ -626,6 +615,62 @@ function LoggedInHome() {
           </section>
         )}
 
+        {/* 7일 날씨 예보 */}
+        {weather?.dailyForecast && weather.dailyForecast.length > 0 && (
+          <section className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-base">📅</span>
+              <span className="text-sm font-semibold text-gray-800">7일 날씨 예보</span>
+              <span className="text-[10px] text-gray-400 ml-auto">루틴 가이드 포함</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+              {weather.dailyForecast.map((day: DailyForecast, i: number) => {
+                const isToday = i === 0;
+                const adviceColor =
+                  day.routineAdvice === "gentle_only" ? "bg-red-100 text-red-600" :
+                  day.routineAdvice === "retinol_caution" ? "bg-amber-100 text-amber-600" :
+                  day.routineAdvice === "retinol_ok" ? "bg-green-100 text-green-600" :
+                  day.routineAdvice === "exfoliate_ok" ? "bg-blue-100 text-blue-600" :
+                  "bg-gray-100 text-gray-500";
+                const adviceLabel =
+                  day.routineAdvice === "gentle_only" ? "저자극" :
+                  day.routineAdvice === "retinol_caution" ? "레티놀주의" :
+                  day.routineAdvice === "retinol_ok" ? "레티놀OK" :
+                  day.routineAdvice === "exfoliate_ok" ? "각질OK" :
+                  "일반";
+                return (
+                  <div
+                    key={day.date}
+                    className={`flex flex-col items-center min-w-[4.2rem] py-2 px-1.5 rounded-xl transition-colors ${
+                      isToday ? "bg-primary/10 ring-1 ring-primary/30" : "bg-gray-50"
+                    }`}
+                  >
+                    <span className={`text-[10px] font-semibold ${isToday ? "text-primary" : "text-gray-500"}`}>
+                      {isToday ? "오늘" : `${day.dayLabel}요일`}
+                    </span>
+                    <span className="text-lg my-0.5">{day.icon}</span>
+                    <div className="flex items-center gap-0.5 text-[10px]">
+                      <span className="text-blue-500 font-medium">{day.tempMin}°</span>
+                      <span className="text-gray-300">/</span>
+                      <span className="text-red-400 font-medium">{day.tempMax}°</span>
+                    </div>
+                    <span className={`text-[8px] px-1.5 py-0.5 rounded-full mt-1 font-medium ${
+                      day.uvMax >= 6 ? "bg-red-50 text-red-500" :
+                      day.uvMax >= 3 ? "bg-amber-50 text-amber-500" :
+                      "bg-green-50 text-green-500"
+                    }`}>
+                      UV {day.uvMax}
+                    </span>
+                    <span className={`text-[8px] px-1.5 py-0.5 rounded-full mt-0.5 font-medium ${adviceColor}`}>
+                      {adviceLabel}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {/* 체크리스트 없으면 분석 유도 */}
         {routineLoaded && !hasRoutine && (
           <section className="bg-white rounded-2xl border border-gray-100 p-6 mb-6 text-center">
@@ -833,45 +878,74 @@ function LoggedInHome() {
           </div>
         </section>
 
-        {/* 🧴 내 서랍 + 듀프 파인더 배너 */}
-        <section className="grid grid-cols-2 gap-2 mb-4">
-          <Link
-            href="/drawer"
-            className="bg-white rounded-2xl border border-gray-100 p-3.5 hover:border-primary/30 transition-colors"
-          >
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-lg">🧴</span>
-              <span className="text-xs font-semibold text-gray-800">내 서랍</span>
-            </div>
-            <p className="text-[10px] text-gray-400 leading-relaxed">
-              보유 제품 관리 + 개봉일 트래킹
-            </p>
-          </Link>
-          <Link
-            href="/dupe"
-            className="bg-white rounded-2xl border border-gray-100 p-3.5 hover:border-primary/30 transition-colors"
-          >
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-lg">🔍</span>
-              <span className="text-xs font-semibold text-gray-800">듀프 파인더</span>
-            </div>
-            <p className="text-[10px] text-gray-400 leading-relaxed">
-              비슷한 성분의 대안 제품 찾기
-            </p>
-          </Link>
+        {/* 🧴 스킨케어 도구 모음 */}
+        <section className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sm font-semibold text-gray-800">스킨케어 도구</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <Link
+              href="/drawer"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
+            >
+              <span className="text-lg block mb-1">🧴</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">내 서랍</span>
+              <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">제품 관리</p>
+            </Link>
+            <Link
+              href="/dupe"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
+            >
+              <span className="text-lg block mb-1">🔍</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">듀프 파인더</span>
+              <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">대안 제품</p>
+            </Link>
+            <Link
+              href="/ranking"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
+            >
+              <span className="text-lg block mb-1">🏅</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">인기 랭킹</span>
+              <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">TOP 10</p>
+            </Link>
+            <Link
+              href="/scanner"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
+            >
+              <span className="text-lg block mb-1">📷</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">바코드 스캐너</span>
+              <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">제품 스캔</p>
+            </Link>
+            <Link
+              href="/ingredient-analysis"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
+            >
+              <span className="text-lg block mb-1">🧬</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">성분 분석</span>
+              <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">AI 분석</p>
+            </Link>
+            <Link
+              href="/challenge"
+              className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
+            >
+              <span className="text-lg block mb-1">🏆</span>
+              <span className="text-[11px] font-semibold text-gray-800 block">챌린지</span>
+              <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">7일 미션</p>
+            </Link>
+          </div>
         </section>
 
-        {/* 🏆 챌린지 배너 */}
-        <section className="py-4">
-          <Link
-            href="/challenge"
-            className="block bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border border-amber-200/50 p-4"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🏆</span>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-gray-800">7일 스킨케어 챌린지</p>
-                {challengeActive ? (
+        {/* 🏆 챌린지 진행 배너 (진행 중일 때만 표시) */}
+        {challengeActive && (
+          <section className="mb-4">
+            <Link
+              href="/challenge"
+              className="block bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border border-amber-200/50 p-4"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏆</span>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-800">7일 스킨케어 챌린지</p>
                   <div className="mt-1">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-1.5 bg-amber-100 rounded-full overflow-hidden">
@@ -888,16 +962,14 @@ function LoggedInHome() {
                       피부 컨디션 기록하면 오늘 미션 자동 완료!
                     </p>
                   </div>
-                ) : (
-                  <p className="text-xs text-gray-500">매일 미션 수행하며 올바른 루틴 만들기</p>
-                )}
+                </div>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
               </div>
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </div>
-          </Link>
-        </section>
+            </Link>
+          </section>
+        )}
 
         {/* 📱 최근 피드 */}
         <section className="py-4">
