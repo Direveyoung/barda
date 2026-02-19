@@ -86,13 +86,39 @@
 | 파이프라인 API | `api/admin/pipeline/route.ts` | 관리자 파이프라인 실행 엔드포인트 |
 | 관리자 대시보드 강화 | `app/admin/page.tsx` | 3탭 (개요/파이프라인/외부API) + 아키텍처 다이어그램 |
 
+### Phase 3: AI 성분 분석 + 바코드 스캐너 (2026.02.19)
+| 기능 | 파일 | 설명 |
+|------|------|------|
+| 성분 DB 30종 | `data/ingredients.ts` | safetyScore, goodWith/avoidWith, skinTypes |
+| AI 성분 분석 | `app/ingredient-analysis/page.tsx` | 성분별 상세, 시너지/충돌 맵, 맞춤 추천 |
+| 바코드 스캐너 | `app/scanner/page.tsx` | 카메라 + 수동입력, OBF 연동 |
+| 바코드 API | `api/barcode/route.ts` | Open Beauty Facts 바코드 조회 |
+
+### v1.1.0: 테스트 + API 타입 강화 (2026.02.19)
+| 기능 | 파일 | 설명 |
+|------|------|------|
+| 제품 DB 502개 | `data/products.ts` | 83개 브랜드, 20개 카테고리 |
+| Vitest 71개 테스트 | `lib/__tests__/` | analysis(44) + search(27) |
+| API 타입 중앙화 | `lib/api-types.ts` | 12개 API 타입 + 7개 validation 헬퍼 |
+
+### v1.2.0: 고도화 + 프로덕션 연동 (2026.02.19)
+| 기능 | 파일 | 설명 |
+|------|------|------|
+| 날씨 7일 예보 | `lib/weather.ts` | DailyForecast + 바람 + 루틴 어드바이스 |
+| 듀프 가격 비교 | `app/dupe/page.tsx` | 4단계 가격대, 절약 금액, 인기도 |
+| 듀프 배지/정렬 | `app/dupe/page.tsx` | 가장유사/BestValue/인기 + 3종 정렬 |
+| 외부 API 캐싱 | `lib/external-apis.ts` | 5분 TTL + 재시도(2회, 백오프) |
+| 통합 성분 조회 | `lib/external-apis.ts` | `lookupIngredientEnriched()` 병렬 |
+| 성분 조회 API | `api/ingredients/lookup/route.ts` | 사용자 대면 외부 성분 데이터 API |
+| 성분 분석 보강 | `app/ingredient-analysis/page.tsx` | 외부 API 데이터 자동 표시 |
+
 ---
 
-## 미구현 (Phase 3+)
+## 미구현 (Phase 4+)
 | 기능 | 우선순위 | 복잡도 | 비고 |
 |------|---------|--------|------|
-| Q&A 섹션 | 중간 | 중 | 피드 질문 태그로 대체 중 |
-| 제품 스캐너 | 낮음 | 대 | 사진/바코드 인식 |
-| AI 피부 분석 | 낮음 | 대 | 프리미엄 정당성 |
-| 전성분 파싱 | 낮음 | 대 | OCR → 성분 매칭 |
-| 팔로우/팔로워 | 낮음 | 중 | 유저 1만+ 이후 |
+| Q&A 섹션 | 중간 | 중 | Phase 5 소셜 확장 |
+| 팔로우/팔로워 | 낮음 | 중 | 유저 규모 확대 후 |
+| 커머스 연동 | 중간 | 중 | 올리브영/쿠팡 어필리에이트 |
+| 데이터 리포트 B2B | 낮음 | 대 | 트렌드 분석 유료 리포트 |
+| 프리미엄 구독 | 중간 | 소 | 월 3,900원 (기존 원타임 외 추가) |
