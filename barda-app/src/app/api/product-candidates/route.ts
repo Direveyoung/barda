@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type {
+  ProductCandidateResponse,
+  ProductCandidateListResponse,
+  ApiOk,
+  ApiError,
+} from "@/lib/api-types";
+import { isNonEmptyString, isValidCandidateStatus } from "@/lib/api-types";
 
 // POST: Submit a new product candidate (user direct input)
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse<ProductCandidateResponse | ApiError>> {
   const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
@@ -74,7 +81,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET: List product candidates (admin)
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse<ProductCandidateListResponse | ApiError>> {
   const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
@@ -108,7 +115,7 @@ export async function GET(request: NextRequest) {
 }
 
 // PATCH: Update candidate status (admin: promote or reject)
-export async function PATCH(request: NextRequest) {
+export async function PATCH(request: NextRequest): Promise<NextResponse<ApiOk | ApiError>> {
   const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
@@ -118,7 +125,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { id, status } = body;
 
-    if (!id || !["approved", "rejected", "pending"].includes(status)) {
+    if (!isNonEmptyString(id) || !isValidCandidateStatus(status)) {
       return NextResponse.json(
         { error: "id and valid status required" },
         { status: 400 }

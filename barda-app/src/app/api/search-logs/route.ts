@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type {
+  SearchStatsResponse,
+  MissedSearchesResponse,
+  ApiOk,
+  ApiError,
+} from "@/lib/api-types";
+import { isNonEmptyString } from "@/lib/api-types";
 
 // POST: Log a search query (tracks hits and misses)
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse<ApiOk | ApiError>> {
   const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json({ ok: true }); // graceful degradation
@@ -20,7 +27,7 @@ export async function POST(request: NextRequest) {
     selected_product_id = body.selected_product_id ?? null;
     fell_through = body.fell_through ?? false;
 
-    if (!query || typeof query !== "string") {
+    if (!isNonEmptyString(query)) {
       return NextResponse.json({ error: "query is required" }, { status: 400 });
     }
   } catch {
@@ -41,7 +48,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET: Search stats for admin (top missed queries, hit rate)
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse<SearchStatsResponse | MissedSearchesResponse | ApiError>> {
   const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json({ error: "DB unavailable" }, { status: 503 });

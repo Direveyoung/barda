@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type { ApiOk, ApiError } from "@/lib/api-types";
+import { isNonEmptyString } from "@/lib/api-types";
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<ApiOk | ApiError>> {
   const supabase = await createClient();
 
   if (!supabase) {
@@ -21,7 +23,7 @@ export async function POST(request: Request) {
     isHelpful = body.is_helpful;
     sessionId = body.session_id;
 
-    if (!conflictRuleId || typeof isHelpful !== "boolean" || !sessionId) {
+    if (!isNonEmptyString(conflictRuleId) || typeof isHelpful !== "boolean" || !isNonEmptyString(sessionId)) {
       throw new Error("Missing required fields");
     }
   } catch {

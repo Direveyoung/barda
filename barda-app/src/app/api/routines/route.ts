@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type {
+  RoutinePostListResponse,
+  RoutinePostResponse,
+  CreateRoutinePostRequest,
+  CreateRoutinePostResponse,
+  ApiError,
+} from "@/lib/api-types";
+import { isNonEmptyString, isStringArray } from "@/lib/api-types";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse<RoutinePostListResponse | ApiError>> {
   const supabase = await createClient();
 
   if (!supabase) {
@@ -62,24 +70,24 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const posts = (data ?? []).map((post) => {
+  const posts: RoutinePostResponse[] = (data ?? []).map((post) => {
     const raw = post as Record<string, unknown>;
     const users = raw.users as { email?: string } | null;
     const email = users?.email ?? "";
     const displayName = email.split("@")[0] || "anonymous";
 
     return {
-      id: raw.id,
-      user_id: raw.user_id,
-      skin_type: raw.skin_type,
-      concerns: raw.concerns,
-      score: raw.score,
+      id: raw.id as string,
+      user_id: raw.user_id as string,
+      skin_type: raw.skin_type as string,
+      concerns: raw.concerns as string[],
+      score: raw.score as number,
       products_json: raw.products_json,
-      comment: raw.comment,
-      rating: raw.rating,
-      like_count: raw.like_count,
-      comment_count: raw.comment_count,
-      created_at: raw.created_at,
+      comment: (raw.comment as string) ?? null,
+      rating: raw.rating as number,
+      like_count: raw.like_count as number,
+      comment_count: raw.comment_count as number,
+      created_at: raw.created_at as string,
       user_email_prefix: displayName,
     };
   });
@@ -92,7 +100,7 @@ export async function GET(request: NextRequest) {
   });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<CreateRoutinePostResponse | ApiError>> {
   const supabase = await createClient();
 
   if (!supabase) {
@@ -114,31 +122,20 @@ export async function POST(request: Request) {
     );
   }
 
-  let skin_type: string;
-  let concerns: string[];
-  let score: number;
-  let products_json: object;
-  let comment: string | undefined;
-  let rating: number;
+  let parsed: CreateRoutinePostRequest;
 
   try {
     const body = await request.json();
-    skin_type = body.skin_type;
-    concerns = body.concerns;
-    score = body.score;
-    products_json = body.products_json;
-    comment = body.comment;
-    rating = body.rating;
-
     if (
-      !skin_type ||
-      !Array.isArray(concerns) ||
-      typeof score !== "number" ||
-      !products_json ||
-      typeof rating !== "number"
+      !isNonEmptyString(body.skin_type) ||
+      !isStringArray(body.concerns) ||
+      typeof body.score !== "number" ||
+      !body.products_json ||
+      typeof body.rating !== "number"
     ) {
       throw new Error("Missing required fields");
     }
+    parsed = body as CreateRoutinePostRequest;
   } catch {
     return NextResponse.json(
       { error: "Invalid request body: skin_type, concerns, score, products_json, and rating are required" },
@@ -150,12 +147,12 @@ export async function POST(request: Request) {
     .from("routine_posts")
     .insert({
       user_id: user.id,
-      skin_type,
-      concerns,
-      score,
-      products_json,
-      comment: comment ?? null,
-      rating,
+      skin_type: parsed.skin_type,
+      concerns: parsed.concerns,
+      score: parsed.score,
+      products_json: parsed.products_json,
+      comment: parsed.comment ?? null,
+      rating: parsed.rating,
     })
     .select()
     .single();

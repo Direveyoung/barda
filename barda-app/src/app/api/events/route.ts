@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type { FunnelEvent, BatchEventsResponse, ApiError } from "@/lib/api-types";
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<BatchEventsResponse | ApiError>> {
   const supabase = await createClient();
 
   if (!supabase) {
@@ -11,12 +12,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let events: Array<{
-    event_name: string;
-    session_id: string;
-    metadata?: Record<string, unknown>;
-    created_at: string;
-  }>;
+  let events: FunnelEvent[];
 
   try {
     const body = await request.json();

@@ -762,4 +762,12 @@ export const ALL_PRODUCTS: Product[] = [
   // ── 추가 수면팩 ──
   { id: "haruharu-wonder-sleeping", brand: "하루하루원더", name: "블랙라이스 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["흑미 추출물", "히알루론산"], tags: ["수분", "톤업"], source: "manual_v2", verified: true },
   { id: "anua-heartleaf-sleeping", brand: "아누아", name: "어성초 77 수딩 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["어성초 77%", "판테놀"], tags: ["올리브영베스트", "진정"], source: "manual_v2", verified: true },
+
+  // ── 500개 달성 추가 제품 ──
+  { id: "mixsoon-bean-essence", brand: "믹순", name: "빈 에센스", categoryId: "essence", key_ingredients: ["발효 콩 추출물", "나이아신아마이드"], tags: ["올리브영베스트", "보습강화", "톤업"], source: "manual_v2", verified: true },
+  { id: "illiyoon-probiotic-essence", brand: "일리윤", name: "프로바이오틱 스킨 배리어 에센스", categoryId: "essence", key_ingredients: ["프로바이오틱스", "세라마이드"], tags: ["장벽강화", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "round-lab-mugwort-toner", brand: "라운드랩", name: "쑥 진정 토너", categoryId: "toner", key_ingredients: ["쑥 추출물", "판테놀"], tags: ["진정", "저자극", "올리브영베스트"], source: "manual_v2", verified: true },
+  { id: "skin1004-centella-ampoule-v2", brand: "스킨1004", name: "마다가스카르 센텔라 앰플 2세대", categoryId: "ampoule", key_ingredients: ["센텔라 추출물", "히알루론산"], tags: ["진정", "올리브영베스트"], source: "manual_v2", verified: true },
+  { id: "medicube-collagen-night-cream", brand: "메디큐브", name: "콜라겐 나이트 래핑 크림", categoryId: "cream", key_ingredients: ["콜라겐", "레티놀", "나이아신아마이드"], tags: ["안티에이징", "탄력"], source: "manual_v2", verified: true },
+  { id: "torriden-cellmazing-cream", brand: "토리든", name: "셀마징 저분자 콜라겐 크림", categoryId: "cream", key_ingredients: ["저분자 콜라겐", "세라마이드"], tags: ["탄력", "보습강화", "올리브영베스트"], source: "manual_v2", verified: true },
 ];

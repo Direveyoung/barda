@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type { ConfirmPaymentResponse, ApiError } from "@/lib/api-types";
+import { isNonEmptyString, isPositiveNumber } from "@/lib/api-types";
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<ConfirmPaymentResponse | ApiError>> {
   const secretKey = process.env.TOSS_SECRET_KEY;
 
   if (!secretKey) {
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
     orderId = body.orderId;
     amount = body.amount;
 
-    if (!paymentKey || !orderId || typeof amount !== "number") {
+    if (!isNonEmptyString(paymentKey) || !isNonEmptyString(orderId) || !isPositiveNumber(amount)) {
       throw new Error("Missing required fields");
     }
   } catch {

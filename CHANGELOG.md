@@ -4,6 +4,26 @@
 
 ---
 
+## [1.1.0] - 2026-02-19
+
+### Added
+- **제품 DB 502개 달성** (496 → 502, 6개 K-뷰티 신제품 추가)
+  - 믹순 빈 에센스, 일리윤 프로바이오틱 에센스, 라운드랩 쑥 진정 토너
+  - 스킨1004 센텔라 앰플 2세대, 메디큐브 콜라겐 나이트 크림, 토리든 셀마징 크림
+- **테스트 코드 71개** (Vitest 프레임워크 도입)
+  - `analysis.test.ts`: 44개 (충돌 감지, 누락 단계, 점수, 캘린더, 팁, 헬퍼)
+  - `search.test.ts`: 27개 (정확 매칭, 별칭 확장, 퍼지 매칭, 엣지 케이스)
+- **API 응답 타입 중앙화** (`lib/api-types.ts`)
+  - 12개 API 엔드포인트 request/response 타입 정의
+  - 공유 validation 헬퍼: `isNonEmptyString`, `isPositiveNumber`, `isValidBarcode`, `isValidSkinType`, `isStringArray`, `isValidRating`, `isValidCandidateStatus`
+  - 모든 API route에 return type annotation 적용
+
+### Changed
+- API route handlers: 타입 안전성 강화 (response type + validation 함수 적용)
+- `package.json`: vitest, @vitejs/plugin-react devDependencies 추가, test script 추가
+
+---
+
 ## [1.0.0] - 2026-02-19
 
 ### Added
