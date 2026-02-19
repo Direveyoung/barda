@@ -16,6 +16,17 @@ import BottomNav from "@/components/BottomNav";
 
 /* ─── Types ─── */
 
+interface EnrichedData {
+  nameEn: string | null;
+  casNo: string | null;
+  purpose: string | null;
+  maxConcentration: string | null;
+  regulation: string | null;
+  ewgScore: number | null;
+  category: string | null;
+  sources: string[];
+}
+
 interface AnalyzedIngredient {
   name: string;
   info: IngredientInfo | null;
@@ -133,6 +144,56 @@ export default function IngredientAnalysisPage() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [enrichedMap, setEnrichedMap] = useState<Record<string, EnrichedData>>({});
+  const [enrichedLoading, setEnrichedLoading] = useState(false);
+
+  // Fetch enriched data from external APIs when product is selected
+  useEffect(() => {
+    if (!selectedProduct?.key_ingredients) {
+      setEnrichedMap({});
+      return;
+    }
+
+    let cancelled = false;
+    const ingredients = selectedProduct.key_ingredients;
+
+    async function fetchEnriched() {
+      setEnrichedLoading(true);
+      const results: Record<string, EnrichedData> = {};
+
+      // Fetch in parallel (max 5 concurrent)
+      const batches: string[][] = [];
+      for (let i = 0; i < ingredients.length; i += 5) {
+        batches.push(ingredients.slice(i, i + 5));
+      }
+
+      for (const batch of batches) {
+        if (cancelled) break;
+        const promises = batch.map(async (name) => {
+          try {
+            const res = await fetch(`/api/ingredients/lookup?name=${encodeURIComponent(name)}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.ingredient) {
+                results[name] = data.ingredient as EnrichedData;
+              }
+            }
+          } catch {
+            // Silently fail — enriched data is optional
+          }
+        });
+        await Promise.all(promises);
+      }
+
+      if (!cancelled) {
+        setEnrichedMap(results);
+        setEnrichedLoading(false);
+      }
+    }
+
+    fetchEnriched();
+    return () => { cancelled = true; };
+  }, [selectedProduct]);
 
   // Load profile from localStorage
   useEffect(() => {
@@ -656,6 +717,53 @@ export default function IngredientAnalysisPage() {
                           ))}
                         </div>
                       </div>
+
+                      {/* Enriched external data */}
+                      {enrichedMap[item.name] && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <p className="text-[10px] text-gray-400 font-medium mb-1.5">
+                            외부 API 데이터
+                            {enrichedLoading && " (로딩 중...)"}
+                          </p>
+                          <div className="space-y-1">
+                            {enrichedMap[item.name].purpose && (
+                              <p className="text-[10px] text-gray-500">
+                                <span className="font-medium">기능성 용도:</span> {enrichedMap[item.name].purpose}
+                              </p>
+                            )}
+                            {enrichedMap[item.name].maxConcentration && (
+                              <p className="text-[10px] text-gray-500">
+                                <span className="font-medium">최대 배합한도:</span> {enrichedMap[item.name].maxConcentration}
+                              </p>
+                            )}
+                            {enrichedMap[item.name].regulation && (
+                              <p className="text-[10px] text-gray-500">
+                                <span className="font-medium">규제:</span> {enrichedMap[item.name].regulation}
+                              </p>
+                            )}
+                            {enrichedMap[item.name].ewgScore !== null && (
+                              <p className="text-[10px] text-gray-500">
+                                <span className="font-medium">EWG 등급:</span>{" "}
+                                <span className={
+                                  (enrichedMap[item.name].ewgScore ?? 0) <= 2 ? "text-green-600 font-medium" :
+                                  (enrichedMap[item.name].ewgScore ?? 0) <= 6 ? "text-amber-600 font-medium" :
+                                  "text-red-600 font-medium"
+                                }>
+                                  {enrichedMap[item.name].ewgScore}
+                                </span>
+                              </p>
+                            )}
+                            {enrichedMap[item.name].casNo && (
+                              <p className="text-[10px] text-gray-400">
+                                CAS: {enrichedMap[item.name].casNo}
+                              </p>
+                            )}
+                            <p className="text-[9px] text-gray-300 mt-1">
+                              출처: {enrichedMap[item.name].sources.join(", ")}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div
@@ -673,6 +781,42 @@ export default function IngredientAnalysisPage() {
                           </p>
                         </div>
                       </div>
+
+                      {/* Enriched data for unregistered ingredients */}
+                      {enrichedMap[item.name] && (
+                        <div className="mt-2 pl-8">
+                          <p className="text-[10px] text-blue-500 font-medium mb-1">
+                            외부 API에서 찾은 정보
+                          </p>
+                          <div className="space-y-0.5">
+                            {enrichedMap[item.name].nameEn && (
+                              <p className="text-[10px] text-gray-500">
+                                {enrichedMap[item.name].nameEn}
+                              </p>
+                            )}
+                            {enrichedMap[item.name].purpose && (
+                              <p className="text-[10px] text-gray-500">
+                                용도: {enrichedMap[item.name].purpose}
+                              </p>
+                            )}
+                            {enrichedMap[item.name].ewgScore !== null && (
+                              <p className="text-[10px] text-gray-500">
+                                EWG 등급:{" "}
+                                <span className={
+                                  (enrichedMap[item.name].ewgScore ?? 0) <= 2 ? "text-green-600 font-medium" :
+                                  (enrichedMap[item.name].ewgScore ?? 0) <= 6 ? "text-amber-600 font-medium" :
+                                  "text-red-600 font-medium"
+                                }>
+                                  {enrichedMap[item.name].ewgScore}
+                                </span>
+                              </p>
+                            )}
+                            <p className="text-[9px] text-gray-300">
+                              출처: {enrichedMap[item.name].sources.join(", ")}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )
                 )}

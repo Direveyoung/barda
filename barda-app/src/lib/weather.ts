@@ -18,6 +18,10 @@ export interface WeatherData {
   hourlyUV: number[] | null;
   /** 현재 계절 */
   season: "spring" | "summer" | "autumn" | "winter";
+  /** 7일 예보 (날씨-캘린더 연동) */
+  dailyForecast: DailyForecast[] | null;
+  /** 바람 속도 (m/s) */
+  windSpeed: number | null;
 }
 
 export interface WeatherTip {
@@ -27,6 +31,28 @@ export interface WeatherTip {
   priority: "high" | "medium" | "low";
   /** 시간대 태그 (optional) */
   timeTag?: "morning" | "afternoon" | "evening";
+}
+
+/** 7일 예보 항목 */
+export interface DailyForecast {
+  date: string;
+  dayLabel: string;
+  tempMin: number;
+  tempMax: number;
+  uvMax: number;
+  weatherCode: number;
+  icon: string;
+  routineAdvice: "retinol_ok" | "retinol_caution" | "exfoliate_ok" | "gentle_only" | "normal";
+}
+
+/** 날씨-루틴 교차 분석 */
+export interface WeatherRoutineAdvice {
+  retinolSafe: boolean;
+  exfoliateSafe: boolean;
+  reason: string;
+  sunscreenReapplyCount: number;
+  moistureLevel: "light" | "medium" | "heavy";
+  textureAdvice: string;
 }
 
 /* ─── Weather code → description mapping ─── */
@@ -111,8 +137,8 @@ export async function fetchWeather(): Promise<WeatherData | null> {
   try {
     const { lat, lon } = await getLocation();
 
-    // Fetch weather + hourly forecast in parallel with air quality
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&hourly=temperature_2m,uv_index&daily=uv_index_max&timezone=Asia%2FSeoul&forecast_days=1`;
+    // Fetch weather + hourly + 7-day forecast in parallel with air quality
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&hourly=temperature_2m,uv_index&daily=uv_index_max,temperature_2m_min,temperature_2m_max,weather_code&timezone=Asia%2FSeoul&forecast_days=7`;
     const airUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,pm10&timezone=Asia%2FSeoul`;
 
     const [weatherRes, airRes] = await Promise.all([
@@ -145,6 +171,46 @@ export async function fetchWeather(): Promise<WeatherData | null> {
       ? (weatherJson.hourly.uv_index as number[]).slice(0, 24).map(Math.round)
       : null;
 
+    // Parse 7-day forecast
+    const dayLabels = ["일", "월", "화", "수", "목", "금", "토"];
+    let dailyForecast: DailyForecast[] | null = null;
+    if (weatherJson.daily?.time) {
+      const times = weatherJson.daily.time as string[];
+      const tMins = weatherJson.daily.temperature_2m_min as number[];
+      const tMaxs = weatherJson.daily.temperature_2m_max as number[];
+      const uvMaxs = weatherJson.daily.uv_index_max as number[];
+      const wCodes = weatherJson.daily.weather_code as number[];
+
+      dailyForecast = times.map((date: string, i: number) => {
+        const d = new Date(date);
+        const uvMax = Math.round(uvMaxs[i] ?? 0);
+        const tMin = Math.round(tMins[i] ?? 0);
+        const code = wCodes[i] ?? 0;
+        const info = WEATHER_DESCRIPTIONS[code] ?? { desc: "알 수 없음", icon: "🌡️" };
+
+        // Determine routine advice based on UV + weather
+        let routineAdvice: DailyForecast["routineAdvice"] = "normal";
+        if (uvMax >= 8 || code >= 95) {
+          routineAdvice = "gentle_only";
+        } else if (uvMax >= 5) {
+          routineAdvice = "retinol_caution";
+        } else if (uvMax <= 3 && tMin >= 5) {
+          routineAdvice = "retinol_ok";
+        }
+
+        return {
+          date,
+          dayLabel: dayLabels[d.getDay()],
+          tempMin: tMin,
+          tempMax: Math.round(tMaxs[i] ?? 0),
+          uvMax,
+          weatherCode: code,
+          icon: info.icon,
+          routineAdvice,
+        };
+      });
+    }
+
     const data: WeatherData = {
       temperature: Math.round(weatherJson.current?.temperature_2m ?? 0),
       humidity: Math.round(weatherJson.current?.relative_humidity_2m ?? 0),
@@ -157,6 +223,10 @@ export async function fetchWeather(): Promise<WeatherData | null> {
       hourlyTemp,
       hourlyUV,
       season: getSeason(new Date().getMonth() + 1),
+      dailyForecast,
+      windSpeed: weatherJson.current?.wind_speed_10m != null
+        ? Math.round(weatherJson.current.wind_speed_10m)
+        : null,
     };
 
     // Cache the result
@@ -395,6 +465,23 @@ export function generateWeatherTips(
     }
   }
 
+  // ── 강풍 TIP ──
+  if (weather.windSpeed !== null && weather.windSpeed >= 10) {
+    tips.push({
+      emoji: "💨",
+      title: `강풍 주의 (${weather.windSpeed}m/s)`,
+      description: "바람이 수분을 빼앗아요. 밤 오일이나 무거운 크림으로 장벽을 보호하세요.",
+      priority: "high",
+    });
+  } else if (weather.windSpeed !== null && weather.windSpeed >= 6) {
+    tips.push({
+      emoji: "🍃",
+      title: `바람 부는 날 (${weather.windSpeed}m/s)`,
+      description: "바람에 의한 수분 증발 주의. 세라마이드 크림으로 장벽을 강화하세요.",
+      priority: "medium",
+    });
+  }
+
   // ── 계절별 TIP ──
   switch (weather.season) {
     case "spring":
@@ -440,4 +527,52 @@ export function generateWeatherTips(
   tips.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
   return tips.slice(0, 6); // max 6 tips (expanded from 4)
+}
+
+/** Analyze weather conditions against user's active ingredients for routine advice */
+export function getWeatherRoutineAdvice(weather: WeatherData): WeatherRoutineAdvice {
+  const uvHigh = weather.uvIndex >= 5;
+  const uvVeryHigh = weather.uvIndex >= 8;
+  const dry = weather.humidity < 40;
+  const veryDry = weather.humidity < 30;
+  const hot = weather.temperature >= 30;
+  const cold = weather.temperature <= 5;
+  const windy = (weather.windSpeed ?? 0) >= 8;
+
+  // Retinol safety: UV 5+ → caution, UV 8+ or extreme conditions → unsafe
+  const retinolSafe = !uvVeryHigh && !hot;
+  const exfoliateSafe = !uvVeryHigh;
+
+  const reasons: string[] = [];
+  if (uvVeryHigh) reasons.push("자외선 매우 강함");
+  if (hot) reasons.push("고온");
+  if (uvHigh && !uvVeryHigh) reasons.push("자외선 강함 (선크림 필수)");
+
+  // Sunscreen reapply count
+  let sunscreenReapplyCount = 1; // baseline: morning
+  if (weather.uvIndex >= 3) sunscreenReapplyCount = 2;
+  if (weather.uvIndex >= 6) sunscreenReapplyCount = 3;
+  if (weather.uvIndex >= 8) sunscreenReapplyCount = 4;
+
+  // Moisture level
+  let moistureLevel: WeatherRoutineAdvice["moistureLevel"] = "medium";
+  if (veryDry || cold || windy) moistureLevel = "heavy";
+  else if (hot || weather.humidity > 70) moistureLevel = "light";
+
+  // Texture advice
+  let textureAdvice = "기본 크림/로션";
+  if (hot && weather.humidity > 70) textureAdvice = "수분 젤/워터 크림 추천";
+  else if (hot) textureAdvice = "가벼운 로션/에멀전 추천";
+  else if (cold && dry) textureAdvice = "리치 크림 + 페이스 오일 추천";
+  else if (cold) textureAdvice = "보습 크림 + 슬리핑팩 추천";
+  else if (windy) textureAdvice = "밤/오일 크림으로 장벽 보호";
+
+  return {
+    retinolSafe,
+    exfoliateSafe,
+    reason: reasons.length > 0 ? reasons.join(", ") : "날씨 양호",
+    sunscreenReapplyCount,
+    moistureLevel,
+    textureAdvice,
+  };
 }

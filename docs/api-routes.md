@@ -64,6 +64,32 @@
 { "routine_id": "uuid", "conflict_rule_id": "R1", "is_helpful": true }
 ```
 
+### GET /api/barcode?code=8809721512345
+Open Beauty Facts 바코드 조회. 스캐너 페이지에서 사용.
+```json
+// Response
+{ "product": { "code": "...", "productName": "...", "brand": "...", "ingredientsList": "..." }, "source": "obf" }
+```
+
+### GET /api/ingredients/lookup?name=나이아신아마이드
+외부 API(식약처 + 공공데이터포털) 통합 성분 조회. 5분 서버 캐싱.
+```json
+// Response
+{
+  "ingredient": {
+    "name": "나이아신아마이드",
+    "nameEn": "Niacinamide",
+    "casNo": "98-92-0",
+    "purpose": "미백",
+    "maxConcentration": "2~5%",
+    "regulation": null,
+    "ewgScore": 1,
+    "category": "미백",
+    "sources": ["mfds", "ingredient_dict"]
+  }
+}
+```
+
 ## 인증 선택 (optional auth)
 
 ### GET /api/routines?sort=latest&page=1&limit=10&skinType=dry
@@ -109,6 +135,23 @@
 
 ### GET /api/admin/stats
 통계 집계 (totalUsers, totalAnalyses, totalPayments, totalRevenue, searchHitRate, recentSearchMisses, funnelData, productCandidates).
+
+### GET /api/admin/external-apis
+외부 API 헬스체크 (MFDS, OBF, 성분사전 연결 상태 + API키 유무).
+
+### POST /api/admin/external-apis
+외부 API 테스트 쿼리 실행.
+```json
+// Request
+{ "api": "mfds" | "obf" | "ingredient", "query": "나이아신아마이드" }
+```
+
+### POST /api/admin/pipeline
+자동 학습 파이프라인 수동 실행.
+```json
+// Request
+{ "action": "auto_promote" | "search_miss_report" | "community_analysis" | "weekly_report" }
+```
 
 ## 퍼널 이벤트 목록
 ```

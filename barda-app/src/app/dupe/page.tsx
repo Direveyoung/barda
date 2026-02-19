@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 /* ─── Types ─── */
 
 type PriceTier = "budget" | "mid" | "premium" | "luxury";
+type SortMode = "similarity" | "price_low" | "popularity";
 
 interface DupeResult {
   product: Product;
@@ -16,6 +17,10 @@ interface DupeResult {
   matchedIngredients: string[];
   totalIngredients: number;
   priceTier: PriceTier;
+  priceRange: { min: number; max: number };
+  popularityScore: number; // 0~100
+  concernMatch: string[]; // matched tags (skin concerns)
+  badges: ("best_value" | "most_popular" | "highest_match")[];
 }
 
 /* ─── Brand Price Tier Mapping ─── */
@@ -43,6 +48,70 @@ const PRICE_TIER_STYLE: Record<PriceTier, string> = {
   premium: "bg-purple-50 text-purple-600",
   luxury: "bg-amber-50 text-amber-700",
 };
+
+/* ─── Price Range Estimates (category-based, ₩) ─── */
+const PRICE_RANGES: Record<PriceTier, Record<string, { min: number; max: number }>> = {
+  budget: {
+    cleanser: { min: 5000, max: 12000 }, oil_cleanser: { min: 8000, max: 15000 },
+    toner: { min: 7000, max: 15000 }, toner_pad: { min: 8000, max: 16000 },
+    essence: { min: 10000, max: 18000 }, ampoule: { min: 10000, max: 20000 },
+    serum: { min: 10000, max: 20000 }, cream: { min: 8000, max: 18000 },
+    sunscreen: { min: 8000, max: 15000 }, mask: { min: 1000, max: 4000 },
+    _default: { min: 8000, max: 16000 },
+  },
+  mid: {
+    cleanser: { min: 12000, max: 25000 }, oil_cleanser: { min: 15000, max: 28000 },
+    toner: { min: 15000, max: 28000 }, toner_pad: { min: 16000, max: 30000 },
+    essence: { min: 18000, max: 35000 }, ampoule: { min: 20000, max: 40000 },
+    serum: { min: 20000, max: 40000 }, cream: { min: 18000, max: 35000 },
+    sunscreen: { min: 15000, max: 25000 }, mask: { min: 3000, max: 8000 },
+    _default: { min: 15000, max: 30000 },
+  },
+  premium: {
+    cleanser: { min: 25000, max: 45000 }, oil_cleanser: { min: 28000, max: 50000 },
+    toner: { min: 28000, max: 50000 }, toner_pad: { min: 25000, max: 45000 },
+    essence: { min: 35000, max: 65000 }, ampoule: { min: 40000, max: 75000 },
+    serum: { min: 35000, max: 70000 }, cream: { min: 35000, max: 65000 },
+    sunscreen: { min: 25000, max: 40000 }, mask: { min: 5000, max: 15000 },
+    _default: { min: 30000, max: 55000 },
+  },
+  luxury: {
+    cleanser: { min: 40000, max: 80000 }, oil_cleanser: { min: 45000, max: 90000 },
+    toner: { min: 50000, max: 100000 }, toner_pad: { min: 40000, max: 70000 },
+    essence: { min: 70000, max: 180000 }, ampoule: { min: 80000, max: 200000 },
+    serum: { min: 70000, max: 170000 }, cream: { min: 60000, max: 150000 },
+    sunscreen: { min: 35000, max: 60000 }, mask: { min: 10000, max: 30000 },
+    _default: { min: 50000, max: 120000 },
+  },
+};
+
+function getEstimatedPrice(tier: PriceTier, categoryId: string): { min: number; max: number } {
+  const tierPrices = PRICE_RANGES[tier];
+  return tierPrices[categoryId] ?? tierPrices._default;
+}
+
+function formatPrice(val: number): string {
+  if (val >= 10000) return `${(val / 10000).toFixed(val % 10000 === 0 ? 0 : 1)}만`;
+  return `${(val / 1000).toFixed(0)}천`;
+}
+
+/* ─── Popularity scoring ─── */
+function calculatePopularity(product: Product): number {
+  let score = 0;
+  const tags = product.tags ?? [];
+  if (tags.includes("올리브영베스트")) score += 40;
+  if (tags.includes("민감성추천")) score += 10;
+  if (product.verified) score += 10;
+  // Brand recognition bonus (more products = more established)
+  const brandCount = ALL_PRODUCTS.filter(p => p.brand === product.brand).length;
+  score += Math.min(30, brandCount * 2);
+  // Tag richness
+  score += Math.min(10, tags.length * 2);
+  return Math.min(100, score);
+}
+
+/* ─── Concern tags for matching ─── */
+const CONCERN_TAGS = new Set(["저자극", "진정", "수분", "안티에이징", "미백", "보습강화", "톤업", "트러블", "각질", "모공", "민감성추천", "피지조절", "탄력", "장벽강화"]);
 
 /* ─── Helpers ─── */
 
@@ -113,19 +182,50 @@ function findDupes(target: Product, allProducts: Product[]): DupeResult[] {
     const similarity = Math.round((overlapRatio * 70 + tagScore * 30));
 
     if (similarity >= 15) {
+      const priceTier = getBrandPriceTier(product.brand);
+      const targetTags2 = target.tags ?? [];
+      const productTags2 = product.tags ?? [];
+      const concernMatch = productTags2.filter(t => CONCERN_TAGS.has(t) && targetTags2.includes(t));
+
       results.push({
         product,
         similarity,
         matchedIngredients: matched,
         totalIngredients: productIngredients.length,
-        priceTier: getBrandPriceTier(product.brand),
+        priceTier,
+        priceRange: getEstimatedPrice(priceTier, product.categoryId),
+        popularityScore: calculatePopularity(product),
+        concernMatch,
+        badges: [],
       });
     }
   }
 
   // Sort by similarity (highest first)
   results.sort((a, b) => b.similarity - a.similarity);
-  return results.slice(0, 15);
+  const sliced = results.slice(0, 15);
+
+  // Assign badges
+  if (sliced.length > 0) {
+    // Highest match badge → top similarity
+    sliced[0].badges.push("highest_match");
+
+    // Best value badge → highest similarity among budget/mid tier
+    const valuePick = sliced
+      .filter(d => d.priceTier === "budget" || d.priceTier === "mid")
+      .sort((a, b) => b.similarity - a.similarity)[0];
+    if (valuePick && !valuePick.badges.includes("highest_match")) {
+      valuePick.badges.push("best_value");
+    }
+
+    // Most popular badge → highest popularity score
+    const popularPick = [...sliced].sort((a, b) => b.popularityScore - a.popularityScore)[0];
+    if (popularPick && popularPick.badges.length === 0) {
+      popularPick.badges.push("most_popular");
+    }
+  }
+
+  return sliced;
 }
 
 /* ─── Popular search suggestions ─── */
@@ -144,6 +244,7 @@ export default function DupePage() {
   const [dupeResults, setDupeResults] = useState<DupeResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [priceFilter, setPriceFilter] = useState<PriceTier | "all">("all");
+  const [sortMode, setSortMode] = useState<SortMode>("similarity");
   const [compareTarget, setCompareTarget] = useState<DupeResult | null>(null);
 
   // Search products
@@ -171,6 +272,35 @@ export default function DupePage() {
     const dupes = findDupes(product, ALL_PRODUCTS);
     setDupeResults(dupes);
   }, []);
+
+  // Sorted + filtered dupe results
+  const filteredDupes = useMemo(() => {
+    let list = dupeResults.filter(d => priceFilter === "all" || d.priceTier === priceFilter);
+    if (sortMode === "price_low") {
+      list = [...list].sort((a, b) => a.priceRange.min - b.priceRange.min);
+    } else if (sortMode === "popularity") {
+      list = [...list].sort((a, b) => b.popularityScore - a.popularityScore);
+    }
+    // similarity is default sort from findDupes
+    return list;
+  }, [dupeResults, priceFilter, sortMode]);
+
+  // Savings calculation
+  const savingsInfo = useMemo(() => {
+    if (!selectedProduct || dupeResults.length === 0) return null;
+    const originalTier = getBrandPriceTier(selectedProduct.brand);
+    const originalPrice = getEstimatedPrice(originalTier, selectedProduct.categoryId);
+    const cheapestDupe = [...dupeResults].sort((a, b) => a.priceRange.min - b.priceRange.min)[0];
+    if (!cheapestDupe) return null;
+    const saving = originalPrice.min - cheapestDupe.priceRange.min;
+    if (saving <= 0) return null;
+    return {
+      originalRange: originalPrice,
+      cheapestRange: cheapestDupe.priceRange,
+      cheapestProduct: cheapestDupe.product,
+      savingEstimate: saving,
+    };
+  }, [selectedProduct, dupeResults]);
 
   // Category distribution for SEO-friendly browsing
   const categoryGroups = useMemo(() => {
@@ -262,15 +392,23 @@ export default function DupePage() {
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                   원본 제품
                 </span>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[getBrandPriceTier(selectedProduct.brand)]}`}>
+                  {PRICE_TIER_LABEL[getBrandPriceTier(selectedProduct.brand)]}
+                </span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{getCategoryEmoji(selectedProduct.categoryId)}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500">{selectedProduct.brand}</p>
                   <p className="text-sm font-semibold text-gray-800">{selectedProduct.name}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">
-                    {getCategoryLabel(selectedProduct.categoryId)}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[10px] text-gray-400">
+                      {getCategoryLabel(selectedProduct.categoryId)}
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-medium">
+                      ~{formatPrice(getEstimatedPrice(getBrandPriceTier(selectedProduct.brand), selectedProduct.categoryId).min)}~{formatPrice(getEstimatedPrice(getBrandPriceTier(selectedProduct.brand), selectedProduct.categoryId).max)}
+                    </p>
+                  </div>
                 </div>
               </div>
               {(selectedProduct.key_ingredients?.length ?? 0) > 0 && (
@@ -287,6 +425,21 @@ export default function DupePage() {
               )}
             </div>
 
+            {/* Savings banner */}
+            {savingsInfo && savingsInfo.savingEstimate >= 5000 && (
+              <div className="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 flex items-center gap-3">
+                <span className="text-lg">💰</span>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-green-700">
+                    최대 ~{formatPrice(savingsInfo.savingEstimate)} 절약 가능
+                  </p>
+                  <p className="text-[10px] text-green-600 mt-0.5">
+                    {savingsInfo.cheapestProduct.brand} {savingsInfo.cheapestProduct.name}으로 전환 시
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Dupe results */}
             {dupeResults.length > 0 ? (
               <>
@@ -295,7 +448,27 @@ export default function DupePage() {
                     <h3 className="text-sm font-bold text-gray-800">
                       대안 제품 {dupeResults.length}개
                     </h3>
-                    <span className="text-[10px] text-gray-400">성분 유사도 기준</span>
+                  </div>
+                  {/* Sort mode */}
+                  <div className="flex gap-1">
+                    {([
+                      ["similarity", "유사도순"],
+                      ["price_low", "가격순"],
+                      ["popularity", "인기순"],
+                    ] as const).map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setSortMode(mode)}
+                        className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
+                          sortMode === mode
+                            ? "bg-gray-800 text-white"
+                            : "text-gray-400 hover:text-gray-600"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -333,9 +506,14 @@ export default function DupePage() {
                       <div>
                         <p className="text-[10px] text-gray-400 mb-1">원본</p>
                         <p className="text-xs font-semibold text-gray-800 mb-1">{selectedProduct.brand} {selectedProduct.name}</p>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[getBrandPriceTier(selectedProduct.brand)]}`}>
-                          {PRICE_TIER_LABEL[getBrandPriceTier(selectedProduct.brand)]}
-                        </span>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[getBrandPriceTier(selectedProduct.brand)]}`}>
+                            {PRICE_TIER_LABEL[getBrandPriceTier(selectedProduct.brand)]}
+                          </span>
+                          <span className="text-[9px] text-gray-400">
+                            ~{formatPrice(getEstimatedPrice(getBrandPriceTier(selectedProduct.brand), selectedProduct.categoryId).min)}~{formatPrice(getEstimatedPrice(getBrandPriceTier(selectedProduct.brand), selectedProduct.categoryId).max)}
+                          </span>
+                        </div>
                         <div className="mt-2 space-y-0.5">
                           {(selectedProduct.key_ingredients ?? []).map((ing) => {
                             const isMatched = compareTarget.matchedIngredients.some(
@@ -352,9 +530,14 @@ export default function DupePage() {
                       <div>
                         <p className="text-[10px] text-gray-400 mb-1">대안 (유사도 {compareTarget.similarity}%)</p>
                         <p className="text-xs font-semibold text-gray-800 mb-1">{compareTarget.product.brand} {compareTarget.product.name}</p>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[compareTarget.priceTier]}`}>
-                          {PRICE_TIER_LABEL[compareTarget.priceTier]}
-                        </span>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[compareTarget.priceTier]}`}>
+                            {PRICE_TIER_LABEL[compareTarget.priceTier]}
+                          </span>
+                          <span className="text-[9px] text-gray-400">
+                            ~{formatPrice(compareTarget.priceRange.min)}~{formatPrice(compareTarget.priceRange.max)}
+                          </span>
+                        </div>
                         <div className="mt-2 space-y-0.5">
                           {(compareTarget.product.key_ingredients ?? []).map((ing) => {
                             const isMatched = compareTarget.matchedIngredients.some(
@@ -373,13 +556,34 @@ export default function DupePage() {
                 )}
 
                 <div className="space-y-2">
-                  {dupeResults
-                    .filter(d => priceFilter === "all" || d.priceTier === priceFilter)
-                    .map((dupe) => (
+                  {filteredDupes.map((dupe) => (
                     <div
                       key={dupe.product.id}
-                      className="bg-white rounded-xl border border-gray-100 p-3.5"
+                      className={`bg-white rounded-xl border p-3.5 ${
+                        dupe.badges.length > 0 ? "border-primary/20" : "border-gray-100"
+                      }`}
                     >
+                      {/* Badges */}
+                      {dupe.badges.length > 0 && (
+                        <div className="flex gap-1.5 mb-2">
+                          {dupe.badges.includes("highest_match") && (
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
+                              가장 유사
+                            </span>
+                          )}
+                          {dupe.badges.includes("best_value") && (
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-bold">
+                              💰 Best Value
+                            </span>
+                          )}
+                          {dupe.badges.includes("most_popular") && (
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold">
+                              🔥 인기
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex items-start gap-3">
                         <span className="text-xl mt-0.5">{getCategoryEmoji(dupe.product.categoryId)}</span>
                         <div className="flex-1 min-w-0">
@@ -399,6 +603,29 @@ export default function DupePage() {
                             </span>
                           </div>
                           <p className="text-sm font-medium text-gray-800">{dupe.product.name}</p>
+
+                          {/* Price + Popularity row */}
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-[10px] text-gray-500">
+                              ~{formatPrice(dupe.priceRange.min)}~{formatPrice(dupe.priceRange.max)}
+                            </span>
+                            <span className="text-[10px] text-gray-300">|</span>
+                            <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                              인기
+                              <span className="inline-flex items-center">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <span
+                                    key={i}
+                                    className={`inline-block w-1.5 h-1.5 rounded-full mx-px ${
+                                      i < Math.round(dupe.popularityScore / 20)
+                                        ? "bg-rose-400"
+                                        : "bg-gray-200"
+                                    }`}
+                                  />
+                                ))}
+                              </span>
+                            </span>
+                          </div>
 
                           {/* Matched ingredients */}
                           <div className="flex flex-wrap gap-1 mt-2">
@@ -422,10 +649,28 @@ export default function DupePage() {
                               ))}
                           </div>
 
+                          {/* Concern match */}
+                          {dupe.concernMatch.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1.5">
+                              <span className="text-[10px] text-gray-400">고민 매칭:</span>
+                              {dupe.concernMatch.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
                           {/* Tags + Compare button */}
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex flex-wrap gap-1">
-                              {dupe.product.tags?.slice(0, 3).map((tag) => (
+                              {dupe.product.tags
+                                ?.filter(t => !CONCERN_TAGS.has(t))
+                                .slice(0, 3)
+                                .map((tag) => (
                                 <span
                                   key={tag}
                                   className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500"
@@ -509,7 +754,7 @@ export default function DupePage() {
               <h3 className="text-sm font-semibold text-gray-700 mb-2">듀프 파인더란?</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
                 비싼 제품과 비슷한 핵심 성분을 가진 저렴한 대안(dupe)을 찾아주는 기능이에요.
-                같은 카테고리 내에서 성분 유사도를 분석하여 추천합니다.
+                같은 카테고리 내에서 성분 유사도, 예상 가격대, 인기도, 피부고민 매칭까지 분석합니다.
               </p>
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center gap-2">
@@ -523,6 +768,20 @@ export default function DupePage() {
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-500 font-medium">15~39%</span>
                   <span className="text-[10px] text-gray-400">일부 성분 겹침</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-gray-200 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">가장 유사</span>
+                  <span className="text-[10px] text-gray-400">성분이 가장 비슷한 제품</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-bold">Best Value</span>
+                  <span className="text-[10px] text-gray-400">가격 대비 유사도 최고</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold">인기</span>
+                  <span className="text-[10px] text-gray-400">올리브영 베스트 등 인기 제품</span>
                 </div>
               </div>
             </section>
