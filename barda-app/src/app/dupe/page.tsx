@@ -521,8 +521,13 @@ export default function DupePage() {
                               m => normalizeIngredient(m) === normalizeIngredient(ing) || normalizeIngredient(m).includes(normalizeIngredient(ing)) || normalizeIngredient(ing).includes(normalizeIngredient(m))
                             );
                             return (
-                              <p key={ing} className={`text-[10px] ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
-                                {isMatched ? "✓ " : "· "}{ing}
+                              <p key={ing} className={`text-[10px] flex items-center gap-0.5 ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
+                                {isMatched ? (
+                                  <svg className="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                ) : (
+                                  <span className="w-2.5 h-2.5 shrink-0 flex items-center justify-center"><span className="w-1 h-1 rounded-full bg-gray-300" /></span>
+                                )}
+                                {ing}
                               </p>
                             );
                           })}
@@ -545,8 +550,13 @@ export default function DupePage() {
                               m => normalizeIngredient(m) === normalizeIngredient(ing) || normalizeIngredient(m).includes(normalizeIngredient(ing)) || normalizeIngredient(ing).includes(normalizeIngredient(m))
                             );
                             return (
-                              <p key={ing} className={`text-[10px] ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
-                                {isMatched ? "✓ " : "· "}{ing}
+                              <p key={ing} className={`text-[10px] flex items-center gap-0.5 ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
+                                {isMatched ? (
+                                  <svg className="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                ) : (
+                                  <span className="w-2.5 h-2.5 shrink-0 flex items-center justify-center"><span className="w-1 h-1 rounded-full bg-gray-300" /></span>
+                                )}
+                                {ing}
                               </p>
                             );
                           })}
