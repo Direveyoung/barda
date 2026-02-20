@@ -3,11 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import type {
   RoutinePostListResponse,
   RoutinePostResponse,
-  CreateRoutinePostRequest,
   CreateRoutinePostResponse,
   ApiError,
 } from "@/lib/api-types";
-import { isNonEmptyString, isStringArray } from "@/lib/api-types";
+import { createRoutinePostSchema, parseWithZod, sanitizeString } from "@/lib/api-types";
 
 export async function GET(request: NextRequest): Promise<NextResponse<RoutinePostListResponse | ApiError>> {
   const supabase = await createClient();
@@ -45,7 +44,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<RoutinePos
   }
 
   if (searchQ) {
-    query = query.ilike("comment", `%${searchQ}%`);
+    // Escape SQL wildcards to prevent pattern injection
+    const safeQ = searchQ.replace(/%/g, "\\%").replace(/_/g, "\\_");
+    query = query.ilike("comment", `%${safeQ}%`);
   }
 
   if (userId) {
@@ -122,26 +123,16 @@ export async function POST(request: Request): Promise<NextResponse<CreateRoutine
     );
   }
 
-  let parsed: CreateRoutinePostRequest;
+  const result = parseWithZod(createRoutinePostSchema, await request.json().catch(() => null));
 
-  try {
-    const body = await request.json();
-    if (
-      !isNonEmptyString(body.skin_type) ||
-      !isStringArray(body.concerns) ||
-      typeof body.score !== "number" ||
-      !body.products_json ||
-      typeof body.rating !== "number"
-    ) {
-      throw new Error("Missing required fields");
-    }
-    parsed = body as CreateRoutinePostRequest;
-  } catch {
+  if ("error" in result) {
     return NextResponse.json(
-      { error: "Invalid request body: skin_type, concerns, score, products_json, and rating are required" },
+      { error: `Invalid request body: ${result.error}` },
       { status: 400 },
     );
   }
+
+  const parsed = result.data;
 
   const { data: post, error } = await supabase
     .from("routine_posts")
@@ -151,7 +142,7 @@ export async function POST(request: Request): Promise<NextResponse<CreateRoutine
       concerns: parsed.concerns,
       score: parsed.score,
       products_json: parsed.products_json,
-      comment: parsed.comment ?? null,
+      comment: parsed.comment ? sanitizeString(parsed.comment) : null,
       rating: parsed.rating,
     })
     .select()

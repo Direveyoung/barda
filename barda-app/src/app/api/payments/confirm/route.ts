@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ConfirmPaymentResponse, ApiError } from "@/lib/api-types";
-import { isNonEmptyString, isPositiveNumber } from "@/lib/api-types";
+import { confirmPaymentSchema, parseWithZod } from "@/lib/api-types";
 
 export async function POST(request: Request): Promise<NextResponse<ConfirmPaymentResponse | ApiError>> {
   const secretKey = process.env.TOSS_SECRET_KEY;
@@ -34,24 +34,30 @@ export async function POST(request: Request): Promise<NextResponse<ConfirmPaymen
     );
   }
 
-  /* ---- Parse body ---- */
-  let paymentKey: string;
-  let orderId: string;
-  let amount: number;
+  /* ---- Parse & validate body ---- */
+  const result = parseWithZod(confirmPaymentSchema, await request.json().catch(() => null));
 
-  try {
-    const body = await request.json();
-    paymentKey = body.paymentKey;
-    orderId = body.orderId;
-    amount = body.amount;
-
-    if (!isNonEmptyString(paymentKey) || !isNonEmptyString(orderId) || !isPositiveNumber(amount)) {
-      throw new Error("Missing required fields");
-    }
-  } catch {
+  if ("error" in result) {
     return NextResponse.json(
-      { error: "Invalid request body: paymentKey, orderId, and amount are required" },
+      { error: `Invalid request body: ${result.error}` },
       { status: 400 },
+    );
+  }
+
+  const { paymentKey, orderId, amount } = result.data;
+
+  /* ---- Idempotency check: prevent duplicate payments ---- */
+  const { data: existingPayment } = await supabase
+    .from("payments")
+    .select("id")
+    .eq("order_id", orderId)
+    .eq("status", "success")
+    .limit(1);
+
+  if (existingPayment && existingPayment.length > 0) {
+    return NextResponse.json(
+      { error: "이미 처리된 결제입니다." },
+      { status: 409 },
     );
   }
 
@@ -73,8 +79,13 @@ export async function POST(request: Request): Promise<NextResponse<ConfirmPaymen
   const tossData = await tossRes.json();
 
   if (!tossRes.ok) {
+    // Mask sensitive Toss error details — only return error code and message
+    const maskedDetail = {
+      code: tossData?.code ?? "UNKNOWN",
+      message: tossData?.message ?? "결제 승인 실패",
+    };
     return NextResponse.json(
-      { error: "결제 승인에 실패했습니다.", detail: tossData },
+      { error: "결제 승인에 실패했습니다.", detail: maskedDetail },
       { status: tossRes.status },
     );
   }

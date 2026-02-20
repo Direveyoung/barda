@@ -4,6 +4,31 @@
 
 ---
 
+## [1.3.0] - 2026-02-20
+
+### Added
+- **Zod 스키마 검증 도입** (`lib/api-types.ts`)
+  - 8개 Zod 스키마: routines, comments, payments, search-logs, events, feedback, product-candidates, update-candidate
+  - `parseWithZod()` 헬퍼: 에러 메시지 자동 포맷팅
+  - `sanitizeString()` XSS 새니타이저: HTML 태그/특수문자 이스케이프
+- **결제 멱등성 체크** (`api/payments/confirm`): orderId 중복 결제 방지 (409 반환)
+- **Toss 에러 응답 마스킹**: 민감 데이터 제거, code/message만 클라이언트에 반환
+
+### Changed
+- 모든 POST/PATCH API 라우트: 수동 타입 체크 → Zod 스키마 검증으로 교체
+  - `api/routines`: score 0-100, rating 1-5, concerns 배열 길이 제한, comment 500자 제한
+  - `api/product-candidates`: brand 100자, name 200자 제한 + XSS 새니타이징
+  - `api/events`: 개별 이벤트 필드 검증 + 배열 최대 100개 제한
+  - `api/feedback`: 문자열 길이 200자 제한
+  - `api/search-logs`: query 200자 제한, results_count 정수 검증
+  - `api/comments`: Zod 검증 + XSS 새니타이징
+- `api/routines` GET: 검색 쿼리 SQL 와일드카드 이스케이프 (`%`, `_`)
+
+### Fixed
+- 품평 리포트 P1 항목 전체 대응: API 입력 검증 강화, XSS 방지, 결제 멱등성, 에러 마스킹
+
+---
+
 ## [1.2.0] - 2026-02-19
 
 ### Added

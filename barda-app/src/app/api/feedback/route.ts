@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ApiOk, ApiError } from "@/lib/api-types";
-import { isNonEmptyString } from "@/lib/api-types";
+import { feedbackSchema, parseWithZod } from "@/lib/api-types";
 
 export async function POST(request: Request): Promise<NextResponse<ApiOk | ApiError>> {
   const supabase = await createClient();
@@ -13,25 +13,16 @@ export async function POST(request: Request): Promise<NextResponse<ApiOk | ApiEr
     );
   }
 
-  let conflictRuleId: string;
-  let isHelpful: boolean;
-  let sessionId: string;
+  const result = parseWithZod(feedbackSchema, await request.json().catch(() => null));
 
-  try {
-    const body = await request.json();
-    conflictRuleId = body.conflict_rule_id;
-    isHelpful = body.is_helpful;
-    sessionId = body.session_id;
-
-    if (!isNonEmptyString(conflictRuleId) || typeof isHelpful !== "boolean" || !isNonEmptyString(sessionId)) {
-      throw new Error("Missing required fields");
-    }
-  } catch {
+  if ("error" in result) {
     return NextResponse.json(
-      { error: "Invalid request body: conflict_rule_id, is_helpful, and session_id are required" },
+      { error: `Invalid request body: ${result.error}` },
       { status: 400 },
     );
   }
+
+  const { conflict_rule_id, is_helpful, session_id } = result.data;
 
   // Optionally attach user_id if the user is authenticated
   let userId: string | null = null;
@@ -45,9 +36,9 @@ export async function POST(request: Request): Promise<NextResponse<ApiOk | ApiEr
   }
 
   const { error } = await supabase.from("report_feedback").insert({
-    conflict_rule_id: conflictRuleId,
-    is_helpful: isHelpful,
-    session_id: sessionId,
+    conflict_rule_id,
+    is_helpful,
+    session_id,
     ...(userId ? { user_id: userId } : {}),
   });
 

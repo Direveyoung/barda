@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { FunnelEvent, BatchEventsResponse, ApiError } from "@/lib/api-types";
+import type { BatchEventsResponse, ApiError } from "@/lib/api-types";
+import { batchEventsSchema, parseWithZod } from "@/lib/api-types";
 
 export async function POST(request: Request): Promise<NextResponse<BatchEventsResponse | ApiError>> {
   const supabase = await createClient();
@@ -12,23 +13,16 @@ export async function POST(request: Request): Promise<NextResponse<BatchEventsRe
     );
   }
 
-  let events: FunnelEvent[];
+  const result = parseWithZod(batchEventsSchema, await request.json().catch(() => null));
 
-  try {
-    const body = await request.json();
-    events = body.events;
-
-    if (!Array.isArray(events) || events.length === 0) {
-      throw new Error("events must be a non-empty array");
-    }
-  } catch {
+  if ("error" in result) {
     return NextResponse.json(
-      { error: "Invalid request body: expected { events: [...] }" },
+      { error: `Invalid request body: ${result.error}` },
       { status: 400 },
     );
   }
 
-  const rows = events.map((e) => ({
+  const rows = result.data.events.map((e) => ({
     event_name: e.event_name,
     session_id: e.session_id,
     metadata: e.metadata ?? null,

@@ -1,7 +1,90 @@
 /**
  * Shared API request/response types for all route handlers.
  * Centralizes type definitions to ensure consistency across endpoints.
+ * Zod schemas for runtime validation + TypeScript types for compile-time safety.
  */
+
+import { z } from "zod";
+
+/* ─── XSS Sanitizer ─── */
+
+/** Strip HTML tags and dangerous characters from user input */
+export function sanitizeString(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
+/* ─── Zod Schemas ─── */
+
+const skinTypeEnum = z.enum(["oily", "dry", "combination", "sensitive", "normal"]);
+
+export const createRoutinePostSchema = z.object({
+  skin_type: skinTypeEnum,
+  concerns: z.array(z.string().min(1).max(50)).min(1).max(20),
+  score: z.number().int().min(0).max(100),
+  products_json: z.unknown().refine((v) => v !== null && v !== undefined, "products_json is required"),
+  comment: z.string().max(500).optional(),
+  rating: z.number().int().min(1).max(5),
+});
+
+export const createCommentSchema = z.object({
+  content: z.string().min(1).max(500),
+});
+
+export const confirmPaymentSchema = z.object({
+  paymentKey: z.string().min(1).max(200),
+  orderId: z.string().min(1).max(200),
+  amount: z.number().positive().finite(),
+});
+
+export const logSearchSchema = z.object({
+  query: z.string().min(1).max(200),
+  results_count: z.number().int().min(0).default(0),
+  selected_product_id: z.string().max(200).nullable().default(null),
+  fell_through: z.boolean().default(false),
+});
+
+const funnelEventSchema = z.object({
+  event_name: z.string().min(1).max(100),
+  session_id: z.string().min(1).max(200),
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+  created_at: z.string().min(1).max(50),
+});
+
+export const batchEventsSchema = z.object({
+  events: z.array(funnelEventSchema).min(1).max(100),
+});
+
+export const feedbackSchema = z.object({
+  conflict_rule_id: z.string().min(1).max(200),
+  is_helpful: z.boolean(),
+  session_id: z.string().min(1).max(200),
+});
+
+export const productCandidateSchema = z.object({
+  brand: z.string().min(1).max(100),
+  name: z.string().min(1).max(200),
+  category_guess: z.string().max(50).nullable().optional(),
+});
+
+export const updateCandidateSchema = z.object({
+  id: z.string().min(1).max(200),
+  status: z.enum(["approved", "rejected", "pending"]),
+});
+
+/** Parse Zod result and return formatted error or null */
+export function parseWithZod<T>(schema: z.ZodSchema<T>, data: unknown): { data: T } | { error: string } {
+  const result = schema.safeParse(data);
+  if (result.success) {
+    return { data: result.data };
+  }
+  const messages = result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
+  return { error: messages };
+}
 
 /* ─── Common Response Types ─── */
 

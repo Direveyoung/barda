@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { CommentListResponse, CreateCommentResponse, ApiError } from "@/lib/api-types";
+import { createCommentSchema, parseWithZod, sanitizeString } from "@/lib/api-types";
 
 export async function GET(
   request: NextRequest,
@@ -69,21 +70,16 @@ export async function POST(
 
   const { id: postId } = await params;
 
-  let content: string;
+  const result = parseWithZod(createCommentSchema, await request.json().catch(() => null));
 
-  try {
-    const body = await request.json();
-    content = body.content;
-
-    if (typeof content !== "string" || content.length < 1 || content.length > 500) {
-      throw new Error("Invalid content length");
-    }
-  } catch {
+  if ("error" in result) {
     return NextResponse.json(
-      { error: "Invalid request body: content is required (1-500 characters)" },
+      { error: `Invalid request body: ${result.error}` },
       { status: 400 },
     );
   }
+
+  const content = sanitizeString(result.data.content);
 
   const { data: comment, error } = await supabase
     .from("routine_post_comments")

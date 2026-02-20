@@ -6,7 +6,7 @@ import type {
   ApiOk,
   ApiError,
 } from "@/lib/api-types";
-import { isNonEmptyString } from "@/lib/api-types";
+import { logSearchSchema, parseWithZod } from "@/lib/api-types";
 
 // POST: Log a search query (tracks hits and misses)
 export async function POST(request: NextRequest): Promise<NextResponse<ApiOk | ApiError>> {
@@ -15,24 +15,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiOk | A
     return NextResponse.json({ ok: true }); // graceful degradation
   }
 
-  let query: string;
-  let results_count: number;
-  let selected_product_id: string | null;
-  let fell_through: boolean;
+  const result = parseWithZod(logSearchSchema, await request.json().catch(() => null));
 
-  try {
-    const body = await request.json();
-    query = body.query;
-    results_count = body.results_count ?? 0;
-    selected_product_id = body.selected_product_id ?? null;
-    fell_through = body.fell_through ?? false;
-
-    if (!isNonEmptyString(query)) {
-      return NextResponse.json({ error: "query is required" }, { status: 400 });
-    }
-  } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  if ("error" in result) {
+    return NextResponse.json(
+      { error: `Invalid request body: ${result.error}` },
+      { status: 400 },
+    );
   }
+
+  const { query, results_count, selected_product_id } = result.data;
 
   // Get user if logged in (optional)
   const { data: { user } } = await supabase.auth.getUser();
