@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/Icon";
 
 function LoginForm() {
   const router = useRouter();
@@ -68,7 +69,7 @@ function LoginForm() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-sm w-full text-center">
-          <div className="text-5xl mb-4">📧</div>
+          <div className="mb-4"><Icon name="memo" size={40} /></div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">
             이메일을 확인해 주세요
           </h2>

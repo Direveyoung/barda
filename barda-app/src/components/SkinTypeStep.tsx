@@ -1,11 +1,13 @@
 "use client";
 
+import Icon from "@/components/Icon";
+
 const SKIN_TYPES = [
-  { id: "normal", label: "보통", emoji: "😊", desc: "특별한 트러블 없는 편" },
-  { id: "dry", label: "건성", emoji: "🏜️", desc: "당김·각질이 자주 생겨요" },
-  { id: "oily", label: "지성", emoji: "💧", desc: "유분·번들거림이 많아요" },
-  { id: "combination", label: "복합", emoji: "🔄", desc: "T존은 지성, 볼은 건성" },
-  { id: "sensitive", label: "민감", emoji: "🌡️", desc: "자극에 쉽게 반응해요" },
+  { id: "normal", label: "보통", icon: "face-happy", desc: "특별한 트러블 없는 편" },
+  { id: "dry", label: "건성", icon: "desert", desc: "당김·각질이 자주 생겨요" },
+  { id: "oily", label: "지성", icon: "drop", desc: "유분·번들거림이 많아요" },
+  { id: "combination", label: "복합", icon: "cycle", desc: "T존은 지성, 볼은 건성" },
+  { id: "sensitive", label: "민감", icon: "thermometer", desc: "자극에 쉽게 반응해요" },
 ];
 
 interface Props {
@@ -33,13 +35,13 @@ export default function SkinTypeStep({ selected, onSelect, onNext }: Props) {
                 : "border-gray-200 hover:border-gray-300 bg-white"
             }`}
           >
-            <span className="text-3xl">{type.emoji}</span>
+            <Icon name={type.icon} size={24} />
             <div>
               <div className="font-semibold text-gray-800">{type.label}</div>
               <div className="text-sm text-gray-500">{type.desc}</div>
             </div>
             {selected === type.id && (
-              <span className="ml-auto text-primary font-bold">✓</span>
+              <span className="ml-auto text-primary font-bold"><Icon name="check" size={16} /></span>
             )}
           </button>
         ))}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 
 interface Notification {
   id: string;
@@ -24,10 +25,10 @@ function formatTimeAgo(dateStr: string): string {
   return `${diffDay}일 전`;
 }
 
-const typeIcon: Record<string, string> = {
-  like: "❤️",
-  comment: "💬",
-  follow: "👤",
+const typeIconName: Record<string, { name: string; className: string }> = {
+  like: { name: "heart", className: "text-red-500" },
+  comment: { name: "comment-bubble", className: "text-blue-500" },
+  follow: { name: "person", className: "text-gray-600" },
 };
 
 export default function NotificationBell() {
@@ -115,7 +116,13 @@ export default function NotificationBell() {
                     !n.read ? "bg-primary-bg/30" : ""
                   }`}
                 >
-                  <span className="text-base mt-0.5">{typeIcon[n.type] ?? "🔔"}</span>
+                  <span className="mt-0.5">
+                    <Icon
+                      name={typeIconName[n.type]?.name ?? "bell"}
+                      size={14}
+                      className={typeIconName[n.type]?.className ?? "text-gray-500"}
+                    />
+                  </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-700 leading-relaxed">{n.message}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{formatTimeAgo(n.createdAt)}</p>

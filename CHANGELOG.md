@@ -4,6 +4,27 @@
 
 ---
 
+## [1.4.0] - 2026-02-20
+
+### Added
+- **SVG Icon 컴포넌트** (`components/Icon.tsx`): 90+ 인라인 SVG 아이콘 (스킨케어, 날씨, UI, 성분, 피부타입, 랭킹 메달 등)
+  - `<Icon name="..." size={...} className="..." />` 형태로 사용
+  - 카테고리: UI(sun, moon, heart, trophy 등), 제품(bottle, jar, drop 등), 성분(beaker, pill, shield 등), 날씨(cloudy, rainy, snowy 등), 피부 컨디션(face-happy~face-bad), 메달(gold/silver/bronze-medal)
+
+### Changed
+- **프론트엔드 전체 이모지 → SVG 아이콘 대체** (13개 파일, 75+ 이모지 제거)
+  - `data/products.ts`: `CategoryItem.emoji` → `CategoryItem.icon` (20개 카테고리)
+  - `data/ingredients.ts`: `CATEGORY_EMOJI` → `CATEGORY_ICON` (9개 성분 카테고리)
+  - `lib/weather.ts`: `WeatherTip.emoji` → `WeatherTip.icon`, `WEATHER_DESCRIPTIONS` 아이콘 매핑 (24개 날씨 코드 + 20개 팁)
+  - `lib/analysis.ts`: `DaySchedule.pmEmoji` → `DaySchedule.pmIcon`
+  - 컴포넌트 5개: SkinTypeStep, ConcernStep, ProductStep, ResultView, NotificationBell, BlurOverlay, FeedbackButtons
+  - 페이지 10개: page, analyze, challenge, drawer, dupe, guide, ranking, mypage/profile, mypage/MypageClient, ingredient-analysis, auth/login
+
+### Removed
+- 모든 유니코드 이모지 문자 (렌더링 일관성 + 크로스 플랫폼 호환성 확보)
+
+---
+
 ## [1.3.0] - 2026-02-20
 
 ### Added

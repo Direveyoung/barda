@@ -7,6 +7,7 @@ import RoutinePostCard, {
 } from "@/components/RoutinePostCard";
 import BottomNav from "@/components/BottomNav";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 
 type TabKey = "analysis" | "shared" | "liked" | "diary";
 
@@ -17,8 +18,8 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "diary", label: "다이어리" },
 ];
 
-const conditionEmoji: Record<string, string> = {
-  good: "😊", normal: "🙂", meh: "😐", bad: "😟", terrible: "😣",
+const conditionIcon: Record<string, string> = {
+  good: "face-happy", normal: "face-good", meh: "face-neutral", bad: "face-worried", terrible: "face-bad",
 };
 const conditionLabel: Record<string, string> = {
   good: "좋음", normal: "보통", meh: "그저그럭", bad: "별로", terrible: "나쁨",
@@ -258,11 +259,11 @@ export default function MypageClient() {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="bg-amber-50/50 rounded-xl p-2.5">
-                        <p className="text-[10px] text-gray-400 mb-1">☀️ 아침</p>
+                        <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-0.5"><Icon name="sun" size={12} /> 아침</p>
                         <p className="text-xs text-gray-600">{h.amRoutine?.length ?? 0}개 제품</p>
                       </div>
                       <div className="bg-purple-50/50 rounded-xl p-2.5">
-                        <p className="text-[10px] text-gray-400 mb-1">🌙 저녁</p>
+                        <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-0.5"><Icon name="moon" size={12} /> 저녁</p>
                         <p className="text-xs text-gray-600">{h.pmRoutine?.length ?? 0}개 제품</p>
                       </div>
                     </div>
@@ -316,7 +317,7 @@ export default function MypageClient() {
           <div>
             {diaryEntries.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                <span className="text-3xl mb-2">📝</span>
+                <span className="mb-2 text-gray-300"><Icon name="memo" size={24} /></span>
                 <p className="text-sm mb-1">아직 기록이 없어요</p>
                 <p className="text-xs text-gray-300">홈에서 매일 피부 컨디션을 기록해 보세요</p>
               </div>
@@ -324,7 +325,7 @@ export default function MypageClient() {
               <div className="space-y-2">
                 {diaryEntries.map((entry) => (
                   <div key={entry.date} className="bg-white rounded-xl border border-gray-100 px-4 py-3 flex items-center gap-3">
-                    <span className="text-xl">{conditionEmoji[entry.condition] ?? "😐"}</span>
+                    <Icon name={conditionIcon[entry.condition] ?? "face-neutral"} size={20} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-gray-700">{entry.date}</span>

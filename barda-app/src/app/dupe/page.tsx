@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ALL_PRODUCTS, type Product, CATEGORIES, type CategoryItem } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import BottomNav from "@/components/BottomNav";
+import Icon from "@/components/Icon";
 
 /* ─── Types ─── */
 
@@ -123,12 +124,12 @@ function getCategoryLabel(categoryId: string): string {
   return categoryId;
 }
 
-function getCategoryEmoji(categoryId: string): string {
+function getCategoryIcon(categoryId: string): string {
   for (const group of Object.values(CATEGORIES)) {
     const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.emoji;
+    if (item) return item.icon;
   }
-  return "🧴";
+  return "bottle";
 }
 
 /** Normalize ingredient for comparison */
@@ -304,12 +305,12 @@ export default function DupePage() {
 
   // Category distribution for SEO-friendly browsing
   const categoryGroups = useMemo(() => {
-    const groups: Record<string, { label: string; emoji: string; count: number }> = {};
+    const groups: Record<string, { label: string; icon: string; count: number }> = {};
     for (const product of ALL_PRODUCTS) {
       if (!groups[product.categoryId]) {
         groups[product.categoryId] = {
           label: getCategoryLabel(product.categoryId),
-          emoji: getCategoryEmoji(product.categoryId),
+          icon: getCategoryIcon(product.categoryId),
           count: 0,
         };
       }
@@ -372,7 +373,7 @@ export default function DupePage() {
                 onClick={() => selectProduct(product)}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0"
               >
-                <span className="text-lg">{getCategoryEmoji(product.categoryId)}</span>
+                <Icon name={getCategoryIcon(product.categoryId)} size={18} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-400">{product.brand}</p>
                   <p className="text-sm text-gray-800 truncate">{product.name}</p>
@@ -397,7 +398,7 @@ export default function DupePage() {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{getCategoryEmoji(selectedProduct.categoryId)}</span>
+                <Icon name={getCategoryIcon(selectedProduct.categoryId)} size={24} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500">{selectedProduct.brand}</p>
                   <p className="text-sm font-semibold text-gray-800">{selectedProduct.name}</p>
@@ -428,7 +429,7 @@ export default function DupePage() {
             {/* Savings banner */}
             {savingsInfo && savingsInfo.savingEstimate >= 5000 && (
               <div className="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 flex items-center gap-3">
-                <span className="text-lg">💰</span>
+                <Icon name="money" size={20} />
                 <div className="flex-1">
                   <p className="text-xs font-bold text-green-700">
                     최대 ~{formatPrice(savingsInfo.savingEstimate)} 절약 가능
@@ -572,20 +573,20 @@ export default function DupePage() {
                             </span>
                           )}
                           {dupe.badges.includes("best_value") && (
-                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-bold">
-                              💰 Best Value
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-bold inline-flex items-center gap-0.5">
+                              <Icon name="money" size={10} /> Best Value
                             </span>
                           )}
                           {dupe.badges.includes("most_popular") && (
-                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold">
-                              🔥 인기
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold inline-flex items-center gap-0.5">
+                              <Icon name="fire" size={10} /> 인기
                             </span>
                           )}
                         </div>
                       )}
 
                       <div className="flex items-start gap-3">
-                        <span className="text-xl mt-0.5">{getCategoryEmoji(dupe.product.categoryId)}</span>
+                        <span className="mt-0.5"><Icon name={getCategoryIcon(dupe.product.categoryId)} size={20} /></span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                             <span className="text-xs text-gray-400">{dupe.product.brand}</span>
@@ -699,7 +700,7 @@ export default function DupePage() {
               </>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-                <span className="text-3xl mb-3">🔍</span>
+                <Icon name="search" size={30} />
                 <p className="text-sm font-medium">비슷한 대안 제품을 찾지 못했어요</p>
                 <p className="text-xs text-gray-300 mt-1">
                   같은 카테고리에서 성분이 겹치는 제품이 없습니다
@@ -739,7 +740,7 @@ export default function DupePage() {
                     href={`/guide`}
                     className="bg-white rounded-xl border border-gray-100 p-3 flex items-center gap-2.5 hover:border-primary/30 transition-colors"
                   >
-                    <span className="text-lg">{info.emoji}</span>
+                    <Icon name={info.icon} size={18} />
                     <div>
                       <p className="text-xs font-medium text-gray-700">{info.label}</p>
                       <p className="text-[10px] text-gray-400">{info.count}개 제품</p>

@@ -25,7 +25,7 @@ export interface WeatherData {
 }
 
 export interface WeatherTip {
-  emoji: string;
+  icon: string;
   title: string;
   description: string;
   priority: "high" | "medium" | "low";
@@ -57,30 +57,30 @@ export interface WeatherRoutineAdvice {
 
 /* ─── Weather code → description mapping ─── */
 const WEATHER_DESCRIPTIONS: Record<number, { desc: string; icon: string }> = {
-  0: { desc: "맑음", icon: "☀️" },
-  1: { desc: "대체로 맑음", icon: "🌤️" },
-  2: { desc: "구름 조금", icon: "⛅" },
-  3: { desc: "흐림", icon: "☁️" },
-  45: { desc: "안개", icon: "🌫️" },
-  48: { desc: "안개", icon: "🌫️" },
-  51: { desc: "이슬비", icon: "🌦️" },
-  53: { desc: "이슬비", icon: "🌦️" },
-  55: { desc: "이슬비", icon: "🌦️" },
-  61: { desc: "비", icon: "🌧️" },
-  63: { desc: "비", icon: "🌧️" },
-  65: { desc: "폭우", icon: "🌧️" },
-  71: { desc: "눈", icon: "🌨️" },
-  73: { desc: "눈", icon: "🌨️" },
-  75: { desc: "폭설", icon: "🌨️" },
-  77: { desc: "싸락눈", icon: "🌨️" },
-  80: { desc: "소나기", icon: "🌦️" },
-  81: { desc: "소나기", icon: "🌦️" },
-  82: { desc: "폭우", icon: "⛈️" },
-  85: { desc: "눈", icon: "🌨️" },
-  86: { desc: "폭설", icon: "🌨️" },
-  95: { desc: "뇌우", icon: "⛈️" },
-  96: { desc: "우박", icon: "⛈️" },
-  99: { desc: "우박", icon: "⛈️" },
+  0: { desc: "맑음", icon: "sun" },
+  1: { desc: "대체로 맑음", icon: "sun-cloud" },
+  2: { desc: "구름 조금", icon: "partly-cloudy" },
+  3: { desc: "흐림", icon: "cloudy" },
+  45: { desc: "안개", icon: "foggy" },
+  48: { desc: "안개", icon: "foggy" },
+  51: { desc: "이슬비", icon: "drizzle" },
+  53: { desc: "이슬비", icon: "drizzle" },
+  55: { desc: "이슬비", icon: "drizzle" },
+  61: { desc: "비", icon: "rainy" },
+  63: { desc: "비", icon: "rainy" },
+  65: { desc: "폭우", icon: "rainy" },
+  71: { desc: "눈", icon: "snowy" },
+  73: { desc: "눈", icon: "snowy" },
+  75: { desc: "폭설", icon: "snowy" },
+  77: { desc: "싸락눈", icon: "snowy" },
+  80: { desc: "소나기", icon: "drizzle" },
+  81: { desc: "소나기", icon: "drizzle" },
+  82: { desc: "폭우", icon: "thunderstorm" },
+  85: { desc: "눈", icon: "snowy" },
+  86: { desc: "폭설", icon: "snowy" },
+  95: { desc: "뇌우", icon: "thunderstorm" },
+  96: { desc: "우박", icon: "thunderstorm" },
+  99: { desc: "우박", icon: "thunderstorm" },
 };
 
 /* ─── Seoul default coordinates ─── */
@@ -161,7 +161,7 @@ export async function fetchWeather(): Promise<WeatherData | null> {
     }
 
     const weatherCode = weatherJson.current?.weather_code ?? 0;
-    const weatherInfo = WEATHER_DESCRIPTIONS[weatherCode] ?? { desc: "알 수 없음", icon: "🌡️" };
+    const weatherInfo = WEATHER_DESCRIPTIONS[weatherCode] ?? { desc: "알 수 없음", icon: "thermometer" };
 
     // Parse hourly data
     const hourlyTemp: number[] | null = weatherJson.hourly?.temperature_2m
@@ -186,7 +186,7 @@ export async function fetchWeather(): Promise<WeatherData | null> {
         const uvMax = Math.round(uvMaxs[i] ?? 0);
         const tMin = Math.round(tMins[i] ?? 0);
         const code = wCodes[i] ?? 0;
-        const info = WEATHER_DESCRIPTIONS[code] ?? { desc: "알 수 없음", icon: "🌡️" };
+        const info = WEATHER_DESCRIPTIONS[code] ?? { desc: "알 수 없음", icon: "thermometer" };
 
         // Determine routine advice based on UV + weather
         let routineAdvice: DailyForecast["routineAdvice"] = "normal";
@@ -252,28 +252,28 @@ export function generateWeatherTips(
   // UV Index tips
   if (weather.uvIndex >= 8) {
     tips.push({
-      emoji: "🔴",
+      icon: "red-circle",
       title: "자외선 매우 강함 (UV " + weather.uvIndex + ")",
       description: "SPF50+ PA++++ 선크림 필수! 2시간마다 덧바르세요.",
       priority: "high",
     });
   } else if (weather.uvIndex >= 5) {
     tips.push({
-      emoji: "🟠",
+      icon: "orange-circle",
       title: "자외선 강함 (UV " + weather.uvIndex + ")",
       description: "선크림을 꼼꼼히 바르고, 외출 시 모자를 착용하세요.",
       priority: "high",
     });
   } else if (weather.uvIndex >= 3) {
     tips.push({
-      emoji: "🟡",
+      icon: "yellow-circle",
       title: "자외선 보통 (UV " + weather.uvIndex + ")",
       description: "선크림은 기본! 흐린 날에도 UV는 침투해요.",
       priority: "medium",
     });
   } else {
     tips.push({
-      emoji: "🟢",
+      icon: "green-circle",
       title: "자외선 약함 (UV " + weather.uvIndex + ")",
       description: "자외선이 낮지만 선크림은 습관처럼 바르세요.",
       priority: "low",
@@ -283,7 +283,7 @@ export function generateWeatherTips(
   // Retinol/AHA + UV warning
   if ((hasRetinol || hasAHA) && weather.uvIndex >= 3) {
     tips.push({
-      emoji: "⚠️",
+      icon: "warning",
       title: hasRetinol ? "레티놀 사용자 주의" : "각질케어 사용자 주의",
       description: "광감성 성분 사용 중이라 선크림을 더 꼼꼼히 발라주세요.",
       priority: "high",
@@ -293,28 +293,28 @@ export function generateWeatherTips(
   // Temperature tips
   if (weather.temperature <= 5) {
     tips.push({
-      emoji: "🥶",
+      icon: "cold-face",
       title: "기온이 낮아요 (" + weather.temperature + "°C)",
       description: "크림을 두껍게 덧발라 피부 장벽을 보호하세요.",
       priority: "high",
     });
   } else if (weather.temperature <= 10) {
     tips.push({
-      emoji: "🧥",
+      icon: "jacket",
       title: "쌀쌀한 날씨 (" + weather.temperature + "°C)",
       description: "보습 크림으로 수분 증발을 막아주세요.",
       priority: "medium",
     });
   } else if (weather.temperature >= 30) {
     tips.push({
-      emoji: "🥵",
+      icon: "hot-face",
       title: "무더운 날씨 (" + weather.temperature + "°C)",
       description: "가벼운 제형 위주로! 크림 대신 젤이나 로션을 추천해요.",
       priority: "high",
     });
   } else if (weather.temperature >= 25) {
     tips.push({
-      emoji: "☀️",
+      icon: "sun",
       title: "따뜻한 날씨 (" + weather.temperature + "°C)",
       description: "산뜻한 제형으로 전환하고, 유분 과다를 조심하세요.",
       priority: "medium",
@@ -324,7 +324,7 @@ export function generateWeatherTips(
   // Humidity tips
   if (weather.humidity < 40) {
     tips.push({
-      emoji: "💧",
+      icon: "drop",
       title: "건조한 공기 (습도 " + weather.humidity + "%)",
       description: skinType === "dry"
         ? "건성 피부에 특히 위험! 히알루론산 세럼 + 크림으로 수분 보충하세요."
@@ -333,7 +333,7 @@ export function generateWeatherTips(
     });
   } else if (weather.humidity > 80) {
     tips.push({
-      emoji: "💦",
+      icon: "droplets",
       title: "습한 공기 (습도 " + weather.humidity + "%)",
       description: skinType === "oily"
         ? "지성 피부는 유분 과다 주의! BHA 토너 패드로 모공 관리하세요."
@@ -345,14 +345,14 @@ export function generateWeatherTips(
   // Rain/Snow tips
   if ([51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(weather.weatherCode)) {
     tips.push({
-      emoji: "🌧️",
+      icon: "rainy",
       title: "비 오는 날",
       description: "습도가 높아도 UV는 여전해요. 워터프루프 선크림을 추천합니다.",
       priority: "medium",
     });
   } else if ([71, 73, 75, 77, 85, 86].includes(weather.weatherCode)) {
     tips.push({
-      emoji: "❄️",
+      icon: "snowy",
       title: "눈 오는 날",
       description: "눈 반사로 UV가 강해질 수 있어요. 선크림 잊지 마세요!",
       priority: "medium",
@@ -362,7 +362,7 @@ export function generateWeatherTips(
   // Fog tips
   if ([45, 48].includes(weather.weatherCode)) {
     tips.push({
-      emoji: "🌫️",
+      icon: "foggy",
       title: "안개 낀 날",
       description: "미세먼지 주의! 저녁에 꼼꼼한 이중세안을 해주세요.",
       priority: "medium",
@@ -372,7 +372,7 @@ export function generateWeatherTips(
   // Skin type specific
   if (skinType === "sensitive" && weather.temperature < 10) {
     tips.push({
-      emoji: "🛡️",
+      icon: "shield",
       title: "민감피부 장벽 보호",
       description: "추운 날에는 시카/세라마이드 크림으로 장벽을 강화하세요.",
       priority: "high",
@@ -385,21 +385,21 @@ export function generateWeatherTips(
     const pm10 = weather.pm10 ?? 0;
     if (pm25 > 75 || pm10 > 150) {
       tips.push({
-        emoji: "😷",
+        icon: "mask-face",
         title: `미세먼지 매우 나쁨 (PM2.5: ${pm25})`,
         description: "외출 자제! 귀가 후 꼼꼼한 이중세안 + 진정 마스크팩을 추천해요.",
         priority: "high",
       });
     } else if (pm25 > 35 || pm10 > 80) {
       tips.push({
-        emoji: "🌫️",
+        icon: "foggy",
         title: `미세먼지 나쁨 (PM2.5: ${pm25})`,
         description: "외출 후 클렌징을 꼼꼼히! 시카 성분으로 진정 케어하세요.",
         priority: "high",
       });
     } else if (pm25 > 15 || pm10 > 50) {
       tips.push({
-        emoji: "💨",
+        icon: "wind",
         title: `미세먼지 보통 (PM2.5: ${pm25})`,
         description: "저녁 이중세안으로 모공 속 미세먼지를 제거해 주세요.",
         priority: "medium",
@@ -415,7 +415,7 @@ export function generateWeatherTips(
       const afternoonUV = Math.max(...weather.hourlyUV.slice(11, 15));
       if (afternoonUV >= 6) {
         tips.push({
-          emoji: "🕐",
+          icon: "clock",
           title: `오후에 UV ${afternoonUV}까지 올라갈 예정`,
           description: "점심 외출 전 선크림을 한 번 더 덧바르세요!",
           priority: "high",
@@ -428,7 +428,7 @@ export function generateWeatherTips(
       const tempDiff = afternoonMax - weather.temperature;
       if (tempDiff >= 10) {
         tips.push({
-          emoji: "🌡️",
+          icon: "thermometer",
           title: `일교차 ${tempDiff}°C 주의`,
           description: "아침엔 보습 크림, 오후엔 가벼운 제형으로 조절하세요.",
           priority: "medium",
@@ -439,7 +439,7 @@ export function generateWeatherTips(
   } else if (hour < 18) {
     // 오후 시간대
     tips.push({
-      emoji: "🔄",
+      icon: "cycle",
       title: "오후 선크림 리터치 시간",
       description: "아침에 바른 선크림 효과가 줄어들 시간이에요. 덧바르세요!",
       priority: "medium",
@@ -448,7 +448,7 @@ export function generateWeatherTips(
   } else {
     // 저녁 시간대
     tips.push({
-      emoji: "🌙",
+      icon: "moon",
       title: "저녁 루틴 시작할 시간",
       description: "클렌징 → 토너 → 세럼 → 크림 순서로 케어하세요.",
       priority: "low",
@@ -456,7 +456,7 @@ export function generateWeatherTips(
     });
     if ((hasRetinol) && (new Date().getDay() % 2 === 0)) {
       tips.push({
-        emoji: "💜",
+        icon: "purple-heart",
         title: "오늘은 레티놀 사용 가능한 날",
         description: "레티놀은 세안 후 피부가 완전히 건조된 상태에서 발라주세요.",
         priority: "medium",
@@ -468,14 +468,14 @@ export function generateWeatherTips(
   // ── 강풍 TIP ──
   if (weather.windSpeed !== null && weather.windSpeed >= 10) {
     tips.push({
-      emoji: "💨",
+      icon: "wind",
       title: `강풍 주의 (${weather.windSpeed}m/s)`,
       description: "바람이 수분을 빼앗아요. 밤 오일이나 무거운 크림으로 장벽을 보호하세요.",
       priority: "high",
     });
   } else if (weather.windSpeed !== null && weather.windSpeed >= 6) {
     tips.push({
-      emoji: "🍃",
+      icon: "leaves",
       title: `바람 부는 날 (${weather.windSpeed}m/s)`,
       description: "바람에 의한 수분 증발 주의. 세라마이드 크림으로 장벽을 강화하세요.",
       priority: "medium",
@@ -486,7 +486,7 @@ export function generateWeatherTips(
   switch (weather.season) {
     case "spring":
       tips.push({
-        emoji: "🌸",
+        icon: "cherry-blossom",
         title: "봄철 스킨케어",
         description: "꽃가루 + 미세먼지 시즌! 저자극 클렌저 + 진정 토너로 피부를 보호하세요.",
         priority: "medium",
@@ -495,7 +495,7 @@ export function generateWeatherTips(
     case "summer":
       if (weather.humidity > 70 && skinType === "oily") {
         tips.push({
-          emoji: "🧊",
+          icon: "ice",
           title: "여름 지성피부 관리",
           description: "클레이 마스크로 주 1~2회 모공 관리, 가벼운 수분젤로 유수분 밸런스를 맞추세요.",
           priority: "medium",
@@ -504,7 +504,7 @@ export function generateWeatherTips(
       break;
     case "autumn":
       tips.push({
-        emoji: "🍂",
+        icon: "autumn-leaf",
         title: "가을 환절기 주의",
         description: "급격히 건조해지는 시기! 세라마이드 크림으로 장벽을 강화하세요.",
         priority: "medium",
@@ -513,7 +513,7 @@ export function generateWeatherTips(
     case "winter":
       if (skinType === "dry" || skinType === "sensitive") {
         tips.push({
-          emoji: "🧣",
+          icon: "scarf",
           title: "겨울 집중 보습",
           description: "수분크림 → 오일 → 슬리핑팩 레이어링으로 수분 증발을 막으세요.",
           priority: "high",

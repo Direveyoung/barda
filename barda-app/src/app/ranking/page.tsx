@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import BottomNav from "@/components/BottomNav";
 
 interface RankedPost {
@@ -20,7 +21,7 @@ const skinTypeLabel: Record<string, string> = {
   sensitive: "민감성", normal: "중성",
 };
 
-const rankEmoji = ["🥇", "🥈", "🥉"];
+const rankIcon = ["gold-medal", "silver-medal", "bronze-medal"];
 
 function anonymize(prefix: string): string {
   if (prefix.length < 2) return prefix + "***";
@@ -98,7 +99,7 @@ export default function RankingPage() {
           </div>
         ) : posts.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-gray-400">
-            <span className="text-3xl mb-2">🏆</span>
+            <Icon name="trophy" size={24} />
             <p className="text-sm">아직 랭킹 데이터가 없어요</p>
           </div>
         ) : (
@@ -112,7 +113,7 @@ export default function RankingPage() {
                 {/* Rank */}
                 <div className="w-8 text-center shrink-0">
                   {i < 3 ? (
-                    <span className="text-xl">{rankEmoji[i]}</span>
+                    <Icon name={rankIcon[i]} size={24} />
                   ) : (
                     <span className="text-sm font-bold text-gray-400">{i + 1}</span>
                   )}
@@ -137,8 +138,8 @@ export default function RankingPage() {
                 <div className="text-right shrink-0">
                   <p className="text-sm font-bold text-primary">{post.score}점</p>
                   <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                    <span>❤️ {post.like_count}</span>
-                    <span>💬 {post.comment_count}</span>
+                    <span><Icon name="heart" size={12} className="text-red-500" /> {post.like_count}</span>
+                    <span><Icon name="comment-bubble" size={12} /> {post.comment_count}</span>
                   </div>
                 </div>
               </Link>

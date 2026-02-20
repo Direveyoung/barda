@@ -33,16 +33,16 @@ export const CATEGORY_LABELS: Record<IngredientInfo["category"], string> = {
   "uv-protection": "자외선차단",
 };
 
-export const CATEGORY_EMOJI: Record<IngredientInfo["category"], string> = {
-  moisturizing: "💧",
-  brightening: "✨",
-  "anti-aging": "💜",
-  soothing: "🌿",
-  exfoliating: "🧪",
-  antioxidant: "🍊",
-  barrier: "🛡️",
-  acne: "💥",
-  "uv-protection": "☀️",
+export const CATEGORY_ICON: Record<IngredientInfo["category"], string> = {
+  moisturizing: "drop",
+  brightening: "sparkle",
+  "anti-aging": "purple-heart",
+  soothing: "leaf",
+  exfoliating: "beaker",
+  antioxidant: "orange",
+  barrier: "shield",
+  acne: "burst",
+  "uv-protection": "sun",
 };
 
 export const SKIN_TYPE_LABELS: Record<string, string> = {

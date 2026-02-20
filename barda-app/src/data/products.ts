@@ -19,7 +19,7 @@ export interface CategoryItem {
   tag?: "active" | "basic";
   time: "am" | "pm" | "both";
   order: number;
-  emoji: string;
+  icon: string;
 }
 
 /* ─── Categories ─── */
@@ -28,56 +28,56 @@ export const CATEGORIES: Record<string, { label: string; items: CategoryItem[] }
   cleansing: {
     label: "클렌징",
     items: [
-      { id: "oil_cleanser", label: "오일/밤 클렌저", time: "both", order: 1, emoji: "🧴" },
-      { id: "cleanser", label: "폼/젤 클렌저", time: "both", order: 2, emoji: "🫧" },
+      { id: "oil_cleanser", label: "오일/밤 클렌저", time: "both", order: 1, icon: "bottle" },
+      { id: "cleanser", label: "폼/젤 클렌저", time: "both", order: 2, icon: "bubble" },
     ],
   },
   toner: {
     label: "토너/패드",
     items: [
-      { id: "toner", label: "토너", time: "both", order: 3, emoji: "💧" },
-      { id: "toner_pad", label: "토너 패드", time: "both", order: 4, emoji: "🧻" },
+      { id: "toner", label: "토너", time: "both", order: 3, icon: "drop" },
+      { id: "toner_pad", label: "토너 패드", time: "both", order: 4, icon: "pad" },
     ],
   },
   essence: {
     label: "에센스/앰플",
     items: [
-      { id: "essence", label: "에센스", time: "both", order: 5, emoji: "✨" },
-      { id: "ampoule", label: "앰플", time: "both", order: 6, emoji: "💎" },
+      { id: "essence", label: "에센스", time: "both", order: 5, icon: "sparkle" },
+      { id: "ampoule", label: "앰플", time: "both", order: 6, icon: "diamond" },
     ],
   },
   serum: {
     label: "세럼/액티브",
     items: [
-      { id: "vitamin_c", label: "비타민C 세럼", tag: "active", time: "am", order: 7, emoji: "🍊" },
-      { id: "niacinamide", label: "나이아신아마이드", time: "both", order: 8, emoji: "⚡" },
-      { id: "hyaluronic", label: "히알루론산", time: "both", order: 8, emoji: "💦" },
-      { id: "retinol", label: "레티놀", tag: "active", time: "pm", order: 9, emoji: "💜" },
-      { id: "aha", label: "AHA", tag: "active", time: "pm", order: 9, emoji: "✨" },
-      { id: "bha", label: "BHA", tag: "active", time: "pm", order: 9, emoji: "🔵" },
-      { id: "pha", label: "PHA", tag: "active", time: "pm", order: 9, emoji: "🟢" },
+      { id: "vitamin_c", label: "비타민C 세럼", tag: "active", time: "am", order: 7, icon: "orange" },
+      { id: "niacinamide", label: "나이아신아마이드", time: "both", order: 8, icon: "lightning" },
+      { id: "hyaluronic", label: "히알루론산", time: "both", order: 8, icon: "droplets" },
+      { id: "retinol", label: "레티놀", tag: "active", time: "pm", order: 9, icon: "purple-heart" },
+      { id: "aha", label: "AHA", tag: "active", time: "pm", order: 9, icon: "sparkle" },
+      { id: "bha", label: "BHA", tag: "active", time: "pm", order: 9, icon: "blue-circle" },
+      { id: "pha", label: "PHA", tag: "active", time: "pm", order: 9, icon: "green-circle" },
     ],
   },
   moisturizer: {
     label: "보습",
     items: [
-      { id: "lotion", label: "로션/에멀전", time: "both", order: 10, emoji: "🧴" },
-      { id: "cream", label: "크림", time: "both", order: 11, emoji: "🫙" },
-      { id: "sleeping_pack", label: "수면팩", time: "pm", order: 12, emoji: "🌙" },
+      { id: "lotion", label: "로션/에멀전", time: "both", order: 10, icon: "bottle" },
+      { id: "cream", label: "크림", time: "both", order: 11, icon: "jar" },
+      { id: "sleeping_pack", label: "수면팩", time: "pm", order: 12, icon: "moon" },
     ],
   },
   sun: {
     label: "선케어",
     items: [
-      { id: "sunscreen", label: "선크림", time: "am", order: 13, emoji: "☀️" },
+      { id: "sunscreen", label: "선크림", time: "am", order: 13, icon: "sun" },
     ],
   },
   special: {
     label: "스페셜",
     items: [
-      { id: "eye_cream", label: "아이크림", time: "both", order: 10, emoji: "👁️" },
-      { id: "spot_treatment", label: "스팟 트리트먼트", time: "pm", order: 9, emoji: "🎯" },
-      { id: "mask_pack", label: "마스크팩", time: "pm", order: 14, emoji: "🎭" },
+      { id: "eye_cream", label: "아이크림", time: "both", order: 10, icon: "eye" },
+      { id: "spot_treatment", label: "스팟 트리트먼트", time: "pm", order: 9, icon: "target" },
+      { id: "mask_pack", label: "마스크팩", time: "pm", order: 14, icon: "mask" },
     ],
   },
 };

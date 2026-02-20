@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import { ALL_PRODUCTS, type Product, CATEGORIES, type CategoryItem } from "@/data/products";
 import { searchProducts } from "@/lib/search";
+import Icon from "@/components/Icon";
 
 /* ─── Types ─── */
 
@@ -20,9 +21,9 @@ interface DrawerItem {
 }
 
 const STATUS_CONFIG = {
-  unopened: { label: "미개봉", emoji: "📦", color: "bg-gray-100 text-gray-600" },
-  using: { label: "사용 중", emoji: "✅", color: "bg-green-50 text-green-600" },
-  finished: { label: "다 씀", emoji: "🏁", color: "bg-gray-50 text-gray-400" },
+  unopened: { label: "미개봉", icon: "package", color: "bg-gray-100 text-gray-600" },
+  using: { label: "사용 중", icon: "check-circle", color: "bg-green-50 text-green-600" },
+  finished: { label: "다 씀", icon: "flag", color: "bg-gray-50 text-gray-400" },
 };
 
 const STORAGE_KEY = "barda_drawer";
@@ -35,12 +36,12 @@ function getCategoryLabel(categoryId: string): string {
   return categoryId;
 }
 
-function getCategoryEmoji(categoryId: string): string {
+function getCategoryIcon(categoryId: string): string {
   for (const group of Object.values(CATEGORIES)) {
     const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.emoji;
+    if (item) return item.icon;
   }
-  return "🧴";
+  return "bottle";
 }
 
 function daysSince(dateStr: string): number {
@@ -160,13 +161,13 @@ export default function DrawerPage() {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-2 mb-4">
           {[
-            { label: "전체", value: stats.total, emoji: "🧴" },
-            { label: "사용 중", value: stats.using, emoji: "✅" },
-            { label: "미개봉", value: stats.unopened, emoji: "📦" },
-            { label: "다 씀", value: stats.finished, emoji: "🏁" },
+            { label: "전체", value: stats.total, icon: "bottle" },
+            { label: "사용 중", value: stats.using, icon: "check-circle" },
+            { label: "미개봉", value: stats.unopened, icon: "package" },
+            { label: "다 씀", value: stats.finished, icon: "flag" },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 text-center">
-              <span className="text-base">{s.emoji}</span>
+              <Icon name={s.icon} size={16} />
               <p className="text-lg font-bold text-gray-800 mt-0.5">{s.value}</p>
               <p className="text-[10px] text-gray-400">{s.label}</p>
             </div>
@@ -199,7 +200,7 @@ export default function DrawerPage() {
         {/* Product list */}
         {filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-            <span className="text-4xl mb-3">🧴</span>
+            <Icon name="bottle" size={36} />
             {items.length === 0 ? (
               <>
                 <p className="text-sm font-medium mb-1">서랍이 비어있어요</p>
@@ -227,12 +228,12 @@ export default function DrawerPage() {
                   className="bg-white rounded-xl border border-gray-100 p-3.5"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-xl mt-0.5">{getCategoryEmoji(item.categoryId)}</span>
+                    <span className="mt-0.5"><Icon name={getCategoryIcon(item.categoryId)} size={20} /></span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-xs text-gray-400">{item.brand}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${statusConfig.color}`}>
-                          {statusConfig.emoji} {statusConfig.label}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5 ${statusConfig.color}`}>
+                          <Icon name={statusConfig.icon} size={10} /> {statusConfig.label}
                         </span>
                       </div>
                       <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
@@ -351,7 +352,7 @@ export default function DrawerPage() {
                     onClick={() => addProduct(product)}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
                   >
-                    <span className="text-lg">{getCategoryEmoji(product.categoryId)}</span>
+                    <Icon name={getCategoryIcon(product.categoryId)} size={18} />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-gray-400">{product.brand}</p>
                       <p className="text-sm text-gray-800 truncate">{product.name}</p>

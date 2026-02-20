@@ -12,12 +12,13 @@ import ConcernStep from "@/components/ConcernStep";
 import ProductStep from "@/components/ProductStep";
 import ResultView from "@/components/ResultView";
 import BottomNav from "@/components/BottomNav";
+import Icon from "@/components/Icon";
 
 const STEPS = [
-  { label: "피부타입", emoji: "🧴" },
-  { label: "고민", emoji: "🎯" },
-  { label: "제품등록", emoji: "📦" },
-  { label: "분석결과", emoji: "📊" },
+  { label: "피부타입", icon: "bottle" },
+  { label: "고민", icon: "target" },
+  { label: "제품등록", icon: "package" },
+  { label: "분석결과", icon: "chart" },
 ];
 
 function AnalyzeContent() {
@@ -177,7 +178,7 @@ function AnalyzeContent() {
                   i <= step ? "text-primary font-semibold" : "text-gray-400"
                 }`}
               >
-                {s.emoji} {s.label}
+                <Icon name={s.icon} size={14} /> {s.label}
               </span>
             </div>
           ))}

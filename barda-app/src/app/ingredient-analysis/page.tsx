@@ -7,12 +7,13 @@ import { searchProducts } from "@/lib/search";
 import {
   INGREDIENT_DB,
   CATEGORY_LABELS,
-  CATEGORY_EMOJI,
+  CATEGORY_ICON,
   SKIN_TYPE_LABELS,
   lookupIngredient,
   type IngredientInfo,
 } from "@/data/ingredients";
 import BottomNav from "@/components/BottomNav";
+import Icon from "@/components/Icon";
 
 /* ─── Types ─── */
 
@@ -50,12 +51,12 @@ interface ProfileData {
 
 /* ─── Helpers ─── */
 
-function getCategoryEmoji(categoryId: string): string {
+function getCategoryIcon(categoryId: string): string {
   for (const group of Object.values(CATEGORIES)) {
     const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.emoji;
+    if (item) return item.icon;
   }
-  return "\uD83E\uDDF4";
+  return "bottle";
 }
 
 function getCategoryLabel(categoryId: string): string {
@@ -429,9 +430,7 @@ export default function IngredientAnalysisPage() {
                 onClick={() => selectProduct(product)}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0"
               >
-                <span className="text-lg">
-                  {getCategoryEmoji(product.categoryId)}
-                </span>
+                <Icon name={getCategoryIcon(product.categoryId)} size={18} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-400">{product.brand}</p>
                   <p className="text-sm text-gray-800 truncate">
@@ -458,9 +457,7 @@ export default function IngredientAnalysisPage() {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">
-                {getCategoryEmoji(selectedProduct.categoryId)}
-              </span>
+              <Icon name={getCategoryIcon(selectedProduct.categoryId)} size={24} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-500">
                   {selectedProduct.brand}
@@ -619,7 +616,7 @@ export default function IngredientAnalysisPage() {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <span className="text-base">
-                            {CATEGORY_EMOJI[item.info.category]}
+                            <Icon name={CATEGORY_ICON[item.info.category]} size={16} />
                           </span>
                           <div>
                             <p className="text-sm font-semibold text-gray-800">
@@ -845,9 +842,7 @@ export default function IngredientAnalysisPage() {
                       onClick={() => selectProduct(product)}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors text-left"
                     >
-                      <span className="text-lg">
-                        {getCategoryEmoji(product.categoryId)}
-                      </span>
+                      <Icon name={getCategoryIcon(product.categoryId)} size={18} />
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-gray-400">
                           {product.brand}
@@ -987,7 +982,7 @@ export default function IngredientAnalysisPage() {
                     >
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="text-sm">
-                          {CATEGORY_EMOJI[info.category]}
+                          <Icon name={CATEGORY_ICON[info.category]} size={14} />
                         </span>
                         <p className="text-xs font-semibold text-gray-800 truncate">
                           {info.name}

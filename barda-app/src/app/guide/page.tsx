@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import BottomNav from "@/components/BottomNav";
 
 interface Ingredient {
   id: string;
   name: string;
-  emoji: string;
+  icon: string;
   category: string;
   desc: string;
   caution: string;
@@ -19,42 +20,42 @@ const categories = [
 
 const ingredients: Ingredient[] = [
   // 안티에이징
-  { id: "retinol", name: "레티놀", emoji: "💛", category: "안티에이징", desc: "주름개선, 피부재생, 콜라겐 촉진", caution: "자외선 민감 증가, AHA/BHA와 동시 사용 주의" },
-  { id: "retinal", name: "레티날", emoji: "💛", category: "안티에이징", desc: "레티놀보다 강력한 비타민A 유도체, 빠른 효과", caution: "레티놀보다 자극 가능성 높음, 밤 사용 필수" },
-  { id: "bakuchiol", name: "바쿠치올", emoji: "🌱", category: "안티에이징", desc: "식물성 레티놀 대안, 항산화 + 주름 개선", caution: "레티놀 대비 순한 편, 민감피부 가능" },
-  { id: "peptide", name: "펩타이드", emoji: "🔗", category: "안티에이징", desc: "콜라겐 생성 촉진, 탄력 개선", caution: "구리 펩타이드는 비타민C/레티놀과 분리 사용" },
-  { id: "adenosine", name: "아데노신", emoji: "🧬", category: "안티에이징", desc: "주름개선 기능성 성분, 상처 회복 촉진", caution: "특별한 주의 없음, 대부분의 성분과 병용 가능" },
+  { id: "retinol", name: "레티놀", icon: "yellow-heart", category: "안티에이징", desc: "주름개선, 피부재생, 콜라겐 촉진", caution: "자외선 민감 증가, AHA/BHA와 동시 사용 주의" },
+  { id: "retinal", name: "레티날", icon: "yellow-heart", category: "안티에이징", desc: "레티놀보다 강력한 비타민A 유도체, 빠른 효과", caution: "레티놀보다 자극 가능성 높음, 밤 사용 필수" },
+  { id: "bakuchiol", name: "바쿠치올", icon: "seedling", category: "안티에이징", desc: "식물성 레티놀 대안, 항산화 + 주름 개선", caution: "레티놀 대비 순한 편, 민감피부 가능" },
+  { id: "peptide", name: "펩타이드", icon: "link", category: "안티에이징", desc: "콜라겐 생성 촉진, 탄력 개선", caution: "구리 펩타이드는 비타민C/레티놀과 분리 사용" },
+  { id: "adenosine", name: "아데노신", icon: "dna", category: "안티에이징", desc: "주름개선 기능성 성분, 상처 회복 촉진", caution: "특별한 주의 없음, 대부분의 성분과 병용 가능" },
   // 각질케어
-  { id: "aha", name: "AHA (글리콜산)", emoji: "🧪", category: "각질케어", desc: "각질 제거, 피부결 개선, 톤 균일화", caution: "레티놀과 같은 날 사용 금지, 선크림 필수" },
-  { id: "bha", name: "BHA (살리실산)", emoji: "🫧", category: "각질케어", desc: "모공 속 각질/피지 제거, 블랙헤드 관리", caution: "과도한 사용 시 건조, AHA와 동시 사용 주의" },
-  { id: "pha", name: "PHA (글루코노락톤)", emoji: "🟢", category: "각질케어", desc: "AHA보다 순한 각질 제거, 보습력 보유", caution: "민감피부도 사용 가능, 자극 최소화" },
-  { id: "lha", name: "LHA (리포하이드록시산)", emoji: "🔬", category: "각질케어", desc: "모공 내 천천히 침투, 지속적 각질 케어", caution: "BHA보다 순하지만 중복 사용 주의" },
-  { id: "urea", name: "우레아", emoji: "💎", category: "각질케어", desc: "천연보습인자, 각질 연화 + 보습", caution: "고농도(10%+)는 자극 가능, 저농도 추천" },
+  { id: "aha", name: "AHA (글리콜산)", icon: "beaker", category: "각질케어", desc: "각질 제거, 피부결 개선, 톤 균일화", caution: "레티놀과 같은 날 사용 금지, 선크림 필수" },
+  { id: "bha", name: "BHA (살리실산)", icon: "bubble", category: "각질케어", desc: "모공 속 각질/피지 제거, 블랙헤드 관리", caution: "과도한 사용 시 건조, AHA와 동시 사용 주의" },
+  { id: "pha", name: "PHA (글루코노락톤)", icon: "green-circle", category: "각질케어", desc: "AHA보다 순한 각질 제거, 보습력 보유", caution: "민감피부도 사용 가능, 자극 최소화" },
+  { id: "lha", name: "LHA (리포하이드록시산)", icon: "microscope", category: "각질케어", desc: "모공 내 천천히 침투, 지속적 각질 케어", caution: "BHA보다 순하지만 중복 사용 주의" },
+  { id: "urea", name: "우레아", icon: "diamond", category: "각질케어", desc: "천연보습인자, 각질 연화 + 보습", caution: "고농도(10%+)는 자극 가능, 저농도 추천" },
   // 미백/톤업
-  { id: "vitamin_c", name: "비타민C (L-AA)", emoji: "🍊", category: "미백/톤업", desc: "항산화, 미백, 콜라겐 합성 촉진", caution: "아침 사용 추천, 벤조일퍼옥사이드와 동시 사용 금지" },
-  { id: "niacinamide", name: "나이아신아마이드", emoji: "✨", category: "미백/톤업", desc: "피지조절, 미백, 피부장벽 강화", caution: "대부분 안전, 민감피부는 비타민C와 분리 권장" },
-  { id: "arbutin", name: "알부틴", emoji: "⚪", category: "미백/톤업", desc: "멜라닌 생성 억제, 미백 효과", caution: "하이드로퀴논 유도체, 고농도 시 자극 주의" },
-  { id: "tranexamic_acid", name: "트라넥사믹애시드", emoji: "💊", category: "미백/톤업", desc: "색소침착 개선, 기미/잡티 완화", caution: "대부분 안전, 경구 복용 시 전문의 상담" },
-  { id: "kojic_acid", name: "코직산", emoji: "🍄", category: "미백/톤업", desc: "천연 미백 성분, 멜라닌 합성 억제", caution: "산화에 약해 변색 주의, 민감피부 패치 테스트" },
+  { id: "vitamin_c", name: "비타민C (L-AA)", icon: "orange", category: "미백/톤업", desc: "항산화, 미백, 콜라겐 합성 촉진", caution: "아침 사용 추천, 벤조일퍼옥사이드와 동시 사용 금지" },
+  { id: "niacinamide", name: "나이아신아마이드", icon: "sparkle", category: "미백/톤업", desc: "피지조절, 미백, 피부장벽 강화", caution: "대부분 안전, 민감피부는 비타민C와 분리 권장" },
+  { id: "arbutin", name: "알부틴", icon: "white-circle", category: "미백/톤업", desc: "멜라닌 생성 억제, 미백 효과", caution: "하이드로퀴논 유도체, 고농도 시 자극 주의" },
+  { id: "tranexamic_acid", name: "트라넥사믹애시드", icon: "pill", category: "미백/톤업", desc: "색소침착 개선, 기미/잡티 완화", caution: "대부분 안전, 경구 복용 시 전문의 상담" },
+  { id: "kojic_acid", name: "코직산", icon: "mushroom", category: "미백/톤업", desc: "천연 미백 성분, 멜라닌 합성 억제", caution: "산화에 약해 변색 주의, 민감피부 패치 테스트" },
   // 보습
-  { id: "hyaluronic_acid", name: "히알루론산", emoji: "💧", category: "보습", desc: "강력한 수분 보유력, 피부 탄력 개선", caution: "건조한 환경에서는 오히려 수분 빼앗길 수 있음, 크림으로 봉인" },
-  { id: "ceramide", name: "세라마이드", emoji: "🛡️", category: "보습", desc: "피부장벽 회복, 수분 증발 방지", caution: "특별한 주의 없음, 민감피부 우선 추천" },
-  { id: "squalane", name: "스쿠알란", emoji: "🫧", category: "보습", desc: "피부 유사 오일, 보습 + 장벽 강화", caution: "순한 편, 지성피부는 소량 사용 권장" },
-  { id: "glycerin", name: "글리세린", emoji: "💦", category: "보습", desc: "수분 끌어오는 보습제, 피부 유연화", caution: "고농도 시 끈적임, 건조환경에서는 크림과 함께" },
-  { id: "beta_glucan", name: "베타글루칸", emoji: "🌾", category: "보습", desc: "히알루론산보다 뛰어난 보습력, 진정 효과", caution: "특별한 주의 없음, 모든 피부 타입 사용 가능" },
+  { id: "hyaluronic_acid", name: "히알루론산", icon: "drop", category: "보습", desc: "강력한 수분 보유력, 피부 탄력 개선", caution: "건조한 환경에서는 오히려 수분 빼앗길 수 있음, 크림으로 봉인" },
+  { id: "ceramide", name: "세라마이드", icon: "shield", category: "보습", desc: "피부장벽 회복, 수분 증발 방지", caution: "특별한 주의 없음, 민감피부 우선 추천" },
+  { id: "squalane", name: "스쿠알란", icon: "droplets", category: "보습", desc: "피부 유사 오일, 보습 + 장벽 강화", caution: "순한 편, 지성피부는 소량 사용 권장" },
+  { id: "glycerin", name: "글리세린", icon: "droplets", category: "보습", desc: "수분 끌어오는 보습제, 피부 유연화", caution: "고농도 시 끈적임, 건조환경에서는 크림과 함께" },
+  { id: "beta_glucan", name: "베타글루칸", icon: "wheat", category: "보습", desc: "히알루론산보다 뛰어난 보습력, 진정 효과", caution: "특별한 주의 없음, 모든 피부 타입 사용 가능" },
   // 진정
-  { id: "cica", name: "시카 (센텔라)", emoji: "🌿", category: "진정", desc: "피부 진정, 장벽 회복, 트러블 완화", caution: "특별한 주의 없음, 대부분의 성분과 병용 가능" },
-  { id: "aloe", name: "알로에 베라", emoji: "🪴", category: "진정", desc: "즉각 진정, 수분 공급, 가벼운 보습", caution: "드물게 알레르기 반응, 패치 테스트 권장" },
-  { id: "allantoin", name: "알란토인", emoji: "🤍", category: "진정", desc: "피부 진정, 자극 완화, 각질 연화", caution: "매우 순한 성분, 특별한 주의 없음" },
-  { id: "tea_tree", name: "티트리 오일", emoji: "🌲", category: "진정", desc: "항균, 항염, 트러블 스팟 케어", caution: "원액 사용 금지, 반드시 희석/제품화된 형태로" },
-  { id: "mugwort", name: "쑥 (아르테미시아)", emoji: "🌱", category: "진정", desc: "한방 진정 성분, 민감 피부 안정화", caution: "대부분 안전, 쑥 알레르기 있으면 주의" },
+  { id: "cica", name: "시카 (센텔라)", icon: "leaf", category: "진정", desc: "피부 진정, 장벽 회복, 트러블 완화", caution: "특별한 주의 없음, 대부분의 성분과 병용 가능" },
+  { id: "aloe", name: "알로에 베라", icon: "plant", category: "진정", desc: "즉각 진정, 수분 공급, 가벼운 보습", caution: "드물게 알레르기 반응, 패치 테스트 권장" },
+  { id: "allantoin", name: "알란토인", icon: "white-heart", category: "진정", desc: "피부 진정, 자극 완화, 각질 연화", caution: "매우 순한 성분, 특별한 주의 없음" },
+  { id: "tea_tree", name: "티트리 오일", icon: "pine-tree", category: "진정", desc: "항균, 항염, 트러블 스팟 케어", caution: "원액 사용 금지, 반드시 희석/제품화된 형태로" },
+  { id: "mugwort", name: "쑥 (아르테미시아)", icon: "seedling", category: "진정", desc: "한방 진정 성분, 민감 피부 안정화", caution: "대부분 안전, 쑥 알레르기 있으면 주의" },
   // 트러블
-  { id: "benzoyl_peroxide", name: "벤조일퍼옥사이드", emoji: "💥", category: "트러블", desc: "여드름균 살균, 트러블 치료", caution: "레티놀/비타민C와 동시 사용 금지, 건조할 수 있음" },
-  { id: "azelaic_acid", name: "아젤라산", emoji: "🔸", category: "트러블", desc: "여드름, 주사비, 색소침착 개선", caution: "초기 자극 가능, 사용량 점진적 증가" },
-  { id: "sulfur", name: "유황", emoji: "🟡", category: "트러블", desc: "피지 조절, 항균, 각질 제거", caution: "강한 냄새, 건조해질 수 있음" },
+  { id: "benzoyl_peroxide", name: "벤조일퍼옥사이드", icon: "burst", category: "트러블", desc: "여드름균 살균, 트러블 치료", caution: "레티놀/비타민C와 동시 사용 금지, 건조할 수 있음" },
+  { id: "azelaic_acid", name: "아젤라산", icon: "diamond-orange", category: "트러블", desc: "여드름, 주사비, 색소침착 개선", caution: "초기 자극 가능, 사용량 점진적 증가" },
+  { id: "sulfur", name: "유황", icon: "yellow-circle", category: "트러블", desc: "피지 조절, 항균, 각질 제거", caution: "강한 냄새, 건조해질 수 있음" },
   // 선케어
-  { id: "zinc_oxide", name: "징크옥사이드", emoji: "☀️", category: "선케어", desc: "물리적 자외선 차단, 민감피부 적합", caution: "백탁 가능, 나노 입자 논란 있으나 안전" },
-  { id: "titanium_dioxide", name: "티타늄디옥사이드", emoji: "🌤️", category: "선케어", desc: "물리적 자외선 차단, UVB 특화", caution: "UVA 차단력은 징크옥사이드보다 낮음" },
+  { id: "zinc_oxide", name: "징크옥사이드", icon: "sun", category: "선케어", desc: "물리적 자외선 차단, 민감피부 적합", caution: "백탁 가능, 나노 입자 논란 있으나 안전" },
+  { id: "titanium_dioxide", name: "티타늄디옥사이드", icon: "sun-cloud", category: "선케어", desc: "물리적 자외선 차단, UVB 특화", caution: "UVA 차단력은 징크옥사이드보다 낮음" },
 ];
 
 export default function GuidePage() {
@@ -106,7 +107,7 @@ export default function GuidePage() {
               className="bg-white rounded-2xl border border-gray-100 p-4"
             >
               <div className="flex items-start gap-3">
-                <div className="text-2xl shrink-0">{ing.emoji}</div>
+                <div className="shrink-0"><Icon name={ing.icon} size={24} /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-gray-800">
@@ -118,7 +119,7 @@ export default function GuidePage() {
                   </div>
                   <p className="text-xs text-gray-600 mb-2">{ing.desc}</p>
                   <div className="flex items-start gap-1.5">
-                    <span className="text-xs text-warning shrink-0">⚠️</span>
+                    <Icon name="warning" size={14} className="text-warning" />
                     <p className="text-xs text-gray-400">{ing.caution}</p>
                   </div>
                 </div>
@@ -132,22 +133,22 @@ export default function GuidePage() {
           <h3 className="text-sm font-bold text-gray-800 mb-3">스킨케어 도구</h3>
           <div className="grid grid-cols-2 gap-2">
             <Link href="/ingredient-analysis" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
-              <span className="text-xl mb-1.5 block">🔬</span>
+              <span className="mb-1.5 block"><Icon name="microscope" size={20} /></span>
               <p className="text-xs font-semibold text-gray-800">성분 분석</p>
               <p className="text-[10px] text-gray-400 mt-0.5">제품별 성분 안전도 분석</p>
             </Link>
             <Link href="/scanner" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
-              <span className="text-xl mb-1.5 block">📷</span>
+              <span className="mb-1.5 block"><Icon name="camera" size={20} /></span>
               <p className="text-xs font-semibold text-gray-800">스캐너</p>
               <p className="text-[10px] text-gray-400 mt-0.5">바코드/성분 스캔</p>
             </Link>
             <Link href="/dupe" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
-              <span className="text-xl mb-1.5 block">🔄</span>
+              <span className="mb-1.5 block"><Icon name="cycle" size={20} /></span>
               <p className="text-xs font-semibold text-gray-800">듀프 파인더</p>
               <p className="text-[10px] text-gray-400 mt-0.5">저렴한 대안 제품 찾기</p>
             </Link>
             <Link href="/analyze" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
-              <span className="text-xl mb-1.5 block">🧴</span>
+              <span className="mb-1.5 block"><Icon name="bottle" size={20} /></span>
               <p className="text-xs font-semibold text-gray-800">루틴 분석</p>
               <p className="text-[10px] text-gray-400 mt-0.5">성분 충돌 체크</p>
             </Link>

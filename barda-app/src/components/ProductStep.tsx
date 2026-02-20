@@ -6,6 +6,7 @@ import { CATEGORIES, ALL_PRODUCTS } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import { findCategory } from "@/lib/analysis";
 import type { RoutineProduct } from "@/lib/analysis";
+import Icon from "@/components/Icon";
 
 interface Props {
   products: RoutineProduct[];
@@ -251,7 +252,7 @@ export default function ProductStep({
             <div className="space-y-1.5 mb-3">
               {activeTips.slice(0, 2).map((t) => (
                 <div key={t.concern} className="flex items-start gap-1.5 text-xs text-gray-600">
-                  <span className="shrink-0">💡</span>
+                  <Icon name="lightbulb" size={16} className="shrink-0" />
                   <span><strong>{t.concern}</strong>: {t.tip}</span>
                 </div>
               ))}
@@ -263,8 +264,8 @@ export default function ProductStep({
               const cat = findCategory(categoryId);
               return (
                 <div key={categoryId}>
-                  <p className="text-[11px] text-gray-500 font-medium mb-1">
-                    {cat?.emoji} {cat?.label}
+                  <p className="text-[11px] text-gray-500 font-medium mb-1 flex items-center gap-1">
+                    <Icon name={cat?.icon ?? "package"} size={14} /> {cat?.label}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {recProducts.map((p) => {
@@ -296,7 +297,7 @@ export default function ProductStep({
       {/* Search Bar */}
       <div className="relative mb-4">
         <div className="flex items-center gap-2 px-4 py-3 rounded-2xl border-2 border-gray-200 bg-white focus-within:border-primary transition-colors">
-          <span className="text-gray-400">🔍</span>
+          <Icon name="search" size={16} className="text-gray-400" />
           <input
             ref={inputRef}
             type="text"
@@ -339,7 +340,7 @@ export default function ProductStep({
                     isAdded ? "opacity-50" : ""
                   }`}
                 >
-                  <span className="text-lg">{cat?.emoji ?? "📦"}</span>
+                  <Icon name={cat?.icon ?? "package"} size={20} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-800 truncate">
                       {product.brand} {product.name}
@@ -427,7 +428,7 @@ export default function ProductStep({
                 {Object.entries(CATEGORIES).map(([, group]) =>
                   group.items.map((cat) => (
                     <option key={cat.id} value={cat.id}>
-                      {cat.emoji} {cat.label}
+                      {cat.label}
                     </option>
                   ))
                 )}
@@ -456,13 +457,13 @@ export default function ProductStep({
               <button
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   selectedCategory === cat.id
                     ? "bg-primary text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
-                {cat.emoji} {cat.label}
+                <Icon name={cat.icon} size={14} /> {cat.label}
               </button>
             ))
           )}
@@ -510,7 +511,7 @@ export default function ProductStep({
                   key={product.id}
                   className="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-gray-200"
                 >
-                  <span className="text-lg">{cat?.emoji ?? "📦"}</span>
+                  <Icon name={cat?.icon ?? "package"} size={20} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-800 truncate">
                       {product.brand} {product.name}
