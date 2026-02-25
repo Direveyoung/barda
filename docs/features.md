@@ -7,7 +7,7 @@
 |------|------|------|
 | 루틴 분석 엔진 | `lib/analysis.ts` | 15 충돌 규칙, 농도/피부타입 보정 |
 | 3단계 검색 | `lib/search.ts` | 정확→별칭→Levenshtein |
-| 제품 DB | `data/products.ts` | 300개, 20 카테고리 |
+| 제품 DB | `data/products.ts` | 502개, 20 카테고리, 83 브랜드 |
 | 루틴 점수 | `lib/analysis.ts` | 100점 만점 (감점+가점) |
 | 7일 캘린더 | `lib/analysis.ts` | 레티놀/각질 자동 분배 |
 | AM/PM TIP | `lib/analysis.ts` | 피부타입×시간대 가이드 |
@@ -111,6 +111,27 @@
 | 통합 성분 조회 | `lib/external-apis.ts` | `lookupIngredientEnriched()` 병렬 |
 | 성분 조회 API | `api/ingredients/lookup/route.ts` | 사용자 대면 외부 성분 데이터 API |
 | 성분 분석 보강 | `app/ingredient-analysis/page.tsx` | 외부 API 데이터 자동 표시 |
+
+### v1.3.0: Zod 입력 검증 + XSS 방지 (2026.02.20)
+| 기능 | 파일 | 설명 |
+|------|------|------|
+| Zod 스키마 검증 | `lib/api-types.ts` | 8개 Zod 스키마 + `parseWithZod()` 헬퍼 |
+| XSS 새니타이저 | `lib/api-types.ts` | `sanitizeString()` HTML 이스케이프 |
+| 결제 멱등성 | `api/payments/confirm` | orderId 중복 방지 (409) |
+| API 전체 검증 교체 | 모든 POST/PATCH API | 수동 체크 → Zod 스키마 |
+
+### v1.4.0: SVG 아이콘 시스템 (2026.02.20)
+| 기능 | 파일 | 설명 |
+|------|------|------|
+| Icon 컴포넌트 | `components/Icon.tsx` | 90+ 인라인 SVG 아이콘 |
+| 이모지 전면 교체 | 13개 파일 | 75+ 이모지 → SVG 아이콘 |
+
+### v1.5.0: PC 데스크톱 셸 + 랜딩 리디자인 (2026.02.20)
+| 기능 | 파일 | 설명 |
+|------|------|------|
+| DesktopShell | `components/DesktopShell.tsx` | PC 폰 목업 + QR 사이드바 |
+| 랜딩 리디자인 | `app/page.tsx` | 화해/파우더룸 스타일 (히어로, 카테고리, 기능카드) |
+| 테스트 로그인 | `app/auth/login/page.tsx` | test@barda.dev 원클릭 (프리미엄 포함) |
 
 ---
 
