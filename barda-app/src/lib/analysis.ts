@@ -49,7 +49,7 @@ export interface DaySchedule {
   day: string;
   isRetinolDay: boolean;
   isExfoliateDay: boolean;
-  pmEmoji: string;
+  pmIcon: string;
   pmLabel: string;
 }
 
@@ -375,35 +375,35 @@ function buildCalendar(products: RoutineProduct[]): DaySchedule[] {
   return days.map((day, i) => {
     let isRetinolDay = false;
     let isExfoliateDay = false;
-    let pmEmoji = "🌙";
+    let pmIcon = "moon";
     let pmLabel = "기본 루틴";
 
     if (hasRetinol && hasAHA) {
       // Retinol: Tue, Thu, Sat / Exfoliate: Wed, Sun
       if ([1, 3, 5].includes(i)) {
         isRetinolDay = true;
-        pmEmoji = "💜";
+        pmIcon = "purple-heart";
         pmLabel = "레티놀";
       } else if ([2, 6].includes(i)) {
         isExfoliateDay = true;
-        pmEmoji = "✨";
+        pmIcon = "sparkle";
         pmLabel = "각질케어";
       }
     } else if (hasRetinol) {
       if ([1, 3, 5].includes(i)) {
         isRetinolDay = true;
-        pmEmoji = "💜";
+        pmIcon = "purple-heart";
         pmLabel = "레티놀";
       }
     } else if (hasAHA) {
       if ([2, 6].includes(i)) {
         isExfoliateDay = true;
-        pmEmoji = "✨";
+        pmIcon = "sparkle";
         pmLabel = "각질케어";
       }
     }
 
-    return { day, isRetinolDay, isExfoliateDay, pmEmoji, pmLabel };
+    return { day, isRetinolDay, isExfoliateDay, pmIcon, pmLabel };
   });
 }
 

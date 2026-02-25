@@ -1,5 +1,7 @@
 "use client";
 
+import Icon from "@/components/Icon";
+
 interface Props {
   children: React.ReactNode;
   isLocked: boolean;
@@ -21,7 +23,7 @@ export default function BlurOverlay({
         {children}
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 rounded-2xl">
-        <span className="text-2xl mb-2">🔒</span>
+        <span className="mb-2"><Icon name="lock" size={24} /></span>
         <p className="text-sm font-semibold text-gray-700 mb-1">
           {ctaText ?? "전체 분석 결과 보기"}
         </p>

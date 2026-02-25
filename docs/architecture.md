@@ -2,10 +2,10 @@
 
 ## 파일 맵
 
-### 페이지 라우트 (13개)
+### 페이지 라우트 (15개)
 ```
 src/app/
-├── page.tsx                    ← 홈 (비로그인: 랜딩 / 로그인: 체크리스트+다이어리)
+├── page.tsx                    ← 홈 (비로그인: 랜딩 / 로그인: 체크리스트+다이어리+날씨TIP)
 ├── analyze/page.tsx            ← 루틴 분석 위자드 (4단계)
 ├── feed/
 │   ├── page.tsx                ← 커뮤니티 피드 (SSR)
@@ -16,6 +16,10 @@ src/app/
 ├── guide/page.tsx              ← 성분 가이드 30종
 ├── challenge/page.tsx          ← 7일 스킨케어 챌린지
 ├── ranking/page.tsx            ← 인기 루틴 랭킹
+├── drawer/page.tsx             ← 내 서랍 (제품 트래커)
+├── dupe/page.tsx               ← 듀프 파인더 (가격비교+배지+정렬)
+├── scanner/page.tsx            ← 바코드 스캐너 (카메라+수동입력)
+├── ingredient-analysis/page.tsx ← AI 성분 분석 (시너지/충돌 맵)
 ├── mypage/
 │   ├── page.tsx                ← 마이페이지
 │   ├── MypageClient.tsx        ← 마이페이지 인터랙션
@@ -23,10 +27,10 @@ src/app/
 ├── auth/
 │   ├── login/page.tsx          ← 로그인 (이메일 + Google OAuth)
 │   └── callback/route.ts       ← OAuth 콜백 핸들러
-└── admin/page.tsx              ← 관리자 대시보드
+└── admin/page.tsx              ← 관리자 대시보드 (3탭)
 ```
 
-### API 라우트 (8개)
+### API 라우트 (13개)
 ```
 src/app/api/
 ├── routines/
@@ -36,13 +40,19 @@ src/app/api/
 │       └── comments/route.ts   ← GET + POST + DELETE (댓글)
 ├── search-logs/route.ts        ← POST (검색 로그) + GET (통계)
 ├── product-candidates/route.ts ← POST + GET + PATCH (제품 후보)
-├── admin/stats/route.ts        ← GET (관리자 통계 집계)
+├── barcode/route.ts            ← GET (Open Beauty Facts 바코드 조회)
+├── ingredients/
+│   └── lookup/route.ts         ← GET (통합 성분 조회, 5분 캐싱)
+├── admin/
+│   ├── stats/route.ts          ← GET (관리자 통계 집계)
+│   ├── pipeline/route.ts       ← POST (파이프라인: 자동승격/미스/커뮤니티/주간리포트)
+│   └── external-apis/route.ts  ← GET (API 헬스체크) + POST (API 테스트 쿼리)
 ├── events/route.ts             ← POST (퍼널 이벤트 배치)
 ├── feedback/route.ts           ← POST (👍/👎 피드백)
 └── payments/confirm/route.ts   ← POST (토스 결제 확인)
 ```
 
-### 컴포넌트 (12개)
+### 컴포넌트 (10개)
 ```
 src/components/
 ├── BottomNav.tsx               ← 5탭 하단 네비게이션
@@ -60,13 +70,18 @@ src/components/
 ### 데이터 + 라이브러리
 ```
 src/data/
-├── products.ts                 ← 제품 DB (300개, 20 카테고리)
+├── products.ts                 ← 제품 DB (502개, 84 브랜드, 20 카테고리)
 ├── rules.ts                    ← 충돌 규칙 15개 + 미싱스텝 규칙
-└── aliases.ts                  ← 검색 별칭 (한글↔영문)
+├── aliases.ts                  ← 검색 별칭 (한글↔영문)
+└── ingredients.ts              ← 성분 DB 30종 (safetyScore, goodWith/avoidWith)
 
 src/lib/
 ├── analysis.ts                 ← 분석 엔진 (충돌, 점수, 캘린더, 팁)
 ├── search.ts                   ← 3단계 검색 (정확→별칭→퍼지)
+├── weather.ts                  ← 날씨 엔진 (7일 예보+바람+UV+대기질)
+├── external-apis.ts            ← 외부 API 3종 + 5분 캐싱 + 재시도
+├── pipeline.ts                 ← 자동 학습 파이프라인 (승격/미스/커뮤니티/리포트)
+├── api-types.ts                ← API 타입 12종 + validation 헬퍼 7개
 ├── events.ts                   ← 퍼널 이벤트 트래킹
 ├── payments.ts                 ← 토스페이먼츠 SDK
 ├── notifications.ts            ← 알림 로직
@@ -78,6 +93,10 @@ src/contexts/
 └── AuthContext.tsx              ← AuthProvider (user, isPaid, signOut)
 
 src/middleware.ts                ← 세션 갱신 + /admin 보호
+
+src/lib/__tests__/
+├── analysis.test.ts            ← 분석 엔진 테스트 (44개)
+└── search.test.ts              ← 검색 엔진 테스트 (27개)
 ```
 
 ## localStorage 키 맵
@@ -88,6 +107,8 @@ src/middleware.ts                ← 세션 갱신 + /admin 보호
 | `barda_diary_YYYY-MM-DD` | 스킨 다이어리 | `{condition: string, memo: string}` |
 | `barda_challenge` | 7일 챌린지 상태 | `{startDate: string, completedDays: boolean[]}` |
 | `barda_dev_unlock` | 개발용 페이월 해제 | `"true"` |
+| `barda_drawer` | 내 서랍 (보유 제품) | `DrawerItem[]` |
+| `barda_weather` | 날씨 캐시 (1시간 TTL) | `{data: WeatherData, timestamp: number}` |
 
 ## 데이터 흐름
 
@@ -115,4 +136,75 @@ ProductStep 검색 → search.ts 3단계 매칭
 홈 피부 컨디션 저장 → barda_diary_날짜 저장
                     → barda_challenge 해당 Day 자동 완료
                     → 챌린지 페이지에서 다이어리 기록 표시
+```
+
+### 날씨 → 루틴 TIP 플로우
+```
+홈 화면 로드 → Open-Meteo API (위치 자동 감지, 서울 기본)
+            → 현재 날씨: 기온/습도/UV/날씨코드
+            → 7일 예보: DailyForecast[] (min/max 기온, 강수, UV, 바람)
+            → 대기질: PM2.5/PM10
+            → generateWeatherTips(skinType, hasRetinol, hasAHA)
+            → 맞춤 TIP 표시 + routineAdvice(각 요일별)
+            → 1시간 캐시 (barda_weather)
+```
+
+### 듀프 파인더 플로우
+```
+제품 검색 → 같은 카테고리 제품 필터
+          → 유사도 = key_ingredients 겹침(70%) + tags 겹침(30%)
+          → 유사도 15%+ 제품 최대 10개
+          → 가격대 추정 (4단계: budget/mid/premium/luxury × 카테고리)
+          → 인기도 점수 (tags/verified/concentration 기반)
+          → 배지 부여 (가장유사/BestValue/인기)
+          → 정렬 모드 (유사도순/가격순/인기순)
+          → 절약 금액 계산
+```
+
+### 바코드 스캐너 플로우
+```
+카메라 or 수동입력 → 바코드 번호
+                   → /api/barcode?code=xxx
+                   → Open Beauty Facts API 조회
+                   → 제품명 + 브랜드 + 전성분 목록 표시
+```
+
+### AI 성분 분석 플로우
+```
+제품 선택 → ingredients.ts DB 매칭 (30종)
+          → 시너지/충돌 맵 생성
+          → 피부타입별 맞춤 추천
+          → /api/ingredients/lookup 병렬 호출 (5개씩 배치)
+          → 외부 데이터 보강: 배합한도/규제/EWG/INCI명
+          → 5분 서버 캐싱
+```
+
+### 자동 학습 파이프라인 (수집 → 분석 → 실행)
+```
+[1] 수집 (Collection)
+  ├─ search_logs        ← 유저 검색 쿼리 + 결과수
+  ├─ product_candidates ← 직접입력 (브랜드 + 제품명)
+  └─ routine_posts      ← 커뮤니티 제품 언급 데이터
+         ↓
+[2] 분석 (Analysis)
+  ├─ 미스 분석          ← 주간 Top 20 미스 쿼리 + 히트율 트렌드
+  ├─ 자동 승격          ← submit_count >= 3 → auto_promoted 상태
+  └─ 커뮤니티 분석      ← 인기 제품 추출 + 피부타입별 다양성
+         ↓
+[3] 실행 (Execution)
+  ├─ DB 확장            ← 관리자 승인 후 products.ts 업데이트
+  ├─ 별칭 추가          ← 미스 쿼리 기반 aliases.ts 업데이트
+  └─ 주간 리포트        ← 검색 + 후보 + 커뮤니티 종합 현황
+```
+
+### 외부 API 연동 플로우
+```
+                    ┌─ 식약처 OpenAPI ──→ 배합한도/규제
+성분명 ─→ lookupIngredientEnriched() ─┤                      ──→ EnrichedIngredient
+                    └─ 공공데이터포털 ──→ INCI명/EWG등급
+
+Open Beauty Facts ←── 바코드 번호 ──→ 전성분 목록
+
+* 모든 외부 호출: 5분 in-memory 캐싱 + 재시도 2회 (1s/2s 백오프)
+* 캐시: 최대 500 항목, TTL 만료 시 자동 삭제
 ```

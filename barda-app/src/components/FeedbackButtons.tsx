@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getSessionId, trackEvent } from "@/lib/events";
+import Icon from "@/components/Icon";
 
 interface Props {
   conflictId: string;
@@ -55,7 +56,7 @@ export default function FeedbackButtons({ conflictId }: Props) {
         aria-label="도움이 되었어요"
         className="p-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-50 text-sm leading-none"
       >
-        👍
+        <Icon name="thumbs-up" size={16} />
       </button>
       <button
         onClick={() => handleFeedback(false)}
@@ -63,7 +64,7 @@ export default function FeedbackButtons({ conflictId }: Props) {
         aria-label="도움이 안 되었어요"
         className="p-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-50 text-sm leading-none"
       >
-        👎
+        <Icon name="thumbs-down" size={16} />
       </button>
     </span>
   );

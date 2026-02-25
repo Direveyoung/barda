@@ -1,32 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type {
+  ProductCandidateResponse,
+  ProductCandidateListResponse,
+  ApiOk,
+  ApiError,
+} from "@/lib/api-types";
+import { productCandidateSchema, updateCandidateSchema, parseWithZod, sanitizeString } from "@/lib/api-types";
 
 // POST: Submit a new product candidate (user direct input)
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse<ProductCandidateResponse | ApiError>> {
   const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
   }
 
-  let brand: string;
-  let name: string;
-  let category_guess: string | null;
+  const result = parseWithZod(productCandidateSchema, await request.json().catch(() => null));
 
-  try {
-    const body = await request.json();
-    brand = body.brand?.trim();
-    name = body.name?.trim();
-    category_guess = body.category_guess ?? null;
-
-    if (!brand || !name) {
-      return NextResponse.json(
-        { error: "brand and name are required" },
-        { status: 400 }
-      );
-    }
-  } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  if ("error" in result) {
+    return NextResponse.json(
+      { error: `Invalid request body: ${result.error}` },
+      { status: 400 },
+    );
   }
+
+  const brand = sanitizeString(result.data.brand.trim());
+  const name = sanitizeString(result.data.name.trim());
+  const category_guess = result.data.category_guess ?? null;
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET: List product candidates (admin)
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse<ProductCandidateListResponse | ApiError>> {
   const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
@@ -108,35 +108,35 @@ export async function GET(request: NextRequest) {
 }
 
 // PATCH: Update candidate status (admin: promote or reject)
-export async function PATCH(request: NextRequest) {
+export async function PATCH(request: NextRequest): Promise<NextResponse<ApiOk | ApiError>> {
   const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
   }
 
-  try {
-    const body = await request.json();
-    const { id, status } = body;
+  const result = parseWithZod(updateCandidateSchema, await request.json().catch(() => null));
 
-    if (!id || !["approved", "rejected", "pending"].includes(status)) {
-      return NextResponse.json(
-        { error: "id and valid status required" },
-        { status: 400 }
-      );
-    }
-
-    const { error } = await supabase
-      .from("product_candidates")
-      .update({ status })
-      .eq("id", id);
-
-    if (error) throw error;
-
-    return NextResponse.json({ ok: true });
-  } catch {
+  if ("error" in result) {
     return NextResponse.json(
-      { error: "Failed to update candidate" },
-      { status: 500 }
+      { error: `Invalid request body: ${result.error}` },
+      { status: 400 },
     );
   }
+
+  const { id, status } = result.data;
+
+  const { error } = await supabase
+    .from("product_candidates")
+    .update({ status })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Failed to update candidate:", error);
+    return NextResponse.json(
+      { error: "Failed to update candidate" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ ok: true });
 }

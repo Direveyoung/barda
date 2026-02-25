@@ -3,11 +3,14 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import Icon from "@/components/Icon";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
+  const { testLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
@@ -16,6 +19,12 @@ function LoginForm() {
   const [emailSent, setEmailSent] = useState(false);
 
   const supabase = createClient();
+
+  function handleTestLogin() {
+    testLogin();
+    router.push(next);
+    router.refresh();
+  }
 
   async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault();
@@ -68,7 +77,7 @@ function LoginForm() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-sm w-full text-center">
-          <div className="text-5xl mb-4">📧</div>
+          <div className="mb-4"><Icon name="memo" size={40} /></div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">
             이메일을 확인해 주세요
           </h2>
@@ -197,6 +206,27 @@ function LoginForm() {
             Supabase가 설정되지 않았습니다. .env.local 파일을 확인해 주세요.
           </div>
         )}
+
+        {/* Test Login */}
+        <div className="mt-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400">개발용</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+          <button
+            onClick={handleTestLogin}
+            className="w-full py-3 rounded-2xl font-semibold text-white bg-gray-800 hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            테스트 계정으로 로그인
+          </button>
+          <p className="text-center text-xs text-gray-400 mt-2">
+            test@barda.dev · 프리미엄 기능 포함
+          </p>
+        </div>
       </div>
     </div>
   );

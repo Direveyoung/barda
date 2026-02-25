@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type {
+  RoutinePostListResponse,
+  RoutinePostResponse,
+  CreateRoutinePostResponse,
+  ApiError,
+} from "@/lib/api-types";
+import { createRoutinePostSchema, parseWithZod, sanitizeString } from "@/lib/api-types";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse<RoutinePostListResponse | ApiError>> {
   const supabase = await createClient();
 
   if (!supabase) {
@@ -37,7 +44,9 @@ export async function GET(request: NextRequest) {
   }
 
   if (searchQ) {
-    query = query.ilike("comment", `%${searchQ}%`);
+    // Escape SQL wildcards to prevent pattern injection
+    const safeQ = searchQ.replace(/%/g, "\\%").replace(/_/g, "\\_");
+    query = query.ilike("comment", `%${safeQ}%`);
   }
 
   if (userId) {
@@ -62,24 +71,24 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const posts = (data ?? []).map((post) => {
+  const posts: RoutinePostResponse[] = (data ?? []).map((post) => {
     const raw = post as Record<string, unknown>;
     const users = raw.users as { email?: string } | null;
     const email = users?.email ?? "";
     const displayName = email.split("@")[0] || "anonymous";
 
     return {
-      id: raw.id,
-      user_id: raw.user_id,
-      skin_type: raw.skin_type,
-      concerns: raw.concerns,
-      score: raw.score,
+      id: raw.id as string,
+      user_id: raw.user_id as string,
+      skin_type: raw.skin_type as string,
+      concerns: raw.concerns as string[],
+      score: raw.score as number,
       products_json: raw.products_json,
-      comment: raw.comment,
-      rating: raw.rating,
-      like_count: raw.like_count,
-      comment_count: raw.comment_count,
-      created_at: raw.created_at,
+      comment: (raw.comment as string) ?? null,
+      rating: raw.rating as number,
+      like_count: raw.like_count as number,
+      comment_count: raw.comment_count as number,
+      created_at: raw.created_at as string,
       user_email_prefix: displayName,
     };
   });
@@ -92,7 +101,7 @@ export async function GET(request: NextRequest) {
   });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<CreateRoutinePostResponse | ApiError>> {
   const supabase = await createClient();
 
   if (!supabase) {
@@ -114,48 +123,27 @@ export async function POST(request: Request) {
     );
   }
 
-  let skin_type: string;
-  let concerns: string[];
-  let score: number;
-  let products_json: object;
-  let comment: string | undefined;
-  let rating: number;
+  const result = parseWithZod(createRoutinePostSchema, await request.json().catch(() => null));
 
-  try {
-    const body = await request.json();
-    skin_type = body.skin_type;
-    concerns = body.concerns;
-    score = body.score;
-    products_json = body.products_json;
-    comment = body.comment;
-    rating = body.rating;
-
-    if (
-      !skin_type ||
-      !Array.isArray(concerns) ||
-      typeof score !== "number" ||
-      !products_json ||
-      typeof rating !== "number"
-    ) {
-      throw new Error("Missing required fields");
-    }
-  } catch {
+  if ("error" in result) {
     return NextResponse.json(
-      { error: "Invalid request body: skin_type, concerns, score, products_json, and rating are required" },
+      { error: `Invalid request body: ${result.error}` },
       { status: 400 },
     );
   }
+
+  const parsed = result.data;
 
   const { data: post, error } = await supabase
     .from("routine_posts")
     .insert({
       user_id: user.id,
-      skin_type,
-      concerns,
-      score,
-      products_json,
-      comment: comment ?? null,
-      rating,
+      skin_type: parsed.skin_type,
+      concerns: parsed.concerns,
+      score: parsed.score,
+      products_json: parsed.products_json,
+      comment: parsed.comment ? sanitizeString(parsed.comment) : null,
+      rating: parsed.rating,
     })
     .select()
     .single();

@@ -4,13 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
+import Icon from "@/components/Icon";
 
 const skinTypes = [
-  { value: "dry", label: "건성", emoji: "🏜️" },
-  { value: "oily", label: "지성", emoji: "💧" },
-  { value: "combination", label: "복합성", emoji: "🔄" },
-  { value: "sensitive", label: "민감성", emoji: "🌸" },
-  { value: "normal", label: "중성", emoji: "✨" },
+  { value: "dry", label: "건성", icon: "desert" },
+  { value: "oily", label: "지성", icon: "drop" },
+  { value: "combination", label: "복합성", icon: "cycle" },
+  { value: "sensitive", label: "민감성", icon: "cherry-blossom" },
+  { value: "normal", label: "중성", icon: "sparkle" },
 ];
 
 const allConcerns = [
@@ -44,6 +45,8 @@ export default function ProfileSettingsPage() {
 
   // Load profile from localStorage
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
       const data = localStorage.getItem("barda_profile");
       if (data) {
@@ -161,7 +164,7 @@ export default function ProfileSettingsPage() {
                     : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <span className="text-base mr-1">{st.emoji}</span>
+                <span className="mr-1"><Icon name={st.icon} size={16} /></span>
                 {st.label}
               </button>
             ))}

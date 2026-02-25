@@ -16,6 +16,20 @@ interface AuthState {
   isPaid: boolean;
   isLoading: boolean;
   signOut: () => Promise<void>;
+  testLogin: () => void;
+}
+
+const TEST_USER_KEY = "barda_test_user";
+
+function makeTestUser(): User {
+  return {
+    id: "test-user-00000000-0000-0000-0000-000000000000",
+    email: "test@barda.dev",
+    app_metadata: {},
+    user_metadata: { full_name: "테스트 유저" },
+    aud: "authenticated",
+    created_at: new Date().toISOString(),
+  } as User;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -24,6 +38,7 @@ const AuthContext = createContext<AuthState>({
   isPaid: false,
   isLoading: true,
   signOut: async () => {},
+  testLogin: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -32,7 +47,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isPaid, setIsPaid] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Restore test user from localStorage on mount
   useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
+      setUser(makeTestUser());
+      setIsPaid(true);
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Skip Supabase init if test user is active
+    if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
+      return;
+    }
+
     const supabase = createClient();
     if (!supabase) {
       setIsLoading(false);
@@ -85,13 +114,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsPaid((data?.length ?? 0) > 0);
   }
 
+  const testLogin = () => {
+    localStorage.setItem(TEST_USER_KEY, "true");
+    localStorage.setItem("barda_dev_unlock", "true");
+    setUser(makeTestUser());
+    setIsPaid(true);
+    setIsLoading(false);
+  };
+
   const signOut = async () => {
+    // Clear test user
+    if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
+      localStorage.removeItem(TEST_USER_KEY);
+      localStorage.removeItem("barda_dev_unlock");
+      setUser(null);
+      setSession(null);
+      setIsPaid(false);
+      return;
+    }
     const supabase = createClient();
     if (supabase) await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isPaid, isLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, isPaid, isLoading, signOut, testLogin }}>
       {children}
     </AuthContext.Provider>
   );

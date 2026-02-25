@@ -19,7 +19,7 @@ export interface CategoryItem {
   tag?: "active" | "basic";
   time: "am" | "pm" | "both";
   order: number;
-  emoji: string;
+  icon: string;
 }
 
 /* ─── Categories ─── */
@@ -28,56 +28,56 @@ export const CATEGORIES: Record<string, { label: string; items: CategoryItem[] }
   cleansing: {
     label: "클렌징",
     items: [
-      { id: "oil_cleanser", label: "오일/밤 클렌저", time: "both", order: 1, emoji: "🧴" },
-      { id: "cleanser", label: "폼/젤 클렌저", time: "both", order: 2, emoji: "🫧" },
+      { id: "oil_cleanser", label: "오일/밤 클렌저", time: "both", order: 1, icon: "bottle" },
+      { id: "cleanser", label: "폼/젤 클렌저", time: "both", order: 2, icon: "bubble" },
     ],
   },
   toner: {
     label: "토너/패드",
     items: [
-      { id: "toner", label: "토너", time: "both", order: 3, emoji: "💧" },
-      { id: "toner_pad", label: "토너 패드", time: "both", order: 4, emoji: "🧻" },
+      { id: "toner", label: "토너", time: "both", order: 3, icon: "drop" },
+      { id: "toner_pad", label: "토너 패드", time: "both", order: 4, icon: "pad" },
     ],
   },
   essence: {
     label: "에센스/앰플",
     items: [
-      { id: "essence", label: "에센스", time: "both", order: 5, emoji: "✨" },
-      { id: "ampoule", label: "앰플", time: "both", order: 6, emoji: "💎" },
+      { id: "essence", label: "에센스", time: "both", order: 5, icon: "sparkle" },
+      { id: "ampoule", label: "앰플", time: "both", order: 6, icon: "diamond" },
     ],
   },
   serum: {
     label: "세럼/액티브",
     items: [
-      { id: "vitamin_c", label: "비타민C 세럼", tag: "active", time: "am", order: 7, emoji: "🍊" },
-      { id: "niacinamide", label: "나이아신아마이드", time: "both", order: 8, emoji: "⚡" },
-      { id: "hyaluronic", label: "히알루론산", time: "both", order: 8, emoji: "💦" },
-      { id: "retinol", label: "레티놀", tag: "active", time: "pm", order: 9, emoji: "💜" },
-      { id: "aha", label: "AHA", tag: "active", time: "pm", order: 9, emoji: "✨" },
-      { id: "bha", label: "BHA", tag: "active", time: "pm", order: 9, emoji: "🔵" },
-      { id: "pha", label: "PHA", tag: "active", time: "pm", order: 9, emoji: "🟢" },
+      { id: "vitamin_c", label: "비타민C 세럼", tag: "active", time: "am", order: 7, icon: "orange" },
+      { id: "niacinamide", label: "나이아신아마이드", time: "both", order: 8, icon: "lightning" },
+      { id: "hyaluronic", label: "히알루론산", time: "both", order: 8, icon: "droplets" },
+      { id: "retinol", label: "레티놀", tag: "active", time: "pm", order: 9, icon: "purple-heart" },
+      { id: "aha", label: "AHA", tag: "active", time: "pm", order: 9, icon: "sparkle" },
+      { id: "bha", label: "BHA", tag: "active", time: "pm", order: 9, icon: "blue-circle" },
+      { id: "pha", label: "PHA", tag: "active", time: "pm", order: 9, icon: "green-circle" },
     ],
   },
   moisturizer: {
     label: "보습",
     items: [
-      { id: "lotion", label: "로션/에멀전", time: "both", order: 10, emoji: "🧴" },
-      { id: "cream", label: "크림", time: "both", order: 11, emoji: "🫙" },
-      { id: "sleeping_pack", label: "수면팩", time: "pm", order: 12, emoji: "🌙" },
+      { id: "lotion", label: "로션/에멀전", time: "both", order: 10, icon: "bottle" },
+      { id: "cream", label: "크림", time: "both", order: 11, icon: "jar" },
+      { id: "sleeping_pack", label: "수면팩", time: "pm", order: 12, icon: "moon" },
     ],
   },
   sun: {
     label: "선케어",
     items: [
-      { id: "sunscreen", label: "선크림", time: "am", order: 13, emoji: "☀️" },
+      { id: "sunscreen", label: "선크림", time: "am", order: 13, icon: "sun" },
     ],
   },
   special: {
     label: "스페셜",
     items: [
-      { id: "eye_cream", label: "아이크림", time: "both", order: 10, emoji: "👁️" },
-      { id: "spot_treatment", label: "스팟 트리트먼트", time: "pm", order: 9, emoji: "🎯" },
-      { id: "mask_pack", label: "마스크팩", time: "pm", order: 14, emoji: "🎭" },
+      { id: "eye_cream", label: "아이크림", time: "both", order: 10, icon: "eye" },
+      { id: "spot_treatment", label: "스팟 트리트먼트", time: "pm", order: 9, icon: "target" },
+      { id: "mask_pack", label: "마스크팩", time: "pm", order: 14, icon: "mask" },
     ],
   },
 };
@@ -452,4 +452,322 @@ export const ALL_PRODUCTS: Product[] = [
   { id: "dr-ceuracle-cica-sun", brand: "닥터시라보", name: "시카 래핑 선크림", categoryId: "sunscreen", key_ingredients: ["시카", "화학 자외선 차단제"], tags: ["진정", "저자극"], source: "manual_v1", verified: true },
   // 추가 크림
   { id: "happybath-cera-cream", brand: "해피바스", name: "오리지널 세라마이드 크림", categoryId: "cream", key_ingredients: ["세라마이드", "히알루론산"], tags: ["보습강화", "저자극"], source: "manual_v1", verified: true },
+
+  // ══════════════════════════════════════════════════════════════
+  // ── 확장 제품 v3 (200+ 신규 추가) ──
+  // ══════════════════════════════════════════════════════════════
+
+  // ── AHA 추가 (7→16) ──
+  { id: "dr-wu-mandelic-acid-18", brand: "닥터우", name: "만델릭산 18% 리뉴얼 세럼", categoryId: "aha", concentration_level: "high", key_ingredients: ["만델릭산 18%"], tags: ["각질", "톤업"], source: "manual_v2", verified: true },
+  { id: "by-wishtrend-mandelic-5", brand: "바이위시트렌드", name: "만델릭산 5% 스킨 프렙 워터", categoryId: "aha", concentration_level: "low", key_ingredients: ["만델릭산 5%"], tags: ["각질", "저자극"], source: "manual_v2", verified: true },
+  { id: "mizon-aha-8-peeling", brand: "미쟝센", name: "AHA 8% 필링 세럼", categoryId: "aha", concentration_level: "medium", key_ingredients: ["글리콜산 8%"], tags: ["각질", "톤업"], source: "manual_v2", verified: true },
+  { id: "cosrx-aha-bha-vita-ampoule", brand: "코스알엑스", name: "AHA/BHA 비타민C 데일리 앰플", categoryId: "aha", active_flags: ["bha", "vitamin_c"], concentration_level: "low", key_ingredients: ["AHA", "BHA", "비타민C"], tags: ["각질", "미백"], source: "manual_v2", verified: true },
+  { id: "neogen-dermalogy-aha-serum", brand: "네오젠", name: "더마로지 리얼 AHA 세럼", categoryId: "aha", concentration_level: "medium", key_ingredients: ["글리콜산", "젖산"], tags: ["각질", "톤업"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-aha-toner", brand: "하루하루원더", name: "블랙라이스 AHA 토너", categoryId: "aha", concentration_level: "low", key_ingredients: ["AHA", "흑미 추출물"], tags: ["각질", "톤업", "저자극"], source: "manual_v2", verified: true },
+  { id: "skin1004-aha-peeling-gel", brand: "스킨1004", name: "센텔라 AHA 필링 젤", categoryId: "aha", concentration_level: "low", key_ingredients: ["AHA", "센텔라"], tags: ["각질", "진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "medicube-aha-peel-serum", brand: "메디큐브", name: "레드 AHA 필 세럼", categoryId: "aha", concentration_level: "medium", key_ingredients: ["글리콜산", "나이아신아마이드"], tags: ["각질", "톤업", "모공"], source: "manual_v2", verified: true },
+  { id: "tocobo-aha-bha-lemon-toner", brand: "토코보", name: "AHA BHA 레몬 토너", categoryId: "aha", active_flags: ["bha"], concentration_level: "low", key_ingredients: ["AHA", "BHA", "레몬"], tags: ["각질", "모공", "톤업"], source: "manual_v2", verified: true },
+
+  // ── BHA 추가 (7→16) ──
+  { id: "numbuzin-no3-bha-serum", brand: "넘버즈인", name: "3번 BHA 모공 세럼", categoryId: "bha", concentration_level: "medium", key_ingredients: ["살리실산 2%", "나이아신아마이드"], tags: ["모공", "피지조절"], source: "manual_v2", verified: true },
+  { id: "cnp-anti-pore-bha-liquid", brand: "CNP", name: "안티포어 블랙헤드 BHA 리퀴드", categoryId: "bha", concentration_level: "medium", key_ingredients: ["살리실산", "윌로우바크"], tags: ["올리브영베스트", "모공", "트러블"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-bha-toner", brand: "하루하루원더", name: "블랙라이스 BHA 토너", categoryId: "bha", concentration_level: "low", key_ingredients: ["BHA", "흑미 추출물"], tags: ["모공", "각질"], source: "manual_v2", verified: true },
+  { id: "medicube-bha-pore-serum", brand: "메디큐브", name: "제로모공 BHA 세럼", categoryId: "bha", concentration_level: "medium", key_ingredients: ["살리실산 2%", "나이아신아마이드"], tags: ["올리브영베스트", "모공", "피지조절"], source: "manual_v2", verified: true },
+  { id: "skin1004-bha-cleanser", brand: "스킨1004", name: "센텔라 BHA 딥 클렌징 폼", categoryId: "bha", concentration_level: "low", key_ingredients: ["BHA", "센텔라"], tags: ["모공", "트러블", "진정"], source: "manual_v2", verified: true },
+  { id: "by-wishtrend-bha-liquid", brand: "바이위시트렌드", name: "클리어 스킨 BHA 리퀴드", categoryId: "bha", concentration_level: "medium", key_ingredients: ["살리실산 2%"], tags: ["모공", "트러블", "각질"], source: "manual_v2", verified: true },
+  { id: "torriden-balanceful-bha-serum", brand: "토리든", name: "밸런스풀 BHA 스킨 세럼", categoryId: "bha", concentration_level: "low", key_ingredients: ["BHA", "판테놀"], tags: ["모공", "저자극"], source: "manual_v2", verified: true },
+  { id: "anua-bha-daily-toner", brand: "아누아", name: "BHA 데일리 토너", categoryId: "bha", concentration_level: "low", key_ingredients: ["살리실산", "어성초"], tags: ["모공", "트러블", "진정"], source: "manual_v2", verified: true },
+  { id: "beplain-bha-peeling-ampoule", brand: "비플레인", name: "BHA 필링 앰플", categoryId: "bha", concentration_level: "medium", key_ingredients: ["살리실산", "센텔라"], tags: ["모공", "각질", "진정"], source: "manual_v2", verified: true },
+
+  // ── PHA 추가 (6→16) ──
+  { id: "numbuzin-no5-pha-serum", brand: "넘버즈인", name: "5번 PHA 수딩 세럼", categoryId: "pha", concentration_level: "low", key_ingredients: ["PHA 글루코노락톤", "판테놀"], tags: ["각질", "저자극", "수분"], source: "manual_v2", verified: true },
+  { id: "torriden-balanceful-pha-toner", brand: "토리든", name: "밸런스풀 PHA 토너", categoryId: "pha", concentration_level: "low", key_ingredients: ["PHA", "히알루론산"], tags: ["각질", "저자극", "수분"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-pha-serum", brand: "하루하루원더", name: "블랙라이스 PHA 세럼", categoryId: "pha", concentration_level: "low", key_ingredients: ["PHA", "흑미 추출물"], tags: ["각질", "저자극", "톤업"], source: "manual_v2", verified: true },
+  { id: "skin1004-pha-peeling-booster", brand: "스킨1004", name: "센텔라 PHA 필링 부스터", categoryId: "pha", concentration_level: "medium", key_ingredients: ["PHA", "센텔라", "나이아신아마이드"], tags: ["각질", "진정", "톤업"], source: "manual_v2", verified: true },
+  { id: "cnp-pha-brightening-peeling", brand: "CNP", name: "PHA 브라이트닝 필링 부스터", categoryId: "pha", concentration_level: "medium", key_ingredients: ["PHA", "나이아신아마이드"], tags: ["올리브영베스트", "각질", "미백"], source: "manual_v2", verified: true },
+  { id: "dewytree-pha-gentle-toner", brand: "듀이트리", name: "PHA 젠틀 필링 토너", categoryId: "pha", concentration_level: "low", key_ingredients: ["PHA 글루코노락톤", "센텔라"], tags: ["각질", "저자극", "진정"], source: "manual_v2", verified: true },
+  { id: "abib-pha-peeling-pad", brand: "아비브", name: "PHA 어성초 필링 패드", categoryId: "pha", concentration_level: "low", key_ingredients: ["PHA", "어성초"], tags: ["각질", "저자극", "진정"], source: "manual_v2", verified: true },
+  { id: "goodal-pha-clearing-ampoule", brand: "구달", name: "PHA 클리어링 앰플", categoryId: "pha", concentration_level: "low", key_ingredients: ["PHA 글루코노락톤", "나이아신아마이드"], tags: ["각질", "미백", "저자극"], source: "manual_v2", verified: true },
+  { id: "cellfusion-pha-gel-peeling", brand: "셀퓨전씨", name: "PHA 젤 필링", categoryId: "pha", concentration_level: "medium", key_ingredients: ["PHA", "살리실산"], tags: ["각질", "모공"], source: "manual_v2", verified: true },
+  { id: "klairs-pha-daily-gentle-peel", brand: "디어클레어스", name: "PHA 데일리 젠틀 필", categoryId: "pha", concentration_level: "low", key_ingredients: ["PHA 글루코노락톤", "히알루론산"], tags: ["각질", "저자극", "수분"], source: "manual_v2", verified: true },
+
+  // ── 수면팩 추가 (9→16) ──
+  { id: "vt-cica-sleeping-mask", brand: "VT코스메틱", name: "시카 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["시카", "판테놀"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "numbuzin-no3-sleeping-pack", brand: "넘버즈인", name: "3번 글루타치온 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["글루타치온", "나이아신아마이드"], tags: ["올리브영베스트", "미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "torriden-dive-in-sleeping", brand: "토리든", name: "다이브인 슬리핑 팩", categoryId: "sleeping_pack", key_ingredients: ["5가지 히알루론산", "판테놀"], tags: ["올리브영베스트", "수분", "보습강화"], source: "manual_v2", verified: true },
+  { id: "roundlab-birch-sleeping", brand: "라운드랩", name: "자작나무 수분 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["자작나무 수액", "히알루론산"], tags: ["올리브영베스트", "수분"], source: "manual_v2", verified: true },
+  { id: "skin1004-centella-sleeping", brand: "스킨1004", name: "센텔라 수딩 슬리핑 팩", categoryId: "sleeping_pack", key_ingredients: ["센텔라", "마데카소사이드"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "abib-yuja-sleeping-mask", brand: "아비브", name: "유자 비타민 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["유자", "비타민C"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "cnp-vita-b5-sleeping-mask", brand: "CNP", name: "비타 B5 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["판테놀", "히알루론산"], tags: ["수분", "진정"], source: "manual_v2", verified: true },
+
+  // ── 스팟 트리트먼트 추가 (9→16) ──
+  { id: "anua-heartleaf-spot-gel", brand: "아누아", name: "어성초 77 스팟 젤", categoryId: "spot_treatment", key_ingredients: ["어성초 77%", "살리실산"], tags: ["트러블", "진정"], source: "manual_v2", verified: true },
+  { id: "cnp-anti-blemish-spot", brand: "CNP", name: "안티 블레미쉬 스팟 세럼", categoryId: "spot_treatment", key_ingredients: ["살리실산", "나이아신아마이드"], tags: ["트러블", "미백"], source: "manual_v2", verified: true },
+  { id: "numbuzin-no6-spot-serum", brand: "넘버즈인", name: "6번 스팟 세럼", categoryId: "spot_treatment", key_ingredients: ["나이아신아마이드", "알파아르부틴"], tags: ["올리브영베스트", "트러블", "미백"], source: "manual_v2", verified: true },
+  { id: "torriden-balanceful-spot", brand: "토리든", name: "밸런스풀 시카 스팟 젤", categoryId: "spot_treatment", key_ingredients: ["시카", "살리실산"], tags: ["트러블", "진정"], source: "manual_v2", verified: true },
+  { id: "skin1004-centella-spot-cream", brand: "스킨1004", name: "센텔라 스팟 크림", categoryId: "spot_treatment", key_ingredients: ["센텔라", "마데카소사이드"], tags: ["트러블", "진정"], source: "manual_v2", verified: true },
+  { id: "drjart-ctrl-a-spot", brand: "닥터자르트", name: "Ctrl-A 스팟 롤러", categoryId: "spot_treatment", key_ingredients: ["살리실산", "센텔라"], tags: ["트러블"], source: "manual_v2", verified: true },
+  { id: "aestura-theracne-spot", brand: "에스트라", name: "테라크네365 스팟 세럼", categoryId: "spot_treatment", key_ingredients: ["살리실산", "나이아신아마이드"], tags: ["트러블", "피지조절"], source: "manual_v2", verified: true },
+
+  // ── 오일 클렌저 추가 (10→16) ──
+  { id: "numbuzin-no2-oil-cleanser", brand: "넘버즈인", name: "2번 클렌징 오일", categoryId: "oil_cleanser", key_ingredients: ["호호바 오일", "비타민E"], tags: ["올리브영베스트", "저자극"], source: "manual_v2", verified: true },
+  { id: "torriden-dive-in-cleansing-oil", brand: "토리든", name: "다이브인 클렌징 오일", categoryId: "oil_cleanser", key_ingredients: ["히알루론산", "호호바 오일"], tags: ["수분", "저자극"], source: "manual_v2", verified: true },
+  { id: "skin1004-centella-oil-cleanser", brand: "스킨1004", name: "센텔라 클렌징 오일", categoryId: "oil_cleanser", key_ingredients: ["센텔라", "올리브 오일"], tags: ["저자극", "진정"], source: "manual_v2", verified: true },
+  { id: "anua-heartleaf-cleansing-oil", brand: "아누아", name: "어성초 클렌징 오일", categoryId: "oil_cleanser", key_ingredients: ["어성초", "호호바 오일"], tags: ["올리브영베스트", "진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "jungsaemmool-cleansing-balm", brand: "정샘물", name: "에센셜 클렌징 밤", categoryId: "oil_cleanser", key_ingredients: ["시어버터", "코코넛 오일", "비타민E"], tags: ["저자극"], source: "manual_v2", verified: true },
+  { id: "klairs-gentle-black-oil", brand: "디어클레어스", name: "젠틀 블랙 딥 클렌징 오일", categoryId: "oil_cleanser", key_ingredients: ["블랙빈 오일", "호호바 오일"], tags: ["저자극", "모공"], source: "manual_v2", verified: true },
+
+  // ── 나이아신아마이드 추가 (11→16) ──
+  { id: "skin1004-niacinamide-serum", brand: "스킨1004", name: "센텔라 나이아신아마이드 세럼", categoryId: "niacinamide", concentration_level: "medium", key_ingredients: ["나이아신아마이드 5%", "센텔라"], tags: ["모공", "미백", "진정"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-niacinamide", brand: "하루하루원더", name: "블랙라이스 나이아신아마이드 세럼", categoryId: "niacinamide", concentration_level: "medium", key_ingredients: ["나이아신아마이드", "흑미 추출물"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "cnp-niacinamide-brightening", brand: "CNP", name: "나이아신아마이드 브라이트닝 앰플", categoryId: "niacinamide", concentration_level: "medium", key_ingredients: ["나이아신아마이드", "글루타치온"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "goodal-niacinamide-ampoule", brand: "구달", name: "나이아신아마이드 비타C 앰플", categoryId: "niacinamide", concentration_level: "medium", key_ingredients: ["나이아신아마이드", "비타민C"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "aestura-niacinamide-serum", brand: "에스트라", name: "아토배리어 나이아신아마이드 세럼", categoryId: "niacinamide", concentration_level: "medium", key_ingredients: ["나이아신아마이드", "세라마이드"], tags: ["미백", "보습강화", "민감성추천"], source: "manual_v2", verified: true },
+
+  // ── 히알루론산 추가 (11→16) ──
+  { id: "numbuzin-no5-ha-serum", brand: "넘버즈인", name: "5번 히알루론산 세럼", categoryId: "hyaluronic", key_ingredients: ["5중 히알루론산", "판테놀"], tags: ["올리브영베스트", "수분", "보습강화"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-ha-toner", brand: "하루하루원더", name: "블랙라이스 히알루론산 토너", categoryId: "hyaluronic", key_ingredients: ["히알루론산", "흑미 추출물"], tags: ["수분", "보습강화"], source: "manual_v2", verified: true },
+  { id: "skin1004-ha-filling-serum", brand: "스킨1004", name: "히알루론산 필링 세럼", categoryId: "hyaluronic", key_ingredients: ["4중 히알루론산", "센텔라"], tags: ["수분", "보습강화"], source: "manual_v2", verified: true },
+  { id: "cnp-ha-barrier-serum", brand: "CNP", name: "히알루론산 배리어 세럼", categoryId: "hyaluronic", key_ingredients: ["히알루론산", "세라마이드"], tags: ["수분", "보습강화"], source: "manual_v2", verified: true },
+  { id: "klairs-rich-moist-ha", brand: "디어클레어스", name: "리치 모이스트 히알루론산 세럼", categoryId: "hyaluronic", key_ingredients: ["히알루론산", "판테놀"], tags: ["수분", "보습강화", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 로션 추가 (12→16) ──
+  { id: "numbuzin-no3-lotion", brand: "넘버즈인", name: "3번 글루타치온 로션", categoryId: "lotion", key_ingredients: ["글루타치온", "나이아신아마이드"], tags: ["올리브영베스트", "미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "skin1004-centella-emulsion", brand: "스킨1004", name: "센텔라 수딩 에멀전", categoryId: "lotion", key_ingredients: ["센텔라", "판테놀"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "illiyoon-probiotics-lotion", brand: "일리윤", name: "프로바이오틱스 스킨배리어 로션", categoryId: "lotion", key_ingredients: ["프로바이오틱스", "세라마이드"], tags: ["보습강화", "저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "aestura-atobarrier-lotion", brand: "에스트라", name: "아토배리어 365 로션", categoryId: "lotion", key_ingredients: ["세라마이드", "MLE"], tags: ["보습강화", "저자극", "민감성추천"], source: "manual_v2", verified: true },
+
+  // ── 아이크림 추가 (13→16) ──
+  { id: "cnp-eye-cream", brand: "CNP", name: "안티에이징 아이크림", categoryId: "eye_cream", key_ingredients: ["펩타이드", "레티놀"], tags: ["안티에이징"], source: "manual_v2", verified: true },
+  { id: "aestura-retinal-eye-cream", brand: "에스트라", name: "레티날 369 아이크림", categoryId: "eye_cream", key_ingredients: ["레티날", "세라마이드"], tags: ["안티에이징", "보습강화"], source: "manual_v2", verified: true },
+  { id: "torriden-cellmazing-eye", brand: "토리든", name: "셀마이징 콜라겐 아이크림", categoryId: "eye_cream", key_ingredients: ["콜라겐", "펩타이드"], tags: ["안티에이징", "탄력"], source: "manual_v2", verified: true },
+
+  // ── 레티놀 추가 (13→16) ──
+  { id: "haruharu-wonder-retinol", brand: "하루하루원더", name: "블랙라이스 레티놀 세럼", categoryId: "retinol", concentration_level: "low", key_ingredients: ["레티놀", "흑미 추출물"], tags: ["안티에이징", "저자극"], source: "manual_v2", verified: true },
+  { id: "torriden-cellmazing-retinol", brand: "토리든", name: "셀마이징 레티놀 앰플", categoryId: "retinol", concentration_level: "medium", key_ingredients: ["레티놀", "세라마이드"], tags: ["안티에이징", "보습강화"], source: "manual_v2", verified: true },
+  { id: "aestura-retinal-369", brand: "에스트라", name: "레티날 369 세럼", categoryId: "retinol", concentration_level: "medium", key_ingredients: ["레티날", "세라마이드", "나이아신아마이드"], tags: ["안티에이징", "민감성추천"], source: "manual_v2", verified: true },
+
+  // ── 토너패드 추가 (14→16) ──
+  { id: "torriden-balanceful-cica-pad", brand: "토리든", name: "밸런스풀 시카 토너 패드", categoryId: "toner_pad", key_ingredients: ["시카", "판테놀"], tags: ["올리브영베스트", "진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-black-rice-pad", brand: "하루하루원더", name: "블랙라이스 모이스트 토너 패드", categoryId: "toner_pad", key_ingredients: ["흑미 추출물", "히알루론산"], tags: ["수분", "톤업"], source: "manual_v2", verified: true },
+
+  // ── 마스크팩 추가 (14→16) ──
+  { id: "skin1004-centella-mask", brand: "스킨1004", name: "센텔라 카밍 마스크팩", categoryId: "mask_pack", key_ingredients: ["센텔라", "판테놀"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "roundlab-birch-mask", brand: "라운드랩", name: "자작나무 수분 마스크팩", categoryId: "mask_pack", key_ingredients: ["자작나무 수액", "히알루론산"], tags: ["올리브영베스트", "수분"], source: "manual_v2", verified: true },
+
+  // ══════════════════════════════════════════════════════════════
+  // ── 인기 K-뷰티 2025-2026 신제품 + 글로벌 브랜드 확장 ──
+  // ══════════════════════════════════════════════════════════════
+
+  // ── 클렌저 추가 ──
+  { id: "torriden-dive-in-cleanser", brand: "토리든", name: "다이브인 클렌징 폼", categoryId: "cleanser", key_ingredients: ["히알루론산", "약산성 pH 5.5"], tags: ["수분", "저자극"], source: "manual_v2", verified: true },
+  { id: "skin1004-centella-cleanser", brand: "스킨1004", name: "센텔라 수딩 클렌저", categoryId: "cleanser", key_ingredients: ["센텔라", "약산성"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "numbuzin-no1-cleanser", brand: "넘버즈인", name: "1번 약산성 클렌저", categoryId: "cleanser", key_ingredients: ["약산성 pH 5.5", "히알루론산"], tags: ["올리브영베스트", "저자극", "수분"], source: "manual_v2", verified: true },
+  { id: "jungsaemmool-essential-cleanser", brand: "정샘물", name: "에센셜 무슬린 클렌저", categoryId: "cleanser", key_ingredients: ["약산성", "센텔라"], tags: ["저자극"], source: "manual_v2", verified: true },
+  { id: "aestura-atobarrier-cleanser", brand: "에스트라", name: "아토배리어 365 클렌저", categoryId: "cleanser", key_ingredients: ["세라마이드", "약산성"], tags: ["저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "klairs-gentle-cleanser", brand: "디어클레어스", name: "젠틀 블랙 클렌징 워터", categoryId: "cleanser", key_ingredients: ["히알루론산", "약산성"], tags: ["저자극"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-cleanser", brand: "하루하루원더", name: "블랙라이스 약산성 클렌저", categoryId: "cleanser", key_ingredients: ["흑미 추출물", "약산성 pH 5.5"], tags: ["저자극", "수분"], source: "manual_v2", verified: true },
+  { id: "drg-mild-cica-cleanser", brand: "닥터지", name: "마일드 시카 클렌저", categoryId: "cleanser", key_ingredients: ["시카", "판테놀"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 토너 추가 ──
+  { id: "haruharu-wonder-black-rice-toner", brand: "하루하루원더", name: "블랙라이스 히알루론산 토너", categoryId: "toner", key_ingredients: ["흑미 추출물", "히알루론산"], tags: ["수분", "톤업"], source: "manual_v2", verified: true },
+  { id: "jungsaemmool-essential-toner", brand: "정샘물", name: "에센셜 스킨 너리셔", categoryId: "toner", key_ingredients: ["히알루론산", "판테놀"], tags: ["수분", "저자극"], source: "manual_v2", verified: true },
+  { id: "aestura-atobarrier-toner", brand: "에스트라", name: "아토배리어 365 토너", categoryId: "toner", key_ingredients: ["세라마이드", "MLE"], tags: ["보습강화", "저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "cnp-mugener-toner", brand: "CNP", name: "뮤제너 앰플 토너", categoryId: "toner", key_ingredients: ["뮤신", "판테놀"], tags: ["수분", "진정"], source: "manual_v2", verified: true },
+  { id: "vt-cica-toner", brand: "VT코스메틱", name: "시카 마일드 토너", categoryId: "toner", key_ingredients: ["시카", "판테놀"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "drjart-ceramidin-toner", brand: "닥터자르트", name: "세라마이딘 토너", categoryId: "toner", key_ingredients: ["세라마이드", "판테놀"], tags: ["보습강화", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 에센스 추가 ──
+  { id: "haruharu-wonder-essence", brand: "하루하루원더", name: "블랙라이스 히알루론산 에센스", categoryId: "essence", key_ingredients: ["흑미 추출물", "히알루론산"], tags: ["수분", "톤업"], source: "manual_v2", verified: true },
+  { id: "jungsaemmool-mool-essence", brand: "정샘물", name: "에센셜 물에센스", categoryId: "essence", key_ingredients: ["히알루론산", "녹차"], tags: ["수분"], source: "manual_v2", verified: true },
+  { id: "aestura-atobarrier-essence", brand: "에스트라", name: "아토배리어 365 에센스", categoryId: "essence", key_ingredients: ["세라마이드", "MLE"], tags: ["보습강화", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "cnp-propolis-energy-essence", brand: "CNP", name: "프로폴리스 에너지 에센스", categoryId: "essence", key_ingredients: ["프로폴리스", "나이아신아마이드"], tags: ["올리브영베스트", "진정", "미백"], source: "manual_v2", verified: true },
+  { id: "skin1004-centella-essence", brand: "스킨1004", name: "센텔라 에센스", categoryId: "essence", key_ingredients: ["센텔라", "히알루론산"], tags: ["진정", "수분"], source: "manual_v2", verified: true },
+  { id: "klairs-midnight-blue-serum", brand: "디어클레어스", name: "미드나이트 블루 유스 액티베이팅 세럼", categoryId: "essence", key_ingredients: ["EGF", "펩타이드"], tags: ["안티에이징", "진정"], source: "manual_v2", verified: true },
+  { id: "drg-red-blemish-ampoule", brand: "닥터지", name: "레드 블레미쉬 수딩 앰플", categoryId: "essence", key_ingredients: ["시카", "마데카소사이드"], tags: ["진정", "트러블"], source: "manual_v2", verified: true },
+
+  // ── 앰플 추가 ──
+  { id: "numbuzin-no4-collagen-ampoule", brand: "넘버즈인", name: "4번 콜라겐 앰플", categoryId: "ampoule", key_ingredients: ["콜라겐", "펩타이드"], tags: ["올리브영베스트", "안티에이징", "탄력"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-centella-ampoule", brand: "하루하루원더", name: "센텔라 히알 앰플", categoryId: "ampoule", key_ingredients: ["센텔라", "히알루론산"], tags: ["진정", "수분"], source: "manual_v2", verified: true },
+  { id: "aestura-theracne-ampoule", brand: "에스트라", name: "테라크네365 앰플", categoryId: "ampoule", key_ingredients: ["살리실산", "나이아신아마이드"], tags: ["트러블", "피지조절"], source: "manual_v2", verified: true },
+  { id: "vt-reedle-shot-100", brand: "VT코스메틱", name: "리들샷 100", categoryId: "ampoule", key_ingredients: ["실리카", "마이크로니들"], tags: ["올리브영베스트", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "drjart-peptidin-ampoule", brand: "닥터자르트", name: "펩티딘 핑크 에너지 앰플", categoryId: "ampoule", key_ingredients: ["펩타이드", "히알루론산"], tags: ["안티에이징", "탄력"], source: "manual_v2", verified: true },
+  { id: "klairs-freshly-juiced-ampoule", brand: "디어클레어스", name: "프레쉬리 쥬스드 비타민 앰플", categoryId: "ampoule", key_ingredients: ["비타민E", "히알루론산"], tags: ["수분", "안티에이징"], source: "manual_v2", verified: true },
+
+  // ── 비타민C 추가 ──
+  { id: "torriden-cellmazing-vitc", brand: "토리든", name: "셀마이징 비타C 세럼", categoryId: "vitamin_c", concentration_level: "medium", key_ingredients: ["비타민C 유도체", "나이아신아마이드"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-vitc-serum", brand: "하루하루원더", name: "블랙라이스 비타C 세럼", categoryId: "vitamin_c", concentration_level: "medium", key_ingredients: ["비타민C", "흑미 추출물"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "drg-brightening-vitc", brand: "닥터지", name: "레드 블레미쉬 비타민C 세럼", categoryId: "vitamin_c", concentration_level: "medium", key_ingredients: ["비타민C 유도체", "나이아신아마이드"], tags: ["미백", "트러블"], source: "manual_v2", verified: true },
+  { id: "cnp-vitc-blemish-serum", brand: "CNP", name: "비타 C 블레미쉬 세럼", categoryId: "vitamin_c", concentration_level: "medium", key_ingredients: ["비타민C", "나이아신아마이드"], tags: ["미백", "트러블"], source: "manual_v2", verified: true },
+  { id: "drunk-elephant-c-firma", brand: "드렁크엘리펀트", name: "C-퍼마 프레시 데이 세럼", categoryId: "vitamin_c", concentration_level: "high", key_ingredients: ["아스코르빈산 15%", "페룰산"], tags: ["미백", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "sunday-riley-ceo-vitc", brand: "선데이라일리", name: "C.E.O. 비타민C 세럼", categoryId: "vitamin_c", concentration_level: "high", key_ingredients: ["아스코르빈산 15%", "강황"], tags: ["미백", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "glow-recipe-vitc-serum", brand: "글로우레시피", name: "구아바 비타민C 브라이트 세럼", categoryId: "vitamin_c", concentration_level: "medium", key_ingredients: ["비타민C", "구아바"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+
+  // ── 크림 추가 ──
+  { id: "numbuzin-no5-cream", brand: "넘버즈인", name: "5번 판테놀 크림", categoryId: "cream", key_ingredients: ["판테놀", "세라마이드"], tags: ["올리브영베스트", "수분", "진정"], source: "manual_v2", verified: true },
+  { id: "haruharu-wonder-cream", brand: "하루하루원더", name: "블랙라이스 모이스처 크림", categoryId: "cream", key_ingredients: ["흑미 추출물", "세라마이드"], tags: ["보습강화", "톤업"], source: "manual_v2", verified: true },
+  { id: "jungsaemmool-essential-cream", brand: "정샘물", name: "에센셜 스킨 크림", categoryId: "cream", key_ingredients: ["세라마이드", "히알루론산"], tags: ["보습강화"], source: "manual_v2", verified: true },
+  { id: "aestura-atobarrier-cream-mist", brand: "에스트라", name: "아토배리어 365 크림 미스트", categoryId: "cream", key_ingredients: ["세라마이드", "MLE"], tags: ["보습강화", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "cnp-cica-block-cream", brand: "CNP", name: "시카 블록 크림", categoryId: "cream", key_ingredients: ["시카", "판테놀"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "drjart-cryo-rubber-cream", brand: "닥터자르트", name: "크라이오 러버 크림", categoryId: "cream", key_ingredients: ["알란토인", "히알루론산"], tags: ["수분", "진정"], source: "manual_v2", verified: true },
+  { id: "drunk-elephant-protini-cream", brand: "드렁크엘리펀트", name: "프로티니 폴리펩타이드 크림", categoryId: "cream", key_ingredients: ["펩타이드", "아미노산"], tags: ["안티에이징", "탄력"], source: "manual_v2", verified: true },
+  { id: "glow-recipe-watermelon-cream", brand: "글로우레시피", name: "워터멜론 글로우 나이아신아마이드 크림", categoryId: "cream", key_ingredients: ["수박", "나이아신아마이드"], tags: ["수분", "미백"], source: "manual_v2", verified: true },
+  { id: "tatcha-dewy-skin-cream", brand: "타차", name: "더 듀이 스킨 크림", categoryId: "cream", key_ingredients: ["쌀겨수", "히알루론산", "녹차"], tags: ["보습강화", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "vt-reedle-shot-cream", brand: "VT코스메틱", name: "리들샷 크림", categoryId: "cream", key_ingredients: ["실리카", "세라마이드"], tags: ["올리브영베스트", "안티에이징"], source: "manual_v2", verified: true },
+
+  // ── 선크림 추가 ──
+  { id: "haruharu-wonder-sun", brand: "하루하루원더", name: "블랙라이스 선세럼", categoryId: "sunscreen", key_ingredients: ["흑미 추출물", "화학 자외선 차단제"], tags: ["톤업", "수분"], source: "manual_v2", verified: true },
+  { id: "aestura-atobarrier-sun", brand: "에스트라", name: "아토배리어 365 선크림", categoryId: "sunscreen", key_ingredients: ["징크옥사이드", "세라마이드"], tags: ["저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "cnp-tone-up-sun", brand: "CNP", name: "톤업 프로텍션 선크림", categoryId: "sunscreen", key_ingredients: ["화학 자외선 차단제", "나이아신아마이드"], tags: ["톤업", "미백"], source: "manual_v2", verified: true },
+  { id: "jungsaemmool-sun-base", brand: "정샘물", name: "에센셜 선 베이스", categoryId: "sunscreen", key_ingredients: ["화학 자외선 차단제", "히알루론산"], tags: ["톤업"], source: "manual_v2", verified: true },
+  { id: "klairs-airy-sun", brand: "디어클레어스", name: "소프트 에어리 UV 에센스", categoryId: "sunscreen", key_ingredients: ["화학 자외선 차단제", "센텔라"], tags: ["저자극", "진정"], source: "manual_v2", verified: true },
+  { id: "drjart-every-sun-day", brand: "닥터자르트", name: "에브리 썬 데이 선크림", categoryId: "sunscreen", key_ingredients: ["화학 자외선 차단제", "판테놀"], tags: ["수분", "저자극"], source: "manual_v2", verified: true },
+  { id: "goodal-houttuynia-sun", brand: "구달", name: "어성초 카밍 선크림", categoryId: "sunscreen", key_ingredients: ["어성초", "화학 자외선 차단제"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 오일클렌저 ──
+  { id: "drunk-elephant-slaai-balm", brand: "드렁크엘리펀트", name: "슬라이 메이크업 클렌징 밤", categoryId: "oil_cleanser", key_ingredients: ["마룰라 오일", "시어버터"], tags: ["저자극"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 에센스 ──
+  { id: "drunk-elephant-tle-glycolic", brand: "드렁크엘리펀트", name: "T.L.C 프람보스 에센스", categoryId: "essence", key_ingredients: ["글리콜산 12%", "살리실산"], tags: ["각질", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "tatcha-essence", brand: "타차", name: "더 에센스", categoryId: "essence", key_ingredients: ["쌀겨수", "녹차", "해조류"], tags: ["수분", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "glow-recipe-watermelon-mist", brand: "글로우레시피", name: "워터멜론 글로우 에센스", categoryId: "essence", key_ingredients: ["수박", "히알루론산"], tags: ["수분", "톤업"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 레티놀 ──
+  { id: "drunk-elephant-a-passioni", brand: "드렁크엘리펀트", name: "A-파시오니 레티놀 크림", categoryId: "retinol", concentration_level: "high", key_ingredients: ["레티놀 1%", "비타민F"], tags: ["안티에이징"], source: "manual_v2", verified: true },
+  { id: "sunday-riley-luna-retinol", brand: "선데이라일리", name: "루나 레티놀 오일", categoryId: "retinol", concentration_level: "medium", key_ingredients: ["트랜스레티놀 에스터", "블루 탠시 오일"], tags: ["안티에이징"], source: "manual_v2", verified: true },
+  { id: "murad-retinol-youth-serum", brand: "뮤라드", name: "레티놀 유스 리뉴얼 세럼", categoryId: "retinol", concentration_level: "medium", key_ingredients: ["레티놀", "히알루론산"], tags: ["안티에이징"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 앰플 ──
+  { id: "obagi-professional-c10", brand: "오바지", name: "프로페셔널 C 세럼 10%", categoryId: "ampoule", key_ingredients: ["아스코르빈산 10%", "히알루론산"], tags: ["미백", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "sunday-riley-good-genes", brand: "선데이라일리", name: "굿 진스 올인원 젖산 세럼", categoryId: "ampoule", key_ingredients: ["젖산", "레몬그라스"], tags: ["각질", "안티에이징"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 수면팩 ──
+  { id: "glow-recipe-avocado-sleeping", brand: "글로우레시피", name: "아보카도 멜트 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["아보카도", "만카두카 오일"], tags: ["보습강화", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "tatcha-dewy-sleeping-mask", brand: "타차", name: "듀이 스킨 오버나이트 마스크", categoryId: "sleeping_pack", key_ingredients: ["쌀겨수", "스쿠알란", "히알루론산"], tags: ["보습강화", "안티에이징"], source: "manual_v2", verified: true },
+
+  // ── 추가 마스크팩 ──
+  { id: "haruharu-wonder-mask", brand: "하루하루원더", name: "블랙라이스 히알루론산 마스크", categoryId: "mask_pack", key_ingredients: ["흑미 추출물", "히알루론산"], tags: ["수분", "톤업"], source: "manual_v2", verified: true },
+  { id: "anua-heartleaf-mask", brand: "아누아", name: "어성초 77 카밍 마스크", categoryId: "mask_pack", key_ingredients: ["어성초 77%", "판테놀"], tags: ["올리브영베스트", "진정"], source: "manual_v2", verified: true },
+  { id: "cnp-propolis-mask", brand: "CNP", name: "프로폴리스 에너지 앰플 마스크", categoryId: "mask_pack", key_ingredients: ["프로폴리스", "나이아신아마이드"], tags: ["진정", "미백"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 아이크림 ──
+  { id: "drunk-elephant-shaba-eye", brand: "드렁크엘리펀트", name: "샤바 컴플렉스 아이 세럼", categoryId: "eye_cream", key_ingredients: ["블랙커런트씨 오일", "코퍼 펩타이드"], tags: ["안티에이징", "탄력"], source: "manual_v2", verified: true },
+  { id: "tatcha-pearl-eye-cream", brand: "타차", name: "펄 아이 크림", categoryId: "eye_cream", key_ingredients: ["진주 추출물", "쌀겨수"], tags: ["미백", "안티에이징"], source: "manual_v2", verified: true },
+
+  // ══════════════════════════════════════════════════════════════
+  // ── 추가 K-뷰티 확장 (목표 500+ 달성) ──
+  // ══════════════════════════════════════════════════════════════
+
+  // ── 클렌저 추가 ──
+  { id: "cnp-mild-calming-cleanser", brand: "CNP", name: "마일드 카밍 클렌저", categoryId: "cleanser", key_ingredients: ["약산성 pH 5.5", "판테놀"], tags: ["저자극", "진정"], source: "manual_v2", verified: true },
+  { id: "goodal-green-tangerine-foam", brand: "구달", name: "청귤 비타C 폼 클렌저", categoryId: "cleanser", key_ingredients: ["비타민C", "청귤", "약산성"], tags: ["미백", "저자극"], source: "manual_v2", verified: true },
+  { id: "vt-cica-mild-cleanser", brand: "VT코스메틱", name: "시카 마일드 폼 클렌저", categoryId: "cleanser", key_ingredients: ["시카", "약산성 pH 5.5"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 토너 추가 ──
+  { id: "tocobo-bifida-toner", brand: "토코보", name: "비피다 바이옴 토너", categoryId: "toner", key_ingredients: ["비피다", "나이아신아마이드"], tags: ["안티에이징", "미백"], source: "manual_v2", verified: true },
+  { id: "klairs-unscented-toner", brand: "디어클레어스", name: "서플 프레퍼레이션 무향 토너", categoryId: "toner", key_ingredients: ["히알루론산", "센텔라"], tags: ["수분", "저자극", "민감성추천"], source: "manual_v2", verified: true },
+
+  // ── 에센스 추가 ──
+  { id: "goodal-houttuynia-essence", brand: "구달", name: "어성초 카밍 에센스", categoryId: "essence", key_ingredients: ["어성초", "판테놀"], tags: ["진정", "트러블"], source: "manual_v2", verified: true },
+  { id: "vt-reedle-shot-essence", brand: "VT코스메틱", name: "리들샷 에센스", categoryId: "essence", key_ingredients: ["실리카", "히알루론산"], tags: ["올리브영베스트", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "tocobo-vita-tone-up-essence", brand: "토코보", name: "비타 톤업 에센스", categoryId: "essence", key_ingredients: ["비타민C", "나이아신아마이드"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+
+  // ── 앰플 추가 ──
+  { id: "skin1004-centella-probio-ampoule", brand: "스킨1004", name: "센텔라 프로바이오-시카 앰플", categoryId: "ampoule", key_ingredients: ["센텔라", "프로바이오틱스"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "goodal-vita-c-dark-spot-ampoule", brand: "구달", name: "비타C 다크스팟 앰플", categoryId: "ampoule", key_ingredients: ["비타민C", "나이아신아마이드"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+  { id: "cellfusion-vita-ampoule", brand: "셀퓨전씨", name: "비타트리 시너지 앰플", categoryId: "ampoule", key_ingredients: ["비타민C", "비타민E", "페룰산"], tags: ["미백", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "drg-red-blemish-clear-ampoule", brand: "닥터지", name: "레드 블레미쉬 클리어 앰플", categoryId: "ampoule", key_ingredients: ["시카", "나이아신아마이드"], tags: ["트러블", "진정"], source: "manual_v2", verified: true },
+
+  // ── 나이아신아마이드 추가 ──
+  { id: "cellfusion-niacinamide-serum", brand: "셀퓨전씨", name: "나이아신아마이드 앰플", categoryId: "niacinamide", concentration_level: "medium", key_ingredients: ["나이아신아마이드", "판테놀"], tags: ["미백", "모공"], source: "manual_v2", verified: true },
+  { id: "vt-niacinamide-ampoule", brand: "VT코스메틱", name: "나이아신아마이드 앰플", categoryId: "niacinamide", concentration_level: "medium", key_ingredients: ["나이아신아마이드", "히알루론산"], tags: ["미백", "수분"], source: "manual_v2", verified: true },
+
+  // ── 히알루론산 추가 ──
+  { id: "aestura-ha-serum", brand: "에스트라", name: "아토배리어 히알루론산 세럼", categoryId: "hyaluronic", key_ingredients: ["히알루론산", "세라마이드"], tags: ["수분", "보습강화", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "vt-hyaluronic-acid-serum", brand: "VT코스메틱", name: "히알루론산 수분 세럼", categoryId: "hyaluronic", key_ingredients: ["히알루론산", "판테놀"], tags: ["수분", "보습강화"], source: "manual_v2", verified: true },
+
+  // ── 크림 추가 ──
+  { id: "cellfusion-cica-dream-cream", brand: "셀퓨전씨", name: "시카 드림 크림", categoryId: "cream", key_ingredients: ["시카", "세라마이드"], tags: ["진정", "저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "tocobo-vita-glazed-cream", brand: "토코보", name: "비타 글레이즈드 립 & 페이스 크림", categoryId: "cream", key_ingredients: ["비타민E", "시어버터"], tags: ["보습강화"], source: "manual_v2", verified: true },
+  { id: "goodal-houttuynia-cream", brand: "구달", name: "어성초 카밍 모이스처 크림", categoryId: "cream", key_ingredients: ["어성초", "마데카소사이드"], tags: ["진정", "트러블"], source: "manual_v2", verified: true },
+  { id: "the-lab-blanc-doux-cream", brand: "더랩바이블랑두", name: "올가 에센스 래핑 크림", categoryId: "cream", key_ingredients: ["세라마이드", "히알루론산"], tags: ["보습강화", "저자극"], source: "manual_v2", verified: true },
+  { id: "avene-tolerance-cream", brand: "아벤느", name: "톨레랑스 컨트롤 크림", categoryId: "cream", key_ingredients: ["온천수", "스쿠알란"], tags: ["저자극", "민감성추천", "진정"], source: "manual_v2", verified: true },
+
+  // ── 선크림 추가 ──
+  { id: "cellfusion-derma-relief-sun", brand: "셀퓨전씨", name: "더마 릴리프 선스크린", categoryId: "sunscreen", key_ingredients: ["징크옥사이드", "세라마이드"], tags: ["저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "avene-sun-fluid", brand: "아벤느", name: "수프리엄 파워 선 플루이드", categoryId: "sunscreen", key_ingredients: ["징크옥사이드", "온천수"], tags: ["저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "vt-reedle-shot-sun", brand: "VT코스메틱", name: "리들샷 선크림", categoryId: "sunscreen", key_ingredients: ["화학 자외선 차단제", "시카"], tags: ["안티에이징", "진정"], source: "manual_v2", verified: true },
+  { id: "tocobo-bio-watery-sun", brand: "토코보", name: "바이오 워터리 선크림", categoryId: "sunscreen", key_ingredients: ["화학 자외선 차단제", "히알루론산"], tags: ["수분", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 로션 추가 ──
+  { id: "cnp-mugener-lotion", brand: "CNP", name: "뮤제너 앰플 로션", categoryId: "lotion", key_ingredients: ["뮤신", "판테놀", "히알루론산"], tags: ["수분", "진정"], source: "manual_v2", verified: true },
+  { id: "klairs-rich-moist-lotion", brand: "디어클레어스", name: "리치 모이스트 수딩 로션", categoryId: "lotion", key_ingredients: ["세라마이드", "히알루론산"], tags: ["보습강화", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 토너패드 추가 ──
+  { id: "cnp-anti-pore-pad", brand: "CNP", name: "안티포어 블랙헤드 클리어 패드", categoryId: "toner_pad", active_flags: ["bha"], concentration_level: "low", key_ingredients: ["살리실산", "나이아신아마이드"], tags: ["올리브영베스트", "모공", "피지조절"], source: "manual_v2", verified: true },
+  { id: "aestura-theracne-pad", brand: "에스트라", name: "테라크네365 토너 패드", categoryId: "toner_pad", active_flags: ["bha"], concentration_level: "low", key_ingredients: ["살리실산", "나이아신아마이드"], tags: ["트러블", "모공"], source: "manual_v2", verified: true },
+  { id: "klairs-daily-skin-pad", brand: "디어클레어스", name: "데일리 스킨 소프트닝 패드", categoryId: "toner_pad", key_ingredients: ["히알루론산", "센텔라"], tags: ["수분", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 마스크팩 추가 ──
+  { id: "aestura-atobarrier-mask", brand: "에스트라", name: "아토배리어 365 마스크팩", categoryId: "mask_pack", key_ingredients: ["세라마이드", "MLE"], tags: ["보습강화", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "goodal-vita-c-mask", brand: "구달", name: "비타C 브라이트닝 마스크", categoryId: "mask_pack", key_ingredients: ["비타민C", "나이아신아마이드"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+
+  // ── 스팟 트리트먼트 추가 ──
+  { id: "haruharu-wonder-spot-gel", brand: "하루하루원더", name: "블랙라이스 스팟 젤", categoryId: "spot_treatment", key_ingredients: ["흑미 추출물", "살리실산"], tags: ["트러블"], source: "manual_v2", verified: true },
+  { id: "cosrx-ac-collection-spot", brand: "코스알엑스", name: "AC 컬렉션 얼티밋 스팟 크림", categoryId: "spot_treatment", key_ingredients: ["센텔라", "나이아신아마이드"], tags: ["트러블", "진정"], source: "manual_v2", verified: true },
+
+  // ── 오일 클렌저 추가 ──
+  { id: "goodal-green-tangerine-oil", brand: "구달", name: "청귤 비타C 클렌징 오일", categoryId: "oil_cleanser", key_ingredients: ["비타민C", "호호바 오일"], tags: ["미백", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 크림 ──
+  { id: "sunday-riley-ice-cream", brand: "선데이라일리", name: "아이스 세라마이드 크림", categoryId: "cream", key_ingredients: ["세라마이드", "레티놀"], tags: ["보습강화", "안티에이징"], source: "manual_v2", verified: true },
+  { id: "murad-nutrient-cream", brand: "뮤라드", name: "뉴트리언트 차지드 워터 젤", categoryId: "cream", key_ingredients: ["미네랄", "히알루론산", "펩타이드"], tags: ["수분", "안티에이징"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 선크림 ──
+  { id: "drunk-elephant-umbra-sun", brand: "드렁크엘리펀트", name: "엄브라 틴티드 SPF 30", categoryId: "sunscreen", key_ingredients: ["징크옥사이드", "마룰라 오일"], tags: ["저자극", "톤업"], source: "manual_v2", verified: true },
+  { id: "tatcha-silk-sun", brand: "타차", name: "실크 선스크린 SPF 50", categoryId: "sunscreen", key_ingredients: ["징크옥사이드", "쌀겨수"], tags: ["저자극", "톤업"], source: "manual_v2", verified: true },
+  { id: "murad-invisiscar-sun", brand: "뮤라드", name: "인비지스카 선크림 SPF 45", categoryId: "sunscreen", key_ingredients: ["화학 자외선 차단제", "나이아신아마이드"], tags: ["미백", "트러블"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 에센스 ──
+  { id: "sunday-riley-ufo-oil", brand: "선데이라일리", name: "UFO 울트라 클래리파잉 오일", categoryId: "essence", key_ingredients: ["살리실산 1.5%", "티트리 오일"], tags: ["트러블", "모공"], source: "manual_v2", verified: true },
+  { id: "murad-aha-bha-exfoliating-serum", brand: "뮤라드", name: "AHA/BHA 엑스폴리에이팅 세럼", categoryId: "essence", active_flags: ["aha", "bha"], concentration_level: "medium", key_ingredients: ["글리콜산", "살리실산"], tags: ["각질", "모공"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 로션 ──
+  { id: "drunk-elephant-lala-retro", brand: "드렁크엘리펀트", name: "라라 레트로 휩드 크림 로션", categoryId: "lotion", key_ingredients: ["세라마이드", "마룰라 오일"], tags: ["보습강화", "안티에이징"], source: "manual_v2", verified: true },
+
+  // ── 글로벌 마스크팩 ──
+  { id: "glow-recipe-watermelon-mask", brand: "글로우레시피", name: "워터멜론 글로우 슬리핑 마스크", categoryId: "mask_pack", key_ingredients: ["수박", "히알루론산"], tags: ["수분", "톤업"], source: "manual_v2", verified: true },
+  { id: "tatcha-violet-c-mask", brand: "타차", name: "바이올렛-C 마스크", categoryId: "mask_pack", key_ingredients: ["비타민C", "AHA"], tags: ["미백", "각질"], source: "manual_v2", verified: true },
+
+  // ── K-뷰티 추가 제품 ──
+  { id: "the-lab-blanc-doux-toner", brand: "더랩바이블랑두", name: "올가 에센스 래핑 토너", categoryId: "toner", key_ingredients: ["세라마이드", "히알루론산"], tags: ["보습강화", "저자극"], source: "manual_v2", verified: true },
+  { id: "the-lab-blanc-doux-cleanser", brand: "더랩바이블랑두", name: "올가 마일드 클렌저", categoryId: "cleanser", key_ingredients: ["약산성", "올리브 오일 유도체"], tags: ["저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "the-lab-blanc-doux-sun", brand: "더랩바이블랑두", name: "올가 에센스 선크림", categoryId: "sunscreen", key_ingredients: ["징크옥사이드", "세라마이드"], tags: ["저자극", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "avene-cica-cream-v2", brand: "아벤느", name: "시칼파트+ 흉터 크림", categoryId: "cream", key_ingredients: ["시카", "온천수", "구리아연"], tags: ["진정", "저자극"], source: "manual_v2", verified: true },
+  { id: "avene-thermal-toner", brand: "아벤느", name: "떼르말 스프링 미스트 토너", categoryId: "toner", key_ingredients: ["온천수"], tags: ["진정", "저자극", "민감성추천"], source: "manual_v2", verified: true },
+
+  // ── 추가 앰플 ──
+  { id: "the-lab-blanc-doux-ampoule", brand: "더랩바이블랑두", name: "올가 세라마이드 앰플", categoryId: "ampoule", key_ingredients: ["세라마이드", "히알루론산"], tags: ["보습강화", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 추가 토너패드 ──
+  { id: "cellfusion-pha-toner-pad", brand: "셀퓨전씨", name: "PHA 젠틀 토너 패드", categoryId: "toner_pad", active_flags: ["pha"], concentration_level: "low", key_ingredients: ["PHA", "판테놀"], tags: ["각질", "저자극"], source: "manual_v2", verified: true },
+  { id: "goodal-vita-c-toner-pad", brand: "구달", name: "비타C 브라이트닝 토너 패드", categoryId: "toner_pad", key_ingredients: ["비타민C", "나이아신아마이드"], tags: ["미백", "톤업"], source: "manual_v2", verified: true },
+
+  // ── 추가 스팟 트리트먼트 ──
+  { id: "vt-cica-blemish-spot", brand: "VT코스메틱", name: "시카 블레미쉬 스팟 패치", categoryId: "spot_treatment", key_ingredients: ["시카", "하이드로콜로이드"], tags: ["트러블", "진정"], source: "manual_v2", verified: true },
+
+  // ── 추가 AHA ──
+  { id: "cellfusion-aha-cream", brand: "셀퓨전씨", name: "AHA 리뉴얼 크림", categoryId: "aha", concentration_level: "low", key_ingredients: ["글리콜산", "세라마이드"], tags: ["각질", "보습강화", "저자극"], source: "manual_v2", verified: true },
+
+  // ── 추가 수면팩 ──
+  { id: "haruharu-wonder-sleeping", brand: "하루하루원더", name: "블랙라이스 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["흑미 추출물", "히알루론산"], tags: ["수분", "톤업"], source: "manual_v2", verified: true },
+  { id: "anua-heartleaf-sleeping", brand: "아누아", name: "어성초 77 수딩 슬리핑 마스크", categoryId: "sleeping_pack", key_ingredients: ["어성초 77%", "판테놀"], tags: ["올리브영베스트", "진정"], source: "manual_v2", verified: true },
+
+  // ── 500개 달성 추가 제품 ──
+  { id: "mixsoon-bean-essence", brand: "믹순", name: "빈 에센스", categoryId: "essence", key_ingredients: ["발효 콩 추출물", "나이아신아마이드"], tags: ["올리브영베스트", "보습강화", "톤업"], source: "manual_v2", verified: true },
+  { id: "illiyoon-probiotic-essence", brand: "일리윤", name: "프로바이오틱 스킨 배리어 에센스", categoryId: "essence", key_ingredients: ["프로바이오틱스", "세라마이드"], tags: ["장벽강화", "민감성추천"], source: "manual_v2", verified: true },
+  { id: "round-lab-mugwort-toner", brand: "라운드랩", name: "쑥 진정 토너", categoryId: "toner", key_ingredients: ["쑥 추출물", "판테놀"], tags: ["진정", "저자극", "올리브영베스트"], source: "manual_v2", verified: true },
+  { id: "skin1004-centella-ampoule-v2", brand: "스킨1004", name: "마다가스카르 센텔라 앰플 2세대", categoryId: "ampoule", key_ingredients: ["센텔라 추출물", "히알루론산"], tags: ["진정", "올리브영베스트"], source: "manual_v2", verified: true },
+  { id: "medicube-collagen-night-cream", brand: "메디큐브", name: "콜라겐 나이트 래핑 크림", categoryId: "cream", key_ingredients: ["콜라겐", "레티놀", "나이아신아마이드"], tags: ["안티에이징", "탄력"], source: "manual_v2", verified: true },
+  { id: "torriden-cellmazing-cream", brand: "토리든", name: "셀마징 저분자 콜라겐 크림", categoryId: "cream", key_ingredients: ["저분자 콜라겐", "세라마이드"], tags: ["탄력", "보습강화", "올리브영베스트"], source: "manual_v2", verified: true },
 ];

@@ -1,14 +1,16 @@
 "use client";
 
+import Icon from "@/components/Icon";
+
 const CONCERNS = [
-  { id: "acne", label: "여드름·트러블", emoji: "🔴" },
-  { id: "pigment", label: "잡티·색소침착", emoji: "🟤" },
-  { id: "wrinkle", label: "주름·탄력", emoji: "〰️" },
-  { id: "pore", label: "모공", emoji: "🔵" },
-  { id: "dryness", label: "건조·수분부족", emoji: "🏜️" },
-  { id: "redness", label: "홍조·민감", emoji: "🌡️" },
-  { id: "dullness", label: "칙칙함·톤업", emoji: "✨" },
-  { id: "blackhead", label: "블랙헤드·피지", emoji: "⚫" },
+  { id: "acne", label: "여드름·트러블", icon: "red-circle" },
+  { id: "pigment", label: "잡티·색소침착", icon: "brown-circle" },
+  { id: "wrinkle", label: "주름·탄력", icon: "wavy" },
+  { id: "pore", label: "모공", icon: "blue-circle" },
+  { id: "dryness", label: "건조·수분부족", icon: "desert" },
+  { id: "redness", label: "홍조·민감", icon: "thermometer" },
+  { id: "dullness", label: "칙칙함·톤업", icon: "sparkle" },
+  { id: "blackhead", label: "블랙헤드·피지", icon: "black-circle" },
 ];
 
 interface Props {
@@ -49,7 +51,7 @@ export default function ConcernStep({
                     : "border-gray-200 hover:border-gray-300 bg-white"
               }`}
             >
-              <span className="text-xl">{concern.emoji}</span>
+              <Icon name={concern.icon} size={20} />
               <span
                 className={`text-sm font-medium ${isSelected ? "text-primary" : "text-gray-700"}`}
               >

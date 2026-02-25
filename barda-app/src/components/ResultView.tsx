@@ -11,6 +11,7 @@ import {
 import BlurOverlay from "@/components/BlurOverlay";
 import FeedbackButtons from "@/components/FeedbackButtons";
 import ShareRoutineModal from "@/components/ShareRoutineModal";
+import Icon from "@/components/Icon";
 
 interface Props {
   result: AnalysisResult;
@@ -73,7 +74,7 @@ function ScoreRing({ score }: { score: number }) {
 
 function RoutineCard({
   title,
-  emoji,
+  icon,
   bgClass,
   products,
   tips,
@@ -81,7 +82,7 @@ function RoutineCard({
   onPaymentRequest,
 }: {
   title: string;
-  emoji: string;
+  icon: string;
   bgClass: string;
   products: RoutineProduct[];
   tips: string[];
@@ -93,8 +94,8 @@ function RoutineCard({
 
   return (
     <div className={`rounded-2xl p-5 ${bgClass}`}>
-      <h3 className="text-lg font-bold text-gray-800 mb-4">
-        {emoji} {title}
+      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-1.5">
+        <Icon name={icon} size={16} /> {title}
       </h3>
       {products.length === 0 ? (
         <p className="text-sm text-gray-500">해당 시간대 제품이 없어요</p>
@@ -110,7 +111,7 @@ function RoutineCard({
                 <span className="text-sm font-bold text-gray-400 w-6">
                   {idx + 1}
                 </span>
-                <span className="text-lg">{cat?.emoji ?? "📦"}</span>
+                <Icon name={cat?.icon ?? "package"} size={20} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-800 truncate">
                     {product.brand} {product.name}
@@ -127,7 +128,7 @@ function RoutineCard({
         <div className="space-y-2 mt-3 pt-3 border-t border-white/50">
           {visibleTips.map((tip, i) => (
             <div key={i} className="flex gap-2 text-sm text-gray-600">
-              <span className="shrink-0">💡</span>
+              <span className="shrink-0"><Icon name="lightbulb" size={16} /></span>
               <span>{tip}</span>
             </div>
           ))}
@@ -136,7 +137,7 @@ function RoutineCard({
               onClick={onPaymentRequest}
               className="flex items-center gap-1 text-xs text-primary font-medium hover:underline"
             >
-              🔒 팁 {hiddenTipCount}개 더 보기
+              <Icon name="lock" size={14} /> 팁 {hiddenTipCount}개 더 보기
             </button>
           )}
         </div>
@@ -193,7 +194,7 @@ function ConflictCard({
             className="text-xs flex gap-1 items-start"
             style={{ color: config.text }}
           >
-            <span>✅</span>
+            <span><Icon name="check-circle" size={14} /></span>
             <span>{conflict.rule.tip}</span>
           </div>
           <div className="mt-2 flex justify-end">
@@ -222,7 +223,7 @@ function MissingStepCard({
       }`}
     >
       <div className="flex items-start gap-3">
-        <span className="text-xl">{isCritical ? "🚨" : "⚠️"}</span>
+        <span className="text-xl">{isCritical ? <Icon name="alert" size={16} /> : <Icon name="warning" size={16} />}</span>
         <div>
           <h4
             className={`font-semibold text-sm mb-1 ${
@@ -253,8 +254,8 @@ function WeekCalendar({
 }) {
   return (
     <div className="rounded-2xl bg-white p-5 border border-gray-200">
-      <h3 className="text-lg font-bold text-gray-800 mb-4">
-        📅 7일 루틴 캘린더
+      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-1.5">
+        <Icon name="calendar" size={16} /> 7일 루틴 캘린더
       </h3>
       <div className="grid grid-cols-7 gap-1.5">
         {calendar.map((day) => (
@@ -265,7 +266,7 @@ function WeekCalendar({
             <span className="text-xs font-semibold text-gray-500">
               {day.day}
             </span>
-            <span className="text-xl">{day.pmEmoji}</span>
+            <Icon name={day.pmIcon} size={20} />
             <span className="text-[10px] text-gray-500 text-center leading-tight">
               {day.pmLabel}
             </span>
@@ -273,9 +274,9 @@ function WeekCalendar({
         ))}
       </div>
       <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-gray-100">
-        <span className="text-xs text-gray-500">🌙 기본 루틴</span>
-        <span className="text-xs text-gray-500">💜 레티놀 데이</span>
-        <span className="text-xs text-gray-500">✨ 각질케어 데이</span>
+        <span className="text-xs text-gray-500 flex items-center gap-1"><Icon name="moon" size={14} /> 기본 루틴</span>
+        <span className="text-xs text-gray-500 flex items-center gap-1"><Icon name="purple-heart" size={14} /> 레티놀 데이</span>
+        <span className="text-xs text-gray-500 flex items-center gap-1"><Icon name="sparkle" size={14} /> 각질케어 데이</span>
       </div>
     </div>
   );
@@ -298,6 +299,8 @@ export default function ResultView({
 
   // Save routine to localStorage for checklist
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
       localStorage.setItem(
         "barda_last_routine",
@@ -335,7 +338,7 @@ export default function ResultView({
               : "text-gray-500"
           }`}
         >
-          ☀️ 아침 루틴
+          <Icon name="sun" size={16} /> 아침 루틴
         </button>
         <button
           onClick={() => setActiveTab("pm")}
@@ -345,14 +348,14 @@ export default function ResultView({
               : "text-gray-500"
           }`}
         >
-          🌙 저녁 루틴
+          <Icon name="moon" size={16} /> 저녁 루틴
         </button>
       </div>
 
       {activeTab === "am" ? (
         <RoutineCard
           title="아침 루틴"
-          emoji="☀️"
+          icon="sun"
           bgClass="bg-gradient-to-br from-amber-50 to-yellow-50"
           products={result.amProducts}
           tips={result.amTips}
@@ -362,7 +365,7 @@ export default function ResultView({
       ) : (
         <RoutineCard
           title="저녁 루틴"
-          emoji="🌙"
+          icon="moon"
           bgClass="bg-gradient-to-br from-purple-50 to-violet-50"
           products={result.pmProducts}
           tips={result.pmTips}
@@ -374,8 +377,8 @@ export default function ResultView({
       {/* Conflicts */}
       {result.conflicts.length > 0 && (
         <div>
-          <h3 className="text-lg font-bold text-gray-800 mb-3">
-            ⚠️ 주의가 필요한 조합 ({result.conflicts.length})
+          <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-1.5">
+            <Icon name="warning" size={16} /> 주의가 필요한 조합 ({result.conflicts.length})
           </h3>
           <div className="space-y-3">
             {/* First conflict is always visible */}
@@ -405,8 +408,8 @@ export default function ResultView({
       {/* Missing Steps */}
       {result.missingSteps.length > 0 && (
         <div>
-          <h3 className="text-lg font-bold text-gray-800 mb-3">
-            📋 빠진 단계
+          <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-1.5">
+            <Icon name="clipboard" size={16} /> 빠진 단계
           </h3>
           <div className="space-y-3">
             {result.missingSteps.map((step) => (
