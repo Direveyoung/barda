@@ -142,7 +142,7 @@ export default function FeedClient() {
   const hasActiveFilter = skinTypeFilter || concernFilter || debouncedQuery;
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16">
       <div className="max-w-lg mx-auto px-4 pt-6">
         {/* Page title */}
         <h1 className="text-xl font-bold text-gray-800 mb-4">커뮤니티 피드</h1>

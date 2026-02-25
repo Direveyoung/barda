@@ -113,7 +113,7 @@ function AnalyzeContent() {
   );
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16">
       {/* Payment Toast */}
       {paymentToast && (
         <div

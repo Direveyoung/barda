@@ -198,7 +198,7 @@ export default function RoutineDetailClient({ postId }: { postId: string }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pb-16">
         <div className="max-w-lg mx-auto px-4 pt-6">
           <div className="animate-pulse space-y-4">
             <div className="h-8 w-48 bg-gray-200 rounded" />
@@ -216,7 +216,7 @@ export default function RoutineDetailClient({ postId }: { postId: string }) {
 
   if (!post) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pb-16">
         <div className="max-w-lg mx-auto px-4 pt-20 text-center">
           <p className="text-gray-500 text-sm mb-4">루틴을 찾을 수 없어요</p>
           <button
@@ -232,7 +232,7 @@ export default function RoutineDetailClient({ postId }: { postId: string }) {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">

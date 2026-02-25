@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { Product } from "@/data/products";
 import { CATEGORIES, ALL_PRODUCTS } from "@/data/products";
 import { searchProducts } from "@/lib/search";
@@ -17,33 +17,6 @@ interface Props {
   onNext: () => void;
   onBack: () => void;
 }
-
-// Recommended categories based on skin concerns
-const concernRecommendations: Record<string, { categoryIds: string[]; tip: string }> = {
-  acne: { categoryIds: ["bha", "spot_treatment", "niacinamide"], tip: "BHA + 나이아신아마이드가 트러블 관리에 효과적" },
-  wrinkle: { categoryIds: ["retinol", "eye_cream", "cream"], tip: "레티놀 + 아이크림으로 주름 케어" },
-  pigmentation: { categoryIds: ["vitamin_c", "niacinamide", "sunscreen"], tip: "비타민C + 선크림이 색소침착 예방의 핵심" },
-  dryness: { categoryIds: ["hyaluronic", "cream", "sleeping_pack"], tip: "히알루론산 + 수분크림으로 보습 강화" },
-  sensitivity: { categoryIds: ["toner", "cream", "sunscreen"], tip: "저자극 토너 + 장벽 크림 추천" },
-  pore: { categoryIds: ["bha", "toner_pad", "niacinamide"], tip: "BHA + 토너패드로 모공 관리" },
-  blackhead: { categoryIds: ["oil_cleanser", "bha", "toner_pad"], tip: "오일 클렌저 + BHA 조합이 효과적" },
-  redness: { categoryIds: ["toner", "cream", "sunscreen"], tip: "진정 토너 + 장벽 크림 + 선크림 필수" },
-  darkCircle: { categoryIds: ["eye_cream", "vitamin_c", "ampoule"], tip: "아이크림 + 비타민C 앰플 추천" },
-};
-
-const skinTypeEssentials: Record<string, string[]> = {
-  dry: ["hyaluronic", "cream", "sleeping_pack"],
-  oily: ["toner_pad", "niacinamide", "sunscreen"],
-  combination: ["toner", "niacinamide", "cream"],
-  sensitive: ["toner", "cream", "sunscreen"],
-  normal: ["toner", "essence", "cream"],
-};
-
-const concernLabel: Record<string, string> = {
-  acne: "여드름", wrinkle: "주름", pigmentation: "색소침착",
-  dryness: "건조", sensitivity: "민감", pore: "모공",
-  blackhead: "블랙헤드", redness: "홍조", darkCircle: "다크서클",
-};
 
 // Log search to backend
 function logSearch(query: string, resultsCount: number, selectedId?: string) {
@@ -72,7 +45,6 @@ export default function ProductStep({
   const [results, setResults] = useState<Product[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showRecs, setShowRecs] = useState(true);
   const [showDirectInput, setShowDirectInput] = useState(false);
   const [directBrand, setDirectBrand] = useState("");
   const [directName, setDirectName] = useState("");
@@ -81,52 +53,6 @@ export default function ProductStep({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchLogTimer = useRef<ReturnType<typeof setTimeout>>(null);
-
-  // Build contextual recommendations
-  const recommendations = useMemo(() => {
-    const recCategoryIds = new Set<string>();
-
-    // Add skin type essentials
-    if (skinType && skinTypeEssentials[skinType]) {
-      for (const catId of skinTypeEssentials[skinType]) {
-        recCategoryIds.add(catId);
-      }
-    }
-
-    // Add concern-specific categories
-    if (concerns) {
-      for (const c of concerns) {
-        if (concernRecommendations[c]) {
-          for (const catId of concernRecommendations[c].categoryIds) {
-            recCategoryIds.add(catId);
-          }
-        }
-      }
-    }
-
-    if (recCategoryIds.size === 0) return [];
-
-    // Get top products for recommended categories
-    const recs: { categoryId: string; products: Product[] }[] = [];
-    for (const catId of recCategoryIds) {
-      const catProducts = ALL_PRODUCTS.filter((p) => p.categoryId === catId).slice(0, 3);
-      if (catProducts.length > 0) {
-        recs.push({ categoryId: catId, products: catProducts });
-      }
-    }
-    return recs;
-  }, [skinType, concerns]);
-
-  // Get tips for active concerns
-  const activeTips = useMemo(() => {
-    if (!concerns) return [];
-    return concerns
-      .filter((c) => concernRecommendations[c])
-      .map((c) => ({
-        concern: concernLabel[c] ?? c,
-        tip: concernRecommendations[c].tip,
-      }));
-  }, [concerns]);
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -231,68 +157,6 @@ export default function ProductStep({
       <p className="text-gray-500 mb-6">
         검색하거나 카테고리에서 선택할 수 있어요
       </p>
-
-      {/* Contextual Recommendations */}
-      {recommendations.length > 0 && showRecs && products.length === 0 && (
-        <div className="mb-5 bg-gradient-to-br from-primary-bg to-orange-50/30 rounded-2xl p-4 border border-primary/10">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-gray-800">
-              맞춤 추천 제품
-            </h3>
-            <button
-              type="button"
-              onClick={() => setShowRecs(false)}
-              className="text-xs text-gray-400"
-            >
-              접기
-            </button>
-          </div>
-
-          {activeTips.length > 0 && (
-            <div className="space-y-1.5 mb-3">
-              {activeTips.slice(0, 2).map((t) => (
-                <div key={t.concern} className="flex items-start gap-1.5 text-xs text-gray-600">
-                  <Icon name="lightbulb" size={16} className="shrink-0" />
-                  <span><strong>{t.concern}</strong>: {t.tip}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            {recommendations.slice(0, 4).map(({ categoryId, products: recProducts }) => {
-              const cat = findCategory(categoryId);
-              return (
-                <div key={categoryId}>
-                  <p className="text-[11px] text-gray-500 font-medium mb-1 flex items-center gap-1">
-                    <Icon name={cat?.icon ?? "package"} size={14} /> {cat?.label}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {recProducts.map((p) => {
-                      const isAdded = products.some((pp) => pp.id === p.id);
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => handleAdd(p)}
-                          disabled={isAdded}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                            isAdded
-                              ? "bg-gray-100 text-gray-400"
-                              : "bg-white text-gray-700 hover:bg-primary/10 hover:text-primary border border-gray-100"
-                          }`}
-                        >
-                          {isAdded ? "+" : "+"} {p.brand} {p.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Search Bar */}
       <div className="relative mb-4">

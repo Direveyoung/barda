@@ -148,7 +148,7 @@ export default function MypageClient() {
 
   if (!user) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pb-16">
         <div className="max-w-lg mx-auto px-4 pt-20 text-center">
           <p className="text-gray-500 text-sm mb-4">로그인이 필요합니다</p>
           <a
@@ -179,7 +179,7 @@ export default function MypageClient() {
   );
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16">
       <div className="max-w-lg mx-auto px-4 pt-6">
         {/* User info */}
         <div className="mb-6">

@@ -50,7 +50,7 @@ export default function RankingPage() {
   }, [tab]);
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16">
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3">
           <h1 className="text-xl font-bold text-primary">BARDA</h1>
