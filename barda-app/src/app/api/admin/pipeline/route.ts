@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import {
   runAutoPromotePipeline,
   generateSearchMissReport,
@@ -14,14 +14,9 @@ import {
  * body: { action: "auto_promote" | "search_miss" | "community" | "weekly_report", days?: number }
  */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-
-  if (!supabase) {
-    return NextResponse.json(
-      { error: "Database connection unavailable" },
-      { status: 503 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (auth instanceof NextResponse) return auth;
+  const { supabase } = auth;
 
   try {
     const body = await request.json();

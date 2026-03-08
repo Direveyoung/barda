@@ -35,14 +35,13 @@ function AnalyzeContent() {
   // Handle payment callback query params
   useEffect(() => {
     const payment = searchParams.get("payment");
-    if (payment === "success") {
-      setPaymentToast("success");
-      trackEvent("payment_completed");
-      window.history.replaceState({}, "", "/analyze");
-      setTimeout(() => setPaymentToast(null), 4000);
-    } else if (payment === "fail") {
-      setPaymentToast("fail");
-      window.history.replaceState({}, "", "/analyze");
+    if (payment === "success" || payment === "fail") {
+      setPaymentToast(payment);
+      if (payment === "success") trackEvent("payment_completed");
+      // Defer URL cleanup to next frame so toast renders first
+      requestAnimationFrame(() => {
+        window.history.replaceState({}, "", "/analyze");
+      });
       setTimeout(() => setPaymentToast(null), 4000);
     }
   }, [searchParams]);
@@ -113,7 +112,7 @@ function AnalyzeContent() {
   );
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16">
       {/* Payment Toast */}
       {paymentToast && (
         <div

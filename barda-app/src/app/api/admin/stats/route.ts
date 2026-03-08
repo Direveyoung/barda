@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function GET() {
-  const supabase = await createClient();
-
-  if (!supabase) {
-    return NextResponse.json(
-      { error: "Database connection unavailable" },
-      { status: 503 },
-    );
-  }
+  const auth = await requireAdmin();
+  if (auth instanceof NextResponse) return auth;
+  const { supabase } = auth;
 
   try {
     // --- Total Users ---
