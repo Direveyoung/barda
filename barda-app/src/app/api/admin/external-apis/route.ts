@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import {
   checkAPIHealth,
   fetchMFDSIngredients,
@@ -8,9 +9,12 @@ import {
 
 /**
  * GET /api/admin/external-apis
- * 외부 API 상태 체크 (헬스 체크)
+ * 외부 API 상태 체크 (헬스 체크) — 관리자 전용
  */
 export async function GET() {
+  const auth = await requireAdmin();
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const health = await checkAPIHealth();
     return NextResponse.json({ health, timestamp: new Date().toISOString() });
@@ -25,11 +29,14 @@ export async function GET() {
 
 /**
  * POST /api/admin/external-apis
- * 외부 API 테스트 쿼리 실행
+ * 외부 API 테스트 쿼리 실행 — 관리자 전용
  *
  * body: { api: "mfds" | "obf" | "ingredient", query: string }
  */
 export async function POST(request: NextRequest) {
+  const postAuth = await requireAdmin();
+  if (postAuth instanceof NextResponse) return postAuth;
+
   try {
     const body = await request.json();
     const { api, query } = body as { api: string; query: string };
