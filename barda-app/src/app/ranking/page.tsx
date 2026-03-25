@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import BottomNav from "@/components/BottomNav";
+import { SKIN_TYPE_LABEL } from "@/lib/constants";
 
 interface RankedPost {
   id: string;
@@ -16,10 +17,7 @@ interface RankedPost {
   comment: string | null;
 }
 
-const skinTypeLabel: Record<string, string> = {
-  dry: "건성", oily: "지성", combination: "복합성",
-  sensitive: "민감성", normal: "중성",
-};
+const skinTypeLabel = SKIN_TYPE_LABEL;
 
 const rankIcon = ["gold-medal", "silver-medal", "bronze-medal"];
 

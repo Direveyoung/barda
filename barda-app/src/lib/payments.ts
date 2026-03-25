@@ -6,6 +6,8 @@
  * alerts the user and returns without throwing.
  */
 
+import { API_URLS } from "@/lib/constants";
+
 const CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "";
 
 /* ---------- SDK loader ---------- */
@@ -49,7 +51,7 @@ function loadTossPayments(): Promise<TossPaymentsFactory> {
     }
 
     const script = document.createElement("script");
-    script.src = "https://js.tosspayments.com/v1/payment";
+    script.src = API_URLS.TOSS_SDK;
     script.async = true;
 
     script.onload = () => {

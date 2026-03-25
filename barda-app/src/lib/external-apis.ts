@@ -2,6 +2,15 @@
 /* 식약처 OpenAPI + Open Beauty Facts + 공공데이터포털 성분사전 */
 /* Production: caching (5 min TTL) + retry with backoff */
 
+import {
+  API_URLS,
+  API_TIMEOUT_MS,
+  HEALTH_CHECK_TIMEOUT_MS,
+  CACHE_TTL,
+  CACHE_MAX_SIZE,
+  CACHE_EVICT_TARGET,
+} from "@/lib/constants";
+
 /* ─── In-memory Cache ─── */
 
 interface CacheEntry<T> {
@@ -10,7 +19,6 @@ interface CacheEntry<T> {
 }
 
 const cache = new Map<string, CacheEntry<unknown>>();
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 function getCached<T>(key: string): T | null {
   const entry = cache.get(key);
@@ -23,16 +31,14 @@ function getCached<T>(key: string): T | null {
 }
 
 function setCache<T>(key: string, data: T): void {
-  // Evict if cache grows too large
-  if (cache.size > 500) {
+  if (cache.size > CACHE_MAX_SIZE) {
     const now = Date.now();
     for (const [k, v] of cache) {
       if (now > v.expiresAt) cache.delete(k);
     }
-    // Still too big? clear all
-    if (cache.size > 400) cache.clear();
+    if (cache.size > CACHE_EVICT_TARGET) cache.clear();
   }
-  cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+  cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL.API });
 }
 
 /* ─── Retry helper ─── */
@@ -50,7 +56,7 @@ async function fetchWithRetry(
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
       if (attempt < maxRetries) {
-        await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); // 1s, 2s backoff
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
       }
     }
   }
@@ -61,33 +67,33 @@ async function fetchWithRetry(
 
 /** 식약처 기능성화장품 성분 정보 */
 export interface MFDSIngredient {
-  ingredientName: string;       // 성분명
-  ingredientNameEn: string;     // 영문명
-  casNo: string;                // CAS 번호
-  purpose: string;              // 기능 (미백, 주름개선, 자외선차단 등)
-  maxConcentration: string;     // 최대 배합 한도
-  regulation: string;           // 규제 사항
+  ingredientName: string;
+  ingredientNameEn: string;
+  casNo: string;
+  purpose: string;
+  maxConcentration: string;
+  regulation: string;
 }
 
 /** Open Beauty Facts 제품 정보 */
 export interface OBFProduct {
-  code: string;                 // 바코드
-  productName: string;          // 제품명
-  brand: string;                // 브랜드
-  ingredientsList: string;      // 전성분 목록 (comma-separated)
-  ingredientsCount: number;     // 성분 수
-  categories: string;           // 카테고리
-  imageUrl: string | null;      // 이미지 URL
-  countries: string;            // 판매 국가
+  code: string;
+  productName: string;
+  brand: string;
+  ingredientsList: string;
+  ingredientsCount: number;
+  categories: string;
+  imageUrl: string | null;
+  countries: string;
 }
 
 /** 공공데이터포털 성분 매핑 */
 export interface IngredientMapping {
-  koreanName: string;           // 한국명
-  inciName: string;             // INCI 국제명
-  casNo: string;                // CAS 번호
-  ewgScore: number | null;      // EWG 등급 (1~10)
-  category: string;             // 분류 (보습, 미백, 항산화 등)
+  koreanName: string;
+  inciName: string;
+  casNo: string;
+  ewgScore: number | null;
+  category: string;
 }
 
 /** API 연동 결과 */
@@ -99,11 +105,17 @@ export interface APIResult<T> {
   timestamp: string;
 }
 
-/* ─── 1. 식약처 OpenAPI ─── */
-/* 기능성화장품 성분 정보 조회 */
-/* URL: https://apis.data.go.kr/1471000/CosmeFnctnlMaterialService */
+/* ─── Error / Success Factory ─── */
 
-const MFDS_BASE_URL = "https://apis.data.go.kr/1471000/CosmeFnctnlMaterialService/getCosmeFnctnlMaterialList";
+function createErrorResult<T>(source: string, error: string): APIResult<T> {
+  return { success: false, data: null, error, source, timestamp: new Date().toISOString() };
+}
+
+function createSuccessResult<T>(source: string, data: T): APIResult<T> {
+  return { success: true, data, error: null, source, timestamp: new Date().toISOString() };
+}
+
+/* ─── 1. 식약처 OpenAPI ─── */
 
 /**
  * 식약처 기능성화장품 성분 조회
@@ -117,13 +129,7 @@ export async function fetchMFDSIngredients(
   const key = serviceKey ?? process.env.MFDS_API_KEY ?? process.env.PUBLIC_DATA_SERVICE_KEY;
 
   if (!key) {
-    return {
-      success: false,
-      data: null,
-      error: "MFDS_API_KEY 또는 PUBLIC_DATA_SERVICE_KEY 환경변수가 필요합니다",
-      source: "mfds",
-      timestamp: new Date().toISOString(),
-    };
+    return createErrorResult("mfds", "MFDS_API_KEY 또는 PUBLIC_DATA_SERVICE_KEY 환경변수가 필요합니다");
   }
 
   const cacheKey = `mfds:${ingredientName}`;
@@ -139,18 +145,12 @@ export async function fetchMFDSIngredients(
       MTRL_NM: ingredientName,
     });
 
-    const res = await fetchWithRetry(`${MFDS_BASE_URL}?${params.toString()}`, {
-      signal: AbortSignal.timeout(10000),
+    const res = await fetchWithRetry(`${API_URLS.MFDS}?${params.toString()}`, {
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
 
     if (!res.ok) {
-      return {
-        success: false,
-        data: null,
-        error: `HTTP ${res.status}: ${res.statusText}`,
-        source: "mfds",
-        timestamp: new Date().toISOString(),
-      };
+      return createErrorResult("mfds", `HTTP ${res.status}: ${res.statusText}`);
     }
 
     const json = await res.json();
@@ -165,31 +165,15 @@ export async function fetchMFDSIngredients(
       regulation: item.ETC_MATTER ?? "",
     }));
 
-    const result: APIResult<MFDSIngredient[]> = {
-      success: true,
-      data: ingredients,
-      error: null,
-      source: "mfds",
-      timestamp: new Date().toISOString(),
-    };
+    const result = createSuccessResult("mfds", ingredients);
     setCache(cacheKey, result);
     return result;
   } catch (err) {
-    return {
-      success: false,
-      data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
-      source: "mfds",
-      timestamp: new Date().toISOString(),
-    };
+    return createErrorResult("mfds", err instanceof Error ? err.message : "Unknown error");
   }
 }
 
 /* ─── 2. Open Beauty Facts API ─── */
-/* 글로벌 K-뷰티 전성분 DB (무료 오픈소스) */
-/* URL: https://world.openbeautyfacts.org/api/v2/ */
-
-const OBF_BASE_URL = "https://world.openbeautyfacts.org";
 
 /**
  * Open Beauty Facts 바코드로 제품 조회
@@ -204,58 +188,34 @@ export async function fetchOBFByBarcode(
 
   try {
     const res = await fetchWithRetry(
-      `${OBF_BASE_URL}/api/v2/product/${barcode}.json`,
-      { signal: AbortSignal.timeout(10000) },
+      `${API_URLS.OBF}/api/v2/product/${barcode}.json`,
+      { signal: AbortSignal.timeout(API_TIMEOUT_MS) },
     );
 
     if (!res.ok) {
-      return {
-        success: false,
-        data: null,
-        error: `HTTP ${res.status}`,
-        source: "obf",
-        timestamp: new Date().toISOString(),
-      };
+      return createErrorResult("obf", `HTTP ${res.status}`);
     }
 
     const json = await res.json();
     if (json.status !== 1 || !json.product) {
-      return {
-        success: false,
-        data: null,
-        error: "제품을 찾을 수 없습니다",
-        source: "obf",
-        timestamp: new Date().toISOString(),
-      };
+      return createErrorResult("obf", "제품을 찾을 수 없습니다");
     }
 
     const p = json.product;
-    const result: APIResult<OBFProduct> = {
-      success: true,
-      data: {
-        code: p.code ?? barcode,
-        productName: p.product_name ?? p.product_name_ko ?? "",
-        brand: p.brands ?? "",
-        ingredientsList: p.ingredients_text ?? "",
-        ingredientsCount: p.ingredients_n ?? 0,
-        categories: p.categories ?? "",
-        imageUrl: p.image_url ?? null,
-        countries: p.countries ?? "",
-      },
-      error: null,
-      source: "obf",
-      timestamp: new Date().toISOString(),
-    };
+    const result = createSuccessResult<OBFProduct>("obf", {
+      code: p.code ?? barcode,
+      productName: p.product_name ?? p.product_name_ko ?? "",
+      brand: p.brands ?? "",
+      ingredientsList: p.ingredients_text ?? "",
+      ingredientsCount: p.ingredients_n ?? 0,
+      categories: p.categories ?? "",
+      imageUrl: p.image_url ?? null,
+      countries: p.countries ?? "",
+    });
     setCache(cacheKey, result);
     return result;
   } catch (err) {
-    return {
-      success: false,
-      data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
-      source: "obf",
-      timestamp: new Date().toISOString(),
-    };
+    return createErrorResult("obf", err instanceof Error ? err.message : "Unknown error");
   }
 }
 
@@ -281,18 +241,12 @@ export async function searchOBFProducts(
     });
 
     const res = await fetchWithRetry(
-      `${OBF_BASE_URL}/cgi/search.pl?${params.toString()}`,
-      { signal: AbortSignal.timeout(10000) },
+      `${API_URLS.OBF}/cgi/search.pl?${params.toString()}`,
+      { signal: AbortSignal.timeout(API_TIMEOUT_MS) },
     );
 
     if (!res.ok) {
-      return {
-        success: false,
-        data: null,
-        error: `HTTP ${res.status}`,
-        source: "obf",
-        timestamp: new Date().toISOString(),
-      };
+      return createErrorResult("obf", `HTTP ${res.status}`);
     }
 
     const json = await res.json();
@@ -309,31 +263,15 @@ export async function searchOBFProducts(
       })
     );
 
-    const result: APIResult<OBFProduct[]> = {
-      success: true,
-      data: products,
-      error: null,
-      source: "obf",
-      timestamp: new Date().toISOString(),
-    };
+    const result = createSuccessResult("obf", products);
     setCache(cacheKey, result);
     return result;
   } catch (err) {
-    return {
-      success: false,
-      data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
-      source: "obf",
-      timestamp: new Date().toISOString(),
-    };
+    return createErrorResult("obf", err instanceof Error ? err.message : "Unknown error");
   }
 }
 
 /* ─── 3. 공공데이터포털 화장품 성분사전 ─── */
-/* 화장품 전성분 정보 / 성분명 매핑 */
-/* URL: https://apis.data.go.kr/1471000/CsmtcsIngdService */
-
-const INGREDIENT_BASE_URL = "https://apis.data.go.kr/1471000/CsmtcsIngdService/getCsmtcsIngdInforList";
 
 /**
  * 공공데이터포털 성분사전 조회
@@ -347,13 +285,7 @@ export async function fetchIngredientMapping(
   const key = serviceKey ?? process.env.INGREDIENT_API_KEY ?? process.env.PUBLIC_DATA_SERVICE_KEY;
 
   if (!key) {
-    return {
-      success: false,
-      data: null,
-      error: "INGREDIENT_API_KEY 또는 PUBLIC_DATA_SERVICE_KEY 환경변수가 필요합니다",
-      source: "ingredient_dict",
-      timestamp: new Date().toISOString(),
-    };
+    return createErrorResult("ingredient_dict", "INGREDIENT_API_KEY 또는 PUBLIC_DATA_SERVICE_KEY 환경변수가 필요합니다");
   }
 
   const cacheKey = `ingd:${ingredientName}`;
@@ -369,18 +301,12 @@ export async function fetchIngredientMapping(
       INGD_NM: ingredientName,
     });
 
-    const res = await fetchWithRetry(`${INGREDIENT_BASE_URL}?${params.toString()}`, {
-      signal: AbortSignal.timeout(10000),
+    const res = await fetchWithRetry(`${API_URLS.INGREDIENT_DICT}?${params.toString()}`, {
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
 
     if (!res.ok) {
-      return {
-        success: false,
-        data: null,
-        error: `HTTP ${res.status}: ${res.statusText}`,
-        source: "ingredient_dict",
-        timestamp: new Date().toISOString(),
-      };
+      return createErrorResult("ingredient_dict", `HTTP ${res.status}: ${res.statusText}`);
     }
 
     const json = await res.json();
@@ -396,39 +322,26 @@ export async function fetchIngredientMapping(
       })
     );
 
-    const result: APIResult<IngredientMapping[]> = {
-      success: true,
-      data: mappings,
-      error: null,
-      source: "ingredient_dict",
-      timestamp: new Date().toISOString(),
-    };
+    const result = createSuccessResult("ingredient_dict", mappings);
     setCache(cacheKey, result);
     return result;
   } catch (err) {
-    return {
-      success: false,
-      data: null,
-      error: err instanceof Error ? err.message : "Unknown error",
-      source: "ingredient_dict",
-      timestamp: new Date().toISOString(),
-    };
+    return createErrorResult("ingredient_dict", err instanceof Error ? err.message : "Unknown error");
   }
 }
 
 /* ─── Combined Ingredient Lookup ─── */
-/* Queries both MFDS + ingredient dict in parallel, merges results */
 
 export interface EnrichedIngredient {
   name: string;
   nameEn: string | null;
   casNo: string | null;
-  purpose: string | null;          // 기능성 용도 (MFDS)
-  maxConcentration: string | null;  // 최대 배합한도 (MFDS)
-  regulation: string | null;        // 규제 사항 (MFDS)
-  ewgScore: number | null;          // EWG 등급 (ingredient dict)
-  category: string | null;          // 성분 분류 (ingredient dict)
-  sources: string[];                // data sources used
+  purpose: string | null;
+  maxConcentration: string | null;
+  regulation: string | null;
+  ewgScore: number | null;
+  category: string | null;
+  sources: string[];
 }
 
 export async function lookupIngredientEnriched(
@@ -438,7 +351,6 @@ export async function lookupIngredientEnriched(
   const cached = getCached<APIResult<EnrichedIngredient>>(cacheKey);
   if (cached) return cached;
 
-  // Fire both APIs in parallel (graceful if either fails)
   const [mfdsResult, dictResult] = await Promise.all([
     fetchMFDSIngredients(ingredientName).catch(() => null),
     fetchIngredientMapping(ingredientName).catch(() => null),
@@ -453,7 +365,6 @@ export async function lookupIngredientEnriched(
   let ewgScore: number | null = null;
   let category: string | null = null;
 
-  // Extract from MFDS
   if (mfdsResult?.success && mfdsResult.data && mfdsResult.data.length > 0) {
     const m = mfdsResult.data[0];
     nameEn = m.ingredientNameEn || null;
@@ -464,7 +375,6 @@ export async function lookupIngredientEnriched(
     sources.push("mfds");
   }
 
-  // Extract from ingredient dict
   if (dictResult?.success && dictResult.data && dictResult.data.length > 0) {
     const d = dictResult.data[0];
     if (!nameEn) nameEn = d.inciName || null;
@@ -475,32 +385,20 @@ export async function lookupIngredientEnriched(
   }
 
   if (sources.length === 0) {
-    return {
-      success: false,
-      data: null,
-      error: "외부 API에서 성분 정보를 찾지 못했습니다",
-      source: "enriched",
-      timestamp: new Date().toISOString(),
-    };
+    return createErrorResult("enriched", "외부 API에서 성분 정보를 찾지 못했습니다");
   }
 
-  const result: APIResult<EnrichedIngredient> = {
-    success: true,
-    data: {
-      name: ingredientName,
-      nameEn,
-      casNo,
-      purpose,
-      maxConcentration,
-      regulation,
-      ewgScore,
-      category,
-      sources,
-    },
-    error: null,
-    source: "enriched",
-    timestamp: new Date().toISOString(),
-  };
+  const result = createSuccessResult<EnrichedIngredient>("enriched", {
+    name: ingredientName,
+    nameEn,
+    casNo,
+    purpose,
+    maxConcentration,
+    regulation,
+    ewgScore,
+    category,
+    sources,
+  });
   setCache(cacheKey, result);
   return result;
 }
@@ -513,27 +411,25 @@ export interface APIHealthStatus {
   ingredientDict: { available: boolean; hasKey: boolean };
 }
 
+const HEALTH_CHECK_INGREDIENT = "나이아신아마이드";
+
 /** Check all API availability (with actual connectivity test) */
 export async function checkAPIHealth(): Promise<APIHealthStatus> {
   const publicKey = process.env.PUBLIC_DATA_SERVICE_KEY;
   const mfdsKey = process.env.MFDS_API_KEY ?? publicKey;
   const ingredientKey = process.env.INGREDIENT_API_KEY ?? publicKey;
 
-  // Test all APIs in parallel
   const [obfOk, mfdsOk, ingredientOk] = await Promise.all([
-    // OBF: no key, just check reachability
-    fetch(`${OBF_BASE_URL}/api/v2/product/0.json`, { signal: AbortSignal.timeout(5000) })
+    fetch(`${API_URLS.OBF}/api/v2/product/0.json`, { signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS) })
       .then(res => res.ok || res.status === 404)
       .catch(() => false),
-    // MFDS: test with a known ingredient if key exists
     mfdsKey
-      ? fetch(`${MFDS_BASE_URL}?${new URLSearchParams({ serviceKey: mfdsKey, type: "json", numOfRows: "1", pageNo: "1", MTRL_NM: "나이아신아마이드" })}`, { signal: AbortSignal.timeout(8000) })
+      ? fetch(`${API_URLS.MFDS}?${new URLSearchParams({ serviceKey: mfdsKey, type: "json", numOfRows: "1", pageNo: "1", MTRL_NM: HEALTH_CHECK_INGREDIENT })}`, { signal: AbortSignal.timeout(API_TIMEOUT_MS) })
           .then(res => res.ok)
           .catch(() => false)
       : Promise.resolve(false),
-    // Ingredient dict: test with known ingredient if key exists
     ingredientKey
-      ? fetch(`${INGREDIENT_BASE_URL}?${new URLSearchParams({ serviceKey: ingredientKey, type: "json", numOfRows: "1", pageNo: "1", INGD_NM: "나이아신아마이드" })}`, { signal: AbortSignal.timeout(8000) })
+      ? fetch(`${API_URLS.INGREDIENT_DICT}?${new URLSearchParams({ serviceKey: ingredientKey, type: "json", numOfRows: "1", pageNo: "1", INGD_NM: HEALTH_CHECK_INGREDIENT })}`, { signal: AbortSignal.timeout(API_TIMEOUT_MS) })
           .then(res => res.ok)
           .catch(() => false)
       : Promise.resolve(false),

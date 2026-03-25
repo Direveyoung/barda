@@ -8,6 +8,7 @@ import RoutinePostCard, {
 import BottomNav from "@/components/BottomNav";
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import { SKIN_TYPE_LABEL } from "@/lib/constants";
 
 type TabKey = "analysis" | "shared" | "liked" | "diary";
 
@@ -25,10 +26,7 @@ const conditionLabel: Record<string, string> = {
   good: "좋음", normal: "보통", meh: "그저그럭", bad: "별로", terrible: "나쁨",
 };
 
-const skinTypeLabel: Record<string, string> = {
-  dry: "건성", oily: "지성", combination: "복합성",
-  sensitive: "민감성", normal: "중성",
-};
+const skinTypeLabel = SKIN_TYPE_LABEL;
 
 interface AnalysisHistory {
   score: number;

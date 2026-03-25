@@ -419,11 +419,6 @@ export function toEwgScore(safetyScore: number): number {
   return Math.max(1, Math.min(10, 11 - safetyScore * 2));
 }
 
-/** Normalize INCI ingredient name for comparison */
-export function normalizeINCI(name: string): string {
-  return name.trim().toLowerCase().replace(/\s+/g, " ");
-}
-
 /* ─── Lookup Helpers ─── */
 
 /**
@@ -475,5 +470,3 @@ export function lookupIngredient(ingredientName: string): IngredientInfo | null 
   return null;
 }
 
-/** Alias for lookupIngredient (backward compat) */
-export const lookupIngredientKorean = lookupIngredient;

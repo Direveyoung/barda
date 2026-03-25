@@ -8,18 +8,13 @@ import NotificationBell from "@/components/NotificationBell";
 import RoutinePostCard, { type RoutinePost } from "@/components/RoutinePostCard";
 import Icon from "@/components/Icon";
 import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip, type DailyForecast } from "@/lib/weather";
+import { DAY_NAMES_KO, SKIN_TYPE_LABEL } from "@/lib/constants";
 
 /* ─── 요일 이름 ─── */
-const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
+const DAY_NAMES = DAY_NAMES_KO;
 
 /* ─── 피부타입 라벨 ─── */
-const skinTypeLabel: Record<string, string> = {
-  dry: "건성",
-  oily: "지성",
-  combination: "복합성",
-  sensitive: "민감성",
-  normal: "중성",
-};
+const skinTypeLabel = SKIN_TYPE_LABEL;
 
 /* ─── 피부 컨디션 옵션 ─── */
 const conditionOptions = [

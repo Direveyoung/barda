@@ -7,6 +7,7 @@ import { analyzeRoutine } from "@/lib/analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestPayment } from "@/lib/payments";
 import { trackEvent } from "@/lib/events";
+import { PAYMENT } from "@/lib/constants";
 import SkinTypeStep from "@/components/SkinTypeStep";
 import ConcernStep from "@/components/ConcernStep";
 import ProductStep from "@/components/ProductStep";
@@ -90,7 +91,7 @@ function AnalyzeContent() {
     }
     trackEvent("payment_initiated");
     const orderId = `BARDA-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    requestPayment(orderId, 9900, "BARDA 프리미엄 분석", user.email ?? undefined);
+    requestPayment(orderId, PAYMENT.PREMIUM_PRICE, PAYMENT.ORDER_NAME, user.email ?? undefined);
   }, [user, router]);
 
   const handleSkinTypeSelect = useCallback(

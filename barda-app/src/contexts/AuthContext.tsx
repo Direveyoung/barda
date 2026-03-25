@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { STORAGE_KEYS } from "@/lib/constants";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface AuthState {
@@ -96,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function checkPaidStatus(userId: string) {
     // Dev override
-    if (typeof window !== "undefined" && localStorage.getItem("barda_dev_unlock") === "true") {
+    if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.DEV_UNLOCK) === "true") {
       setIsPaid(true);
       return;
     }
@@ -116,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const testLogin = () => {
     localStorage.setItem(TEST_USER_KEY, "true");
-    localStorage.setItem("barda_dev_unlock", "true");
+    localStorage.setItem(STORAGE_KEYS.DEV_UNLOCK, "true");
     setUser(makeTestUser());
     setIsPaid(true);
     setIsLoading(false);
@@ -126,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear test user
     if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
       localStorage.removeItem(TEST_USER_KEY);
-      localStorage.removeItem("barda_dev_unlock");
+      localStorage.removeItem(STORAGE_KEYS.DEV_UNLOCK);
       setUser(null);
       setSession(null);
       setIsPaid(false);
