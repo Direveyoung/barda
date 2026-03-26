@@ -27,7 +27,8 @@ create table if not exists payments (
   order_id text unique not null,
   amount int not null,
   status text not null default 'pending',
-  toss_response jsonb,
+  raw_response jsonb,
+  provider text default 'toss',
   created_at timestamptz default now()
 );
 
@@ -68,9 +69,9 @@ create table if not exists report_feedback (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete set null,
   routine_id uuid references user_routines(id) on delete cascade,
-  target_type text not null,
-  target_id text,
-  is_positive boolean not null,
+  conflict_rule_id text,
+  is_helpful boolean not null,
+  session_id text,
   created_at timestamptz default now()
 );
 
@@ -81,9 +82,9 @@ create table if not exists routine_posts (
   routine_id uuid references user_routines(id) on delete cascade,
   skin_type text not null,
   concerns text[] not null default '{}',
-  products jsonb not null,
+  products_json jsonb not null,
   score int not null,
-  satisfaction int not null check (satisfaction between 1 and 5),
+  rating int not null check (rating between 1 and 5),
   comment text,
   like_count int default 0,
   comment_count int default 0,
