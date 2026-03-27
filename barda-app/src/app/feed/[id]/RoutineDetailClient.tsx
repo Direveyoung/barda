@@ -111,16 +111,13 @@ export default function RoutineDetailClient({ postId }: { postId: string }) {
     async function load() {
       try {
         const [postRes, commentsRes] = await Promise.all([
-          fetch(`/api/routines?page=1&limit=50`),
+          fetch(`/api/routines/${postId}`),
           fetch(`/api/routines/${postId}/comments`),
         ]);
 
         if (postRes.ok) {
           const postJson = await postRes.json();
-          const found = (postJson.posts ?? []).find(
-            (p: PostDetail) => p.id === postId
-          );
-          setPost(found ?? null);
+          setPost(postJson.post ?? null);
         }
 
         if (commentsRes.ok) {

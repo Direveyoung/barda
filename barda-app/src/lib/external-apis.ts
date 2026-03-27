@@ -10,7 +10,7 @@ import {
   CACHE_MAX_SIZE,
   CACHE_EVICT_TARGET,
 } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/client";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 
 /* ─── In-memory Cache ─── */
 
@@ -411,7 +411,7 @@ export async function lookupIngredientEnriched(
 
 async function saveEnrichedToDB(enriched: EnrichedIngredient): Promise<void> {
   try {
-    const supabase = createClient();
+    const supabase = await createServerClient();
     if (!supabase) return;
 
     await supabase.from("ingredients").upsert(

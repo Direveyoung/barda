@@ -85,10 +85,11 @@ export function matchIngredients(text: string): MatchResult {
     }
   }
 
+  const uniqueMatched = [...new Set(matched)];
   return {
     parsed,
-    matched: [...new Set(matched)],
+    matched: uniqueMatched,
     unmatched,
-    matchRate: parsed.length > 0 ? matched.length / parsed.length : 0,
+    matchRate: parsed.length > 0 ? uniqueMatched.length / parsed.length : 0,
   };
 }

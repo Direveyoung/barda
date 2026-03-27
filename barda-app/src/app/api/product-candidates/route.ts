@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import type {
   ProductCandidateResponse,
   ProductCandidateListResponse,
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ProductCan
 
   const { searchParams } = request.nextUrl;
   const status = searchParams.get("status") ?? "pending";
-  const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "30", 10));
+  const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") ?? "30", 10) || 30));
 
   let query = supabase
     .from("product_candidates")
@@ -109,10 +110,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<ProductCan
 
 // PATCH: Update candidate status (admin: promote or reject)
 export async function PATCH(request: NextRequest): Promise<NextResponse<ApiOk | ApiError>> {
-  const supabase = await createClient();
-  if (!supabase) {
-    return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
-  }
+  const auth = await requireAdmin();
+  if (auth instanceof NextResponse) return auth as NextResponse<ApiError>;
+  const { supabase } = auth;
 
   const result = parseWithZod(updateCandidateSchema, await request.json().catch(() => null));
 

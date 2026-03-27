@@ -15,6 +15,7 @@ export const CONCERN_LABEL: Record<string, string> = {
   acne: "여드름",
   wrinkle: "주름",
   pigmentation: "색소침착",
+  pigment: "잡티·색소침착",
   dryness: "건조",
   sensitivity: "민감",
   pore: "모공",
@@ -22,6 +23,7 @@ export const CONCERN_LABEL: Record<string, string> = {
   whitehead: "화이트헤드",
   redness: "홍조",
   darkCircle: "다크서클",
+  dullness: "칙칙함·톤업",
 };
 
 /* ── 결제 ── */

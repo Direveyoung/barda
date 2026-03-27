@@ -120,14 +120,14 @@ export default function MypageClient() {
   }, [activeTab, fetchSharedPosts, fetchLikedPosts]);
 
   function handleLike(postId: string) {
-    const update = (posts: RoutinePost[], setter: (p: RoutinePost[]) => void) => {
-      setter(posts.map((p) => p.id === postId ? { ...p, like_count: p.like_count + 1 } : p));
+    const update = (setter: (fn: (prev: RoutinePost[]) => RoutinePost[]) => void) => {
+      setter((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: p.like_count + 1 } : p));
       fetch(`/api/routines/${postId}/like`, { method: "POST" }).catch(() => {
-        setter(posts.map((p) => p.id === postId ? { ...p, like_count: p.like_count - 1 } : p));
+        setter((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: p.like_count - 1 } : p));
       });
     };
-    if (activeTab === "shared") update(sharedPosts, setSharedPosts);
-    if (activeTab === "liked") update(likedPosts, setLikedPosts);
+    if (activeTab === "shared") update(setSharedPosts);
+    if (activeTab === "liked") update(setLikedPosts);
   }
 
   function formatDate(dateStr: string | undefined): string {
