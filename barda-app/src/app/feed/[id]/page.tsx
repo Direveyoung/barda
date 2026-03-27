@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import RoutineDetailClient from "./RoutineDetailClient";
+import { SKIN_TYPE_LABEL } from "@/lib/constants";
 
-const skinTypeLabel: Record<string, string> = {
-  dry: "건성", oily: "지성", combination: "복합성",
-  sensitive: "민감성", normal: "중성",
-};
+const skinTypeLabel = SKIN_TYPE_LABEL;
 
 export async function generateMetadata({
   params,

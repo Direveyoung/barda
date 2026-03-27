@@ -2,19 +2,24 @@ import type { Product, CategoryItem } from "@/data/products";
 import { CATEGORIES } from "@/data/products";
 import { CONFLICT_RULES, MISSING_STEP_RULES } from "@/data/rules";
 import type { ConflictRule } from "@/data/rules";
+import { SCORE, WEEKDAY_NAMES_KO, SCHEDULE_DAYS } from "@/lib/constants";
 
 /* ─── Helpers ─── */
 
-function getAllCategories(): CategoryItem[] {
-  const all: CategoryItem[] = [];
-  Object.values(CATEGORIES).forEach((g) =>
-    g.items.forEach((i) => all.push(i))
-  );
-  return all;
+export function findCategory(id: string): CategoryItem | undefined {
+  for (const group of Object.values(CATEGORIES)) {
+    const found = group.items.find((c) => c.id === id);
+    if (found) return found;
+  }
+  return undefined;
 }
 
-export function findCategory(id: string): CategoryItem | undefined {
-  return getAllCategories().find((c) => c.id === id);
+export function getCategoryLabel(id: string): string {
+  return findCategory(id)?.label ?? id;
+}
+
+export function getCategoryIcon(id: string): string {
+  return findCategory(id)?.icon ?? "bottle";
 }
 
 /** Get effective active IDs for a product (categoryId + active_flags) */
@@ -253,34 +258,20 @@ function calculateScore(
   missingSteps: MissingStep[],
   products: RoutineProduct[]
 ): number {
-  let score = 100;
+  let score = SCORE.BASE;
 
   for (const c of conflicts) {
-    switch (c.severity) {
-      case "critical":
-        score -= 20;
-        break;
-      case "high":
-        score -= 15;
-        break;
-      case "medium":
-        score -= 8;
-        break;
-      case "low":
-        score -= 3;
-        break;
-    }
+    score -= SCORE.PENALTY[c.severity];
   }
 
   for (const m of missingSteps) {
-    if (m.priority === "critical") score -= 25;
-    else score -= 10;
+    score -= SCORE.MISSING_STEP[m.priority];
   }
 
   // Bonus for balanced routine
   const categoryIds = new Set(products.map((p) => p.categoryId));
-  if (categoryIds.size >= 5) score += 5;
-  if (categoryIds.has("sunscreen")) score += 5;
+  if (categoryIds.size >= 5) score += SCORE.BONUS.BALANCED_ROUTINE;
+  if (categoryIds.has("sunscreen")) score += SCORE.BONUS.HAS_SUNSCREEN;
 
   return Math.max(0, Math.min(100, score));
 }
@@ -366,7 +357,7 @@ function generatePMTips(
 /* ─── 7-Day Calendar ─── */
 
 function buildCalendar(products: RoutineProduct[]): DaySchedule[] {
-  const days = ["월", "화", "수", "목", "금", "토", "일"];
+  const days = WEEKDAY_NAMES_KO;
   const ids = products.flatMap((p) => getActiveIds(p));
   const hasRetinol = ids.includes("retinol");
   const hasAHA =
@@ -378,29 +369,17 @@ function buildCalendar(products: RoutineProduct[]): DaySchedule[] {
     let pmIcon = "moon";
     let pmLabel = "기본 루틴";
 
-    if (hasRetinol && hasAHA) {
-      // Retinol: Tue, Thu, Sat / Exfoliate: Wed, Sun
-      if ([1, 3, 5].includes(i)) {
-        isRetinolDay = true;
-        pmIcon = "purple-heart";
-        pmLabel = "레티놀";
-      } else if ([2, 6].includes(i)) {
-        isExfoliateDay = true;
-        pmIcon = "sparkle";
-        pmLabel = "각질케어";
-      }
-    } else if (hasRetinol) {
-      if ([1, 3, 5].includes(i)) {
-        isRetinolDay = true;
-        pmIcon = "purple-heart";
-        pmLabel = "레티놀";
-      }
-    } else if (hasAHA) {
-      if ([2, 6].includes(i)) {
-        isExfoliateDay = true;
-        pmIcon = "sparkle";
-        pmLabel = "각질케어";
-      }
+    const isRetinolSchedule = (SCHEDULE_DAYS.RETINOL as readonly number[]).includes(i);
+    const isExfoliateSchedule = (SCHEDULE_DAYS.EXFOLIATE as readonly number[]).includes(i);
+
+    if (hasRetinol && isRetinolSchedule) {
+      isRetinolDay = true;
+      pmIcon = "purple-heart";
+      pmLabel = "레티놀";
+    } else if (hasAHA && isExfoliateSchedule) {
+      isExfoliateDay = true;
+      pmIcon = "sparkle";
+      pmLabel = "각질케어";
     }
 
     return { day, isRetinolDay, isExfoliateDay, pmIcon, pmLabel };

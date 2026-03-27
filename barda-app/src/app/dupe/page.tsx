@@ -2,8 +2,9 @@
 
 import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { ALL_PRODUCTS, type Product, CATEGORIES, type CategoryItem } from "@/data/products";
+import { ALL_PRODUCTS, type Product } from "@/data/products";
 import { searchProducts } from "@/lib/search";
+import { getCategoryLabel, getCategoryIcon } from "@/lib/analysis";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 
@@ -115,22 +116,6 @@ function calculatePopularity(product: Product): number {
 const CONCERN_TAGS = new Set(["저자극", "진정", "수분", "안티에이징", "미백", "보습강화", "톤업", "트러블", "각질", "모공", "민감성추천", "피지조절", "탄력", "장벽강화"]);
 
 /* ─── Helpers ─── */
-
-function getCategoryLabel(categoryId: string): string {
-  for (const group of Object.values(CATEGORIES)) {
-    const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.label;
-  }
-  return categoryId;
-}
-
-function getCategoryIcon(categoryId: string): string {
-  for (const group of Object.values(CATEGORIES)) {
-    const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.icon;
-  }
-  return "bottle";
-}
 
 /** Normalize ingredient for comparison */
 function normalizeIngredient(ing: string): string {

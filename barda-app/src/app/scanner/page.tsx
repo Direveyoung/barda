@@ -11,9 +11,9 @@ import {
   getSafetyLevel,
   toEwgScore,
   type IngredientInfo,
-  type SafetyLevel,
 } from "@/data/ingredients";
 import { type OBFProduct } from "@/lib/external-apis";
+import { SAFETY_LEVEL_CONFIG } from "@/lib/constants";
 
 /* ─── Types ─── */
 
@@ -30,14 +30,6 @@ interface BarcodeResult {
 }
 
 type CameraState = "idle" | "requesting" | "active" | "denied" | "captured";
-
-/* ─── Safety badge colors ─── */
-
-const SAFETY_CONFIG: Record<SafetyLevel, { label: string; bg: string; text: string; dot: string }> = {
-  safe: { label: "안전", bg: "bg-green-50", text: "text-green-600", dot: "bg-green-400" },
-  moderate: { label: "보통", bg: "bg-amber-50", text: "text-amber-600", dot: "bg-amber-400" },
-  caution: { label: "주의", bg: "bg-red-50", text: "text-red-600", dot: "bg-red-400" },
-};
 
 /* ─── Helpers ─── */
 
@@ -277,7 +269,7 @@ export default function ScannerPage() {
         <div className="space-y-2">
           {ingredients.map((ing, idx) => {
             if (ing.info) {
-              const config = SAFETY_CONFIG[getSafetyLevel(ing.info.safetyScore)];
+              const config = SAFETY_LEVEL_CONFIG[getSafetyLevel(ing.info.safetyScore)];
               return (
                 <div
                   key={`${ing.raw}-${idx}`}

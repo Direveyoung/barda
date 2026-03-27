@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import { formatRelativeTime } from "@/lib/date-utils";
+import { STORAGE_KEYS, NOTIFICATION_DISPLAY_MAX } from "@/lib/constants";
 
 interface Notification {
   id: string;
@@ -12,17 +14,6 @@ interface Notification {
   link: string;
   read: boolean;
   createdAt: string;
-}
-
-function formatTimeAgo(dateStr: string): string {
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const diffMin = Math.floor(diffMs / 60_000);
-  const diffHour = Math.floor(diffMs / 3_600_000);
-  const diffDay = Math.floor(diffMs / 86_400_000);
-  if (diffMin < 1) return "방금";
-  if (diffMin < 60) return `${diffMin}분 전`;
-  if (diffHour < 24) return `${diffHour}시간 전`;
-  return `${diffDay}일 전`;
 }
 
 const typeIconName: Record<string, { name: string; className: string }> = {
@@ -41,7 +32,7 @@ export default function NotificationBell() {
   useEffect(() => {
     if (!user || typeof window === "undefined") return;
     try {
-      const data = localStorage.getItem(`barda_notifications_${user.id}`);
+      const data = localStorage.getItem(STORAGE_KEYS.notifications(user.id));
       if (data) {
         setNotifications(JSON.parse(data));
       }
@@ -67,7 +58,7 @@ export default function NotificationBell() {
     setNotifications(updated);
     try {
       localStorage.setItem(
-        `barda_notifications_${user.id}`,
+        STORAGE_KEYS.notifications(user.id),
         JSON.stringify(updated)
       );
     } catch { /* ignore */ }
@@ -107,7 +98,7 @@ export default function NotificationBell() {
             </div>
           ) : (
             <div>
-              {notifications.slice(0, 20).map((n) => (
+              {notifications.slice(0, NOTIFICATION_DISPLAY_MAX).map((n) => (
                 <Link
                   key={n.id}
                   href={n.link}
@@ -125,7 +116,7 @@ export default function NotificationBell() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-700 leading-relaxed">{n.message}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{formatTimeAgo(n.createdAt)}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{formatRelativeTime(n.createdAt)}</p>
                   </div>
                 </Link>
               ))}

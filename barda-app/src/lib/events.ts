@@ -1,9 +1,11 @@
 /**
  * Funnel event tracking.
  *
- * Events are buffered in memory and flushed to `/api/events` every 5 seconds
+ * Events are buffered in memory and flushed to `/api/events` periodically
  * or when the page is about to unload.
  */
+
+import { STORAGE_KEYS, EVENT_FLUSH_INTERVAL_MS } from "@/lib/constants";
 
 /* ---------- Event types ---------- */
 
@@ -29,15 +31,13 @@ interface QueuedEvent {
 
 /* ---------- Session ID ---------- */
 
-const SESSION_KEY = "barda_session_id";
-
 export function getSessionId(): string {
   if (typeof window === "undefined") return "";
 
-  let id = sessionStorage.getItem(SESSION_KEY);
+  let id = sessionStorage.getItem(STORAGE_KEYS.SESSION_ID);
   if (!id) {
     id = crypto.randomUUID();
-    sessionStorage.setItem(SESSION_KEY, id);
+    sessionStorage.setItem(STORAGE_KEYS.SESSION_ID, id);
   }
   return id;
 }
@@ -52,7 +52,7 @@ function ensureFlushTimer() {
 
   flushTimer = setInterval(() => {
     flushEvents();
-  }, 5_000);
+  }, EVENT_FLUSH_INTERVAL_MS);
 
   if (typeof window !== "undefined") {
     window.addEventListener("visibilitychange", () => {

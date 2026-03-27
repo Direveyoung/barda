@@ -2,6 +2,8 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { SKIN_TYPE_LABEL, CONCERN_LABEL } from "@/lib/constants";
+import { formatRelativeTime } from "@/lib/date-utils";
 
 export interface RoutinePost {
   id: string;
@@ -20,20 +22,6 @@ interface RoutinePostCardProps {
   post: RoutinePost;
   onLike: (id: string) => void;
   isLiked?: boolean;
-}
-
-function formatRelativeTime(dateStr: string): string {
-  const now = Date.now();
-  const date = new Date(dateStr).getTime();
-  const diffMs = now - date;
-  const diffMin = Math.floor(diffMs / 60_000);
-  const diffHour = Math.floor(diffMs / 3_600_000);
-  const diffDay = Math.floor(diffMs / 86_400_000);
-
-  if (diffMin < 1) return "방금";
-  if (diffMin < 60) return `${diffMin}분 전`;
-  if (diffHour < 24) return `${diffHour}시간 전`;
-  return `${diffDay}일 전`;
 }
 
 function anonymize(prefix: string): string {
@@ -58,26 +46,8 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-const skinTypeLabel: Record<string, string> = {
-  dry: "건성",
-  oily: "지성",
-  combination: "복합성",
-  sensitive: "민감성",
-  normal: "중성",
-};
-
-const concernLabel: Record<string, string> = {
-  acne: "여드름",
-  wrinkle: "주름",
-  pigmentation: "색소침착",
-  dryness: "건조",
-  sensitivity: "민감",
-  pore: "모공",
-  blackhead: "블랙헤드",
-  whitehead: "화이트헤드",
-  redness: "홍조",
-  darkCircle: "다크서클",
-};
+const skinTypeLabel = SKIN_TYPE_LABEL;
+const concernLabel = CONCERN_LABEL;
 
 export default function RoutinePostCard({
   post,
