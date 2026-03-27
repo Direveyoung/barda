@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { ALL_PRODUCTS, type Product, CATEGORIES, type CategoryItem } from "@/data/products";
+import { ALL_PRODUCTS, type Product } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import {
   INGREDIENT_DB,
@@ -12,6 +12,8 @@ import {
   lookupIngredient,
   type IngredientInfo,
 } from "@/data/ingredients";
+import { getCategoryLabel, getCategoryIcon } from "@/lib/analysis";
+import { getSafetyConfig } from "@/lib/constants";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 
@@ -51,53 +53,11 @@ interface ProfileData {
 
 /* ─── Helpers ─── */
 
-function getCategoryIcon(categoryId: string): string {
-  for (const group of Object.values(CATEGORIES)) {
-    const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.icon;
-  }
-  return "bottle";
-}
+function getSafetyColor(score: number): string { return getSafetyConfig(score).color; }
+function getSafetyBg(score: number): string { return getSafetyConfig(score).bg; }
+function getSafetyDotColor(score: number): string { return getSafetyConfig(score).dot; }
 
-function getCategoryLabel(categoryId: string): string {
-  for (const group of Object.values(CATEGORIES)) {
-    const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.label;
-  }
-  return categoryId;
-}
-
-function getSafetyColor(score: number): string {
-  if (score >= 5) return "text-green-500";
-  if (score >= 4) return "text-emerald-500";
-  if (score >= 3) return "text-amber-500";
-  if (score >= 2) return "text-orange-500";
-  return "text-red-500";
-}
-
-function getSafetyBg(score: number): string {
-  if (score >= 5) return "bg-green-50";
-  if (score >= 4) return "bg-emerald-50";
-  if (score >= 3) return "bg-amber-50";
-  if (score >= 2) return "bg-orange-50";
-  return "bg-red-50";
-}
-
-function getSafetyDotColor(score: number): string {
-  if (score >= 5) return "bg-green-500";
-  if (score >= 4) return "bg-emerald-500";
-  if (score >= 3) return "bg-amber-500";
-  if (score >= 2) return "bg-orange-500";
-  return "bg-red-500";
-}
-
-function getSafetyLabel(score: number): string {
-  if (score >= 5) return "\uB9E4\uC6B0 \uC548\uC804";
-  if (score >= 4) return "\uC548\uC804";
-  if (score >= 3) return "\uBCF4\uD1B5";
-  if (score >= 2) return "\uC8FC\uC758";
-  return "\uACBD\uACE0";
-}
+function getSafetyLabel(score: number): string { return getSafetyConfig(score).label; }
 
 function getOverallScoreColor(score: number): string {
   if (score >= 4.5) return "text-green-600";

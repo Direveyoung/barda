@@ -7,6 +7,7 @@
 import type { IngredientInfo } from "@/data/ingredients";
 import { INGREDIENT_DB } from "@/data/ingredients";
 import { createClient } from "@/lib/supabase/client";
+import { CACHE_TTL } from "@/lib/constants";
 
 /* ─── Types ─── */
 
@@ -29,10 +30,9 @@ interface DBInteraction {
 
 let cachedDB: Record<string, IngredientInfo> | null = null;
 let cacheTimestamp = 0;
-const CACHE_TTL_MS = 5 * 60 * 1000;
 
 function isCacheValid(): boolean {
-  return cachedDB !== null && Date.now() - cacheTimestamp < CACHE_TTL_MS;
+  return cachedDB !== null && Date.now() - cacheTimestamp < CACHE_TTL.API;
 }
 
 /* ─── Public API ─── */

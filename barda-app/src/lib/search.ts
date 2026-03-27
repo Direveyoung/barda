@@ -1,8 +1,6 @@
 import { Product } from '@/data/products';
 import { BRAND_ALIASES, PRODUCT_ALIASES } from '@/data/aliases';
-
-const DEFAULT_MAX_RESULTS = 8;
-const DEFAULT_FUZZY_THRESHOLD = 2;
+import { SEARCH_DEFAULTS } from '@/lib/constants';
 
 /**
  * Normalize a string for comparison: collapse whitespace, remove spaces,
@@ -149,7 +147,7 @@ function aliasMatch(query: string, products: Product[]): Product[] {
 function fuzzyMatch(
   query: string,
   products: Product[],
-  threshold: number = DEFAULT_FUZZY_THRESHOLD,
+  threshold: number = SEARCH_DEFAULTS.FUZZY_THRESHOLD,
 ): Product[] {
   const nQuery = normalize(query);
   if (nQuery.length === 0) return [];
@@ -213,7 +211,7 @@ function fuzzyMatch(
 export function searchProducts(
   query: string,
   products: Product[],
-  maxResults: number = DEFAULT_MAX_RESULTS,
+  maxResults: number = SEARCH_DEFAULTS.MAX_RESULTS,
 ): Product[] {
   const trimmed = query.trim();
   if (trimmed.length === 0) return [];

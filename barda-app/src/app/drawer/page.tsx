@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
-import { ALL_PRODUCTS, type Product, CATEGORIES, type CategoryItem } from "@/data/products";
+import { ALL_PRODUCTS, type Product } from "@/data/products";
 import { searchProducts } from "@/lib/search";
+import { getCategoryLabel, getCategoryIcon } from "@/lib/analysis";
+import { STORAGE_KEYS } from "@/lib/constants";
 import Icon from "@/components/Icon";
 
 /* ─── Types ─── */
@@ -26,24 +28,6 @@ const STATUS_CONFIG = {
   finished: { label: "다 씀", icon: "flag", color: "bg-gray-50 text-gray-400" },
 };
 
-const STORAGE_KEY = "barda_drawer";
-
-function getCategoryLabel(categoryId: string): string {
-  for (const group of Object.values(CATEGORIES)) {
-    const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.label;
-  }
-  return categoryId;
-}
-
-function getCategoryIcon(categoryId: string): string {
-  for (const group of Object.values(CATEGORIES)) {
-    const item = group.items.find((i: CategoryItem) => i.id === categoryId);
-    if (item) return item.icon;
-  }
-  return "bottle";
-}
-
 function daysSince(dateStr: string): number {
   const d = new Date(dateStr);
   return Math.floor((Date.now() - d.getTime()) / 86_400_000);
@@ -63,7 +47,7 @@ export default function DrawerPage() {
     if (typeof window === "undefined") return;
 
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEYS.DRAWER);
       if (saved) {
         setItems(JSON.parse(saved));
       }
@@ -74,7 +58,7 @@ export default function DrawerPage() {
   // Save to localStorage
   const saveItems = useCallback((newItems: DrawerItem[]) => {
     setItems(newItems);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
+    localStorage.setItem(STORAGE_KEYS.DRAWER, JSON.stringify(newItems));
   }, []);
 
   // Search products

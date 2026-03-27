@@ -39,6 +39,7 @@ export const STORAGE_KEYS = {
   WEATHER: "barda_weather",
   SESSION_ID: "barda_session_id",
   DEV_UNLOCK: "barda_dev_unlock",
+  DRAWER: "barda_drawer",
   notifications: (userId: string) => `barda_notifications_${userId}`,
 } as const;
 
@@ -122,9 +123,45 @@ export const TEMP_THRESHOLD = {
 
 /* ── 알림 ── */
 
-export const NOTIFICATION_MAX = 50;
 export const NOTIFICATION_DISPLAY_MAX = 20;
 
 /* ── 이벤트 플러시 간격 ── */
 
 export const EVENT_FLUSH_INTERVAL_MS = 5000;
+
+/* ── 검색 ── */
+
+export const SEARCH_DEFAULTS = {
+  MAX_RESULTS: 8,
+  FUZZY_THRESHOLD: 2,
+  SCANNER_RESULTS: 5,
+} as const;
+
+/* ── 페이지네이션 ── */
+
+export const PAGINATION = {
+  DEFAULT_PAGE_SIZE: 10,
+  MAX_PAGE_SIZE: 50,
+} as const;
+
+/* ── Safety 등급 색상 (safetyScore 1~5) ── */
+
+export const SAFETY_SCORE_CONFIG: Record<number, { label: string; color: string; bg: string; dot: string }> = {
+  5: { label: "매우 안전", color: "text-green-500", bg: "bg-green-50", dot: "bg-green-500" },
+  4: { label: "안전", color: "text-emerald-500", bg: "bg-emerald-50", dot: "bg-emerald-500" },
+  3: { label: "보통", color: "text-amber-500", bg: "bg-amber-50", dot: "bg-amber-500" },
+  2: { label: "주의", color: "text-orange-500", bg: "bg-orange-50", dot: "bg-orange-500" },
+  1: { label: "경고", color: "text-red-500", bg: "bg-red-50", dot: "bg-red-500" },
+};
+
+export function getSafetyConfig(score: number) {
+  return SAFETY_SCORE_CONFIG[Math.max(1, Math.min(5, score))] ?? SAFETY_SCORE_CONFIG[3];
+}
+
+/* ── SafetyLevel 색상 ── */
+
+export const SAFETY_LEVEL_CONFIG = {
+  safe: { label: "안전", bg: "bg-green-50", text: "text-green-600", dot: "bg-green-400" },
+  moderate: { label: "보통", bg: "bg-amber-50", text: "text-amber-600", dot: "bg-amber-400" },
+  caution: { label: "주의", bg: "bg-red-50", text: "text-red-600", dot: "bg-red-400" },
+} as const;

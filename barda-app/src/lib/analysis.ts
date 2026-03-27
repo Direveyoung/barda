@@ -14,6 +14,14 @@ export function findCategory(id: string): CategoryItem | undefined {
   return undefined;
 }
 
+export function getCategoryLabel(id: string): string {
+  return findCategory(id)?.label ?? id;
+}
+
+export function getCategoryIcon(id: string): string {
+  return findCategory(id)?.icon ?? "bottle";
+}
+
 /** Get effective active IDs for a product (categoryId + active_flags) */
 function getActiveIds(product: Product): string[] {
   const ids = [product.categoryId];

@@ -8,6 +8,7 @@
 import type { Product } from "@/data/products";
 import { ALL_PRODUCTS } from "@/data/products";
 import { createClient } from "@/lib/supabase/client";
+import { CACHE_TTL } from "@/lib/constants";
 
 /* ─── Types ─── */
 
@@ -45,10 +46,9 @@ function dbToProduct(row: DBProduct): Product {
 
 let cachedProducts: Product[] | null = null;
 let cacheTimestamp = 0;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5분
 
 function isCacheValid(): boolean {
-  return cachedProducts !== null && Date.now() - cacheTimestamp < CACHE_TTL_MS;
+  return cachedProducts !== null && Date.now() - cacheTimestamp < CACHE_TTL.API;
 }
 
 /* ─── Public API ─── */
