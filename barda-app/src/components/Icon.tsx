@@ -624,6 +624,49 @@ const ICONS: Record<string, ReactNode> = {
       <text x="12" y="17" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#7C2D12">3</text>
     </>
   ),
+
+  /* ── Community / KakaoTalk ── */
+  chat: (
+    <>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth="1.5" />
+    </>
+  ),
+  hospital: (
+    <>
+      <path d="M3 21h18M9 8h6M12 5v6M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14" strokeWidth="1.5" />
+      <path d="M9 21v-4h6v4" strokeWidth="1.5" />
+    </>
+  ),
+  "help-circle": (
+    <>
+      <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" strokeWidth="1.5" />
+      <circle cx="12" cy="17" r="0.5" fill="currentColor" />
+    </>
+  ),
+  copy: (
+    <>
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="1.5" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="1.5" />
+    </>
+  ),
+  "x-circle": (
+    <>
+      <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
+      <path d="M15 9l-6 6M9 9l6 6" strokeWidth="1.5" />
+    </>
+  ),
+  "chevron-right": (
+    <path d="M9 18l6-6-6-6" strokeWidth="2" />
+  ),
+  share: (
+    <>
+      <circle cx="18" cy="5" r="3" strokeWidth="1.5" />
+      <circle cx="6" cy="12" r="3" strokeWidth="1.5" />
+      <circle cx="18" cy="19" r="3" strokeWidth="1.5" />
+      <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" strokeWidth="1.5" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 20, className = "" }: IconProps) {

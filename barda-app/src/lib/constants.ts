@@ -40,7 +40,19 @@ export const STORAGE_KEYS = {
   SESSION_ID: "barda_session_id",
   DEV_UNLOCK: "barda_dev_unlock",
   DRAWER: "barda_drawer",
+  PROFILE: "barda_profile",
+  CHALLENGE: "barda_challenge",
+  MIGRATED: "barda_migrated_v3",
   notifications: (userId: string) => `barda_notifications_${userId}`,
+  diary: (date: string) => `barda_diary_${date}`,
+  checks: (date: string) => `barda_checks_${date}`,
+} as const;
+
+/* ── 커뮤니티/카카오톡 ── */
+
+export const COMMUNITY = {
+  KAKAO_OPEN_CHAT_URL: "https://open.kakao.com/o/gXXXXXXX",  // TODO: 실제 오픈톡 URL로 교체
+  CLINIC_LIST_URL: "https://clinic-list.vercel.app/",
 } as const;
 
 /* ── 외부 API ── */
