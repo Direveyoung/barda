@@ -229,6 +229,10 @@ export default function AdminDashboard() {
   const [pipelineRunning, setPipelineRunning] = useState<string | null>(null);
   const [weeklyReport, setWeeklyReport] = useState<WeeklyReport | null>(null);
 
+  // Bulk import state
+  const [bulkImporting, setBulkImporting] = useState(false);
+  const [bulkImportResult, setBulkImportResult] = useState<{ processed: number; succeeded: number; failed: number } | null>(null);
+
   // Admin tab
   const [activeTab, setActiveTab] = useState<"overview" | "pipeline" | "api">("overview");
 
@@ -842,6 +846,46 @@ export default function AdminDashboard() {
                   </p>
                 </button>
               </div>
+            </section>
+
+            {/* Bulk Import */}
+            <section className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">성분 벌크 임포트</h2>
+              <p className="text-xs text-gray-400 mb-4">INGREDIENT_DB 전체 성분을 MFDS API에서 조회하여 규제 데이터를 DB에 저장합니다.</p>
+              <button
+                type="button"
+                disabled={bulkImporting}
+                onClick={async () => {
+                  setBulkImporting(true);
+                  setBulkImportResult(null);
+                  try {
+                    const res = await fetch("/api/admin/import-ingredients", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        ingredients: [
+                          "나이아신아마이드", "레티놀", "아르부틴", "아데노신", "살리실산",
+                          "글리콜산", "히알루론산", "세라마이드", "판테놀", "비타민C",
+                          "트라넥삼산", "글루타치온", "펩타이드", "센텔라", "알란토인",
+                        ],
+                      }),
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      setBulkImportResult(data);
+                    }
+                  } catch { /* ignore */ }
+                  setBulkImporting(false);
+                }}
+                className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-50 hover:bg-primary-light transition-colors"
+              >
+                {bulkImporting ? "임포트 중..." : "주요 성분 15종 임포트"}
+              </button>
+              {bulkImportResult && (
+                <div className="mt-3 text-xs text-gray-600 bg-gray-50 rounded-lg p-3">
+                  처리: {bulkImportResult.processed}건 / 성공: {bulkImportResult.succeeded}건 / 실패: {bulkImportResult.failed}건
+                </div>
+              )}
             </section>
 
             {/* Pipeline Result */}

@@ -55,6 +55,24 @@ export const COMMUNITY = {
   CLINIC_LIST_URL: "https://clinic-list.vercel.app/",
 } as const;
 
+/* ── 다이어리 컨디션 점수 매핑 ── */
+
+export const CONDITION_SCORE: Record<string, number> = {
+  good: 5,
+  normal: 4,
+  meh: 3,
+  bad: 2,
+  terrible: 1,
+};
+
+export const CONDITION_LABEL: Record<string, string> = {
+  good: "좋음",
+  normal: "보통",
+  meh: "그저그럭",
+  bad: "별로",
+  terrible: "나쁨",
+};
+
 /* ── 외부 API ── */
 
 export const API_URLS = {

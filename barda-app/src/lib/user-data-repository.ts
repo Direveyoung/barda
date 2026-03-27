@@ -161,6 +161,55 @@ export async function loadDiary(userId: string, date: string): Promise<DiaryEntr
   }
 }
 
+export async function loadDiaryRange(
+  userId: string,
+  startDate: string,
+  endDate: string,
+): Promise<Record<string, DiaryEntry>> {
+  const result: Record<string, DiaryEntry> = {};
+
+  try {
+    const supabase = createClient();
+    if (supabase) {
+      const { data } = await supabase
+        .from("user_skin_diary")
+        .select("date, condition, memo")
+        .eq("user_id", userId)
+        .gte("date", startDate)
+        .lte("date", endDate)
+        .order("date");
+
+      if (data && data.length > 0) {
+        for (const row of data) {
+          const entry: DiaryEntry = { condition: row.condition, memo: row.memo ?? "" };
+          result[row.date] = entry;
+          if (typeof window !== "undefined") {
+            localStorage.setItem(STORAGE_KEYS.diary(row.date), JSON.stringify(entry));
+          }
+        }
+        return result;
+      }
+    }
+  } catch {
+    // Fall through to localStorage
+  }
+
+  // Fallback: iterate date range in localStorage
+  if (typeof window !== "undefined") {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const key = d.toISOString().slice(0, 10);
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.diary(key));
+        if (raw) result[key] = JSON.parse(raw);
+      } catch { /* ignore */ }
+    }
+  }
+
+  return result;
+}
+
 /* ─── Checklist ─── */
 
 export async function saveChecklist(

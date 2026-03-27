@@ -19,6 +19,9 @@ export interface IngredientInfo {
   goodWith: string[];     // Synergy ingredients (Korean names matching keys)
   avoidWith: string[];    // Conflicting ingredients (Korean names matching keys)
   skinTypes: string[];    // Best for: "dry", "oily", "sensitive", "combination", "normal"
+  regulation?: string;    // 규제 상태 (기능성화장품 고시원료, 배합한도 원료 등)
+  maxConcentration?: string; // 최대 배합 한도 (e.g., "2%")
+  casNo?: string;         // CAS 등록 번호
 }
 
 export const CATEGORY_LABELS: Record<IngredientInfo["category"], string> = {
@@ -65,6 +68,9 @@ export const INGREDIENT_DB: Record<string, IngredientInfo> = {
     goodWith: ["히알루론산", "세라마이드", "판테놀", "아르부틴", "트라넥삼산"],
     avoidWith: ["비타민C"],
     skinTypes: ["oily", "combination", "normal", "sensitive", "dry"],
+    regulation: "기능성화장품 고시원료",
+    maxConcentration: "2~5%",
+    casNo: "98-92-0",
   },
   비타민C: {
     name: "비타민C (아스코르빈산)",
@@ -87,6 +93,9 @@ export const INGREDIENT_DB: Record<string, IngredientInfo> = {
     goodWith: ["나이아신아마이드", "트라넥삼산", "히알루론산", "비타민C"],
     avoidWith: [],
     skinTypes: ["normal", "dry", "combination", "sensitive"],
+    regulation: "기능성화장품 고시원료",
+    maxConcentration: "2~5%",
+    casNo: "497-76-7",
   },
   트라넥삼산: {
     name: "트라넥삼산",
@@ -122,6 +131,9 @@ export const INGREDIENT_DB: Record<string, IngredientInfo> = {
     goodWith: ["히알루론산", "세라마이드", "펩타이드", "판테놀"],
     avoidWith: ["비타민C", "살리실산", "글리콜산", "벤조일퍼옥사이드"],
     skinTypes: ["normal", "combination", "oily"],
+    regulation: "기능성화장품 고시원료",
+    maxConcentration: "2,500 IU/g",
+    casNo: "68-26-8",
   },
   아데노신: {
     name: "아데노신",
@@ -133,6 +145,9 @@ export const INGREDIENT_DB: Record<string, IngredientInfo> = {
     goodWith: ["레티놀", "펩타이드", "나이아신아마이드", "히알루론산"],
     avoidWith: [],
     skinTypes: ["normal", "dry", "combination", "sensitive", "oily"],
+    regulation: "기능성화장품 고시원료",
+    maxConcentration: "0.04%",
+    casNo: "58-61-7",
   },
   펩타이드: {
     name: "펩타이드",
@@ -319,6 +334,9 @@ export const INGREDIENT_DB: Record<string, IngredientInfo> = {
     goodWith: ["나이아신아마이드", "히알루론산", "센텔라"],
     avoidWith: ["레티놀", "글리콜산", "비타민C"],
     skinTypes: ["oily", "combination"],
+    regulation: "배합한도 원료",
+    maxConcentration: "0.5~2%",
+    casNo: "69-72-7",
   },
   글리콜산: {
     name: "글리콜산 (AHA)",
@@ -365,6 +383,9 @@ export const INGREDIENT_DB: Record<string, IngredientInfo> = {
     goodWith: ["나이아신아마이드", "히알루론산"],
     avoidWith: ["레티놀", "비타민C", "글리콜산", "살리실산"],
     skinTypes: ["oily"],
+    regulation: "의약외품 원료",
+    maxConcentration: "5%",
+    casNo: "94-36-0",
   },
   아젤라산: {
     name: "아젤라산",

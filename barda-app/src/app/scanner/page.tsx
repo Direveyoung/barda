@@ -174,6 +174,19 @@ export default function ScannerPage() {
       // Try to match in local DB
       const matches = matchProductInDB(product.brand, product.productName);
       setDbMatches(matches);
+
+      // Auto-create product candidate if OBF found it but no DB match
+      if (product.productName && matches.length === 0) {
+        fetch("/api/product-candidates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            brand: product.brand || "Unknown",
+            name: product.productName,
+            category_guess: null,
+          }),
+        }).catch(() => {/* fire-and-forget */});
+      }
     } catch {
       setBarcodeError("네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
     } finally {
