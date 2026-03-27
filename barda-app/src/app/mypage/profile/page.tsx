@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
+import { saveProfile, loadProfile, type ProfileData } from "@/lib/user-data-repository";
 
 const skinTypes = [
   { value: "dry", label: "건성", icon: "desert" },
@@ -26,12 +27,6 @@ const allConcerns = [
   { value: "darkCircle", label: "다크서클" },
 ];
 
-interface ProfileData {
-  nickname: string;
-  skinType: string;
-  concerns: string[];
-}
-
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
@@ -43,18 +38,17 @@ export default function ProfileSettingsPage() {
   });
   const [saved, setSaved] = useState(false);
 
-  // Load profile from localStorage
+  // Load profile from DB (dual-read: DB → localStorage fallback)
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const userId = user?.id ?? "anonymous";
 
-    try {
-      const data = localStorage.getItem("barda_profile");
+    loadProfile(userId).then((data) => {
       if (data) {
-        const parsed = JSON.parse(data);
         setProfile({
-          nickname: parsed.nickname ?? "",
-          skinType: parsed.skinType ?? "",
-          concerns: parsed.concerns ?? [],
+          nickname: data.nickname,
+          skinType: data.skinType,
+          concerns: data.concerns,
         });
       } else if (user?.email) {
         setProfile((prev) => ({
@@ -62,7 +56,7 @@ export default function ProfileSettingsPage() {
           nickname: user.email!.split("@")[0],
         }));
       }
-    } catch { /* ignore */ }
+    });
   }, [user]);
 
   const toggleConcern = useCallback((value: string) => {
@@ -77,12 +71,12 @@ export default function ProfileSettingsPage() {
   }, []);
 
   const handleSave = useCallback(() => {
-    try {
-      localStorage.setItem("barda_profile", JSON.stringify(profile));
+    const userId = user?.id ?? "anonymous";
+    saveProfile(userId, profile).then(() => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch { /* ignore */ }
-  }, [profile]);
+    });
+  }, [profile, user]);
 
   if (authLoading) {
     return (

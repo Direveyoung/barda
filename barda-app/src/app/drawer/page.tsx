@@ -7,20 +7,8 @@ import BottomNav from "@/components/BottomNav";
 import { ALL_PRODUCTS, type Product } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import { getCategoryLabel, getCategoryIcon } from "@/lib/analysis";
-import { STORAGE_KEYS } from "@/lib/constants";
 import Icon from "@/components/Icon";
-
-/* ─── Types ─── */
-
-interface DrawerItem {
-  productId: string;
-  brand: string;
-  name: string;
-  categoryId: string;
-  openedDate: string | null; // ISO date string
-  status: "unopened" | "using" | "finished";
-  addedAt: string; // ISO date string
-}
+import { saveDrawerItems, loadDrawerItems, type DrawerItem } from "@/lib/user-data-repository";
 
 const STATUS_CONFIG = {
   unopened: { label: "미개봉", icon: "package", color: "bg-gray-100 text-gray-600" },
@@ -42,24 +30,23 @@ export default function DrawerPage() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [filterStatus, setFilterStatus] = useState<"all" | "unopened" | "using" | "finished">("all");
 
-  // Load from localStorage
+  // Load from DB (dual-read: DB → localStorage fallback)
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const userId = user?.id ?? "anonymous";
 
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.DRAWER);
-      if (saved) {
-        setItems(JSON.parse(saved));
-      }
-    } catch { /* ignore */ }
-    setLoaded(true);
-  }, []);
+    loadDrawerItems(userId).then((data) => {
+      setItems(data);
+      setLoaded(true);
+    });
+  }, [user]);
 
-  // Save to localStorage
+  // Save to DB + localStorage
   const saveItems = useCallback((newItems: DrawerItem[]) => {
     setItems(newItems);
-    localStorage.setItem(STORAGE_KEYS.DRAWER, JSON.stringify(newItems));
-  }, []);
+    const userId = user?.id ?? "anonymous";
+    saveDrawerItems(userId, newItems);
+  }, [user]);
 
   // Search products
   useEffect(() => {

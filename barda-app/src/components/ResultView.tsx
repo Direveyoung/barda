@@ -11,6 +11,8 @@ import {
 import BlurOverlay from "@/components/BlurOverlay";
 import FeedbackButtons from "@/components/FeedbackButtons";
 import ShareRoutineModal from "@/components/ShareRoutineModal";
+import KakaoOpenChat from "@/components/KakaoOpenChat";
+import SkinHelpTemplate from "@/components/SkinHelpTemplate";
 import Icon from "@/components/Icon";
 
 interface Props {
@@ -437,6 +439,16 @@ export default function ResultView({
       >
         내 루틴 공유하기
       </button>
+
+      {/* Community */}
+      <div className="space-y-3 pt-2">
+        <KakaoOpenChat skinType={skinType} />
+        <SkinHelpTemplate
+          skinType={skinType}
+          concerns={concerns}
+          recentProducts={products.map((p) => p.name)}
+        />
+      </div>
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">

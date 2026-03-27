@@ -8,7 +8,8 @@ import NotificationBell from "@/components/NotificationBell";
 import RoutinePostCard, { type RoutinePost } from "@/components/RoutinePostCard";
 import Icon from "@/components/Icon";
 import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip, type DailyForecast } from "@/lib/weather";
-import { DAY_NAMES_KO, SKIN_TYPE_LABEL } from "@/lib/constants";
+import { DAY_NAMES_KO, SKIN_TYPE_LABEL, STORAGE_KEYS } from "@/lib/constants";
+import { saveDiary, loadDiary, saveChecklist, saveChallenge, loadChallenge } from "@/lib/user-data-repository";
 
 /* ─── 요일 이름 ─── */
 const DAY_NAMES = DAY_NAMES_KO;
@@ -365,13 +366,15 @@ function LoggedInHome() {
   /* ── 최근 피드 ── */
   const [recentPosts, setRecentPosts] = useState<RoutinePost[]>([]);
 
-  // Load saved checklist & diary from localStorage
+  const userId = user?.id ?? "anonymous";
+
+  // Load saved checklist & diary
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const todayKey = today.toISOString().slice(0, 10);
 
-    // Load last routine analysis result
+    // Load last routine analysis result (session cache — stays in localStorage)
     const savedRoutine = localStorage.getItem("barda_last_routine");
     if (savedRoutine) {
       try {
@@ -385,8 +388,8 @@ function LoggedInHome() {
           checked: false,
         }));
 
-        // Restore today's checked state
-        const savedChecks = localStorage.getItem(`barda_checks_${todayKey}`);
+        // Restore today's checked state from localStorage (fast)
+        const savedChecks = localStorage.getItem(STORAGE_KEYS.checks(todayKey));
         if (savedChecks) {
           const checks = JSON.parse(savedChecks);
           amProducts.forEach((p: { name: string; checked: boolean }, i: number) => {
@@ -409,8 +412,6 @@ function LoggedInHome() {
           pmLabel: string;
         }> | undefined;
         if (calendarData && calendarData.length === 7) {
-          // Calendar is 월(0)~일(6), JS getDay() is 일(0)~토(6)
-          // Map: JS 일(0)→cal 6, 월(1)→cal 0, 화(2)→cal 1, ...
           const jsDay = today.getDay();
           const calIndex = jsDay === 0 ? 6 : jsDay - 1;
           setTodaySchedule(calendarData[calIndex]);
@@ -421,42 +422,32 @@ function LoggedInHome() {
     }
     setRoutineLoaded(true);
 
-    // Load challenge state
-    try {
-      const challengeData = localStorage.getItem("barda_challenge");
-      if (challengeData) {
-        const parsed = JSON.parse(challengeData);
-        const startDate = new Date(parsed.startDate);
-        const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
-        if (daysSince < 7) {
-          setChallengeActive(true);
-          setChallengeDay(daysSince + 1);
-          setChallengeCompleted(
-            (parsed.completedDays as boolean[]).filter(Boolean).length
-          );
-        }
+    // Load challenge state (dual-read)
+    loadChallenge(userId).then((data) => {
+      if (!data) return;
+      const startDate = new Date(data.startDate);
+      const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
+      if (daysSince < 7) {
+        setChallengeActive(true);
+        setChallengeDay(daysSince + 1);
+        setChallengeCompleted(data.completedDays.filter(Boolean).length);
       }
-    } catch { /* ignore */ }
+    });
 
-    // Load today's diary
-    const savedDiary = localStorage.getItem(`barda_diary_${todayKey}`);
-    if (savedDiary) {
-      try {
-        const parsed = JSON.parse(savedDiary);
-        setTodayCondition(parsed.condition ?? null);
-        setDiaryMemo(parsed.memo ?? "");
-        setDiarySaved(true);
-      } catch {
-        // ignore
-      }
-    }
+    // Load today's diary (dual-read)
+    loadDiary(userId, todayKey).then((entry) => {
+      if (!entry) return;
+      setTodayCondition(entry.condition);
+      setDiaryMemo(entry.memo);
+      setDiarySaved(true);
+    });
 
-    // Calculate streak
+    // Calculate streak from localStorage (fast local check)
     let count = 0;
     const d = new Date(today);
     for (let i = 0; i < 30; i++) {
       const key = d.toISOString().slice(0, 10);
-      const checks = localStorage.getItem(`barda_checks_${key}`);
+      const checks = localStorage.getItem(STORAGE_KEYS.checks(key));
       if (checks) {
         count++;
         d.setDate(d.getDate() - 1);
@@ -476,7 +467,6 @@ function LoggedInHome() {
     fetchWeather().then((data) => {
       if (data) {
         setWeather(data);
-        // Get retinol/AHA info from saved routine
         try {
           const saved = localStorage.getItem("barda_last_routine");
           if (saved) {
@@ -490,7 +480,7 @@ function LoggedInHome() {
         }
       }
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Toggle checklist item
   const toggleCheck = useCallback(
@@ -503,45 +493,37 @@ function LoggedInHome() {
           checked: !updated[time][index].checked,
         };
 
-        // Save to localStorage
+        // Save to DB + localStorage
         const todayKey = new Date().toISOString().slice(0, 10);
-        const checks = {
-          am: updated.am.map((p) => p.checked),
-          pm: updated.pm.map((p) => p.checked),
-        };
-        localStorage.setItem(`barda_checks_${todayKey}`, JSON.stringify(checks));
+        const amChecks = updated.am.map((p) => p.checked);
+        const pmChecks = updated.pm.map((p) => p.checked);
+        saveChecklist(userId, todayKey, amChecks, pmChecks);
 
         return updated;
       });
     },
-    []
+    [userId]
   );
 
   // Save diary + auto-update challenge
-  const saveDiary = useCallback(() => {
+  const handleSaveDiary = useCallback(() => {
     if (!todayCondition) return;
     const todayKey = new Date().toISOString().slice(0, 10);
-    localStorage.setItem(
-      `barda_diary_${todayKey}`,
-      JSON.stringify({ condition: todayCondition, memo: diaryMemo })
-    );
+    saveDiary(userId, todayKey, { condition: todayCondition, memo: diaryMemo });
     setDiarySaved(true);
 
     // Auto-complete today's challenge day if active
-    try {
-      const challengeData = localStorage.getItem("barda_challenge");
-      if (challengeData) {
-        const parsed = JSON.parse(challengeData);
-        const startDate = new Date(parsed.startDate);
-        const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
-        if (daysSince >= 0 && daysSince < 7 && !parsed.completedDays[daysSince]) {
-          parsed.completedDays[daysSince] = true;
-          localStorage.setItem("barda_challenge", JSON.stringify(parsed));
-          setChallengeCompleted((prev) => prev + 1);
-        }
+    loadChallenge(userId).then((data) => {
+      if (!data) return;
+      const startDate = new Date(data.startDate);
+      const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
+      if (daysSince >= 0 && daysSince < 7 && !data.completedDays[daysSince]) {
+        data.completedDays[daysSince] = true;
+        saveChallenge(userId, data);
+        setChallengeCompleted((prev) => prev + 1);
       }
-    } catch { /* ignore */ }
-  }, [todayCondition, diaryMemo]);
+    });
+  }, [todayCondition, diaryMemo, userId]);
 
   // Score for last analysis
   const lastScore = (() => {
@@ -942,7 +924,7 @@ function LoggedInHome() {
             />
             <button
               type="button"
-              onClick={saveDiary}
+              onClick={handleSaveDiary}
               disabled={!todayCondition || diarySaved}
               className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-white disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
             >

@@ -5,6 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 import Link from "next/link";
+import {
+  saveChallenge, loadChallenge, loadDiary,
+  type ChallengeState, type DiaryEntry,
+} from "@/lib/user-data-repository";
 
 const DAY_LABELS = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
 
@@ -17,16 +21,6 @@ const challengeTips = [
   { day: 6, title: "스페셜 케어 데이", desc: "마스크팩 또는 아이크림으로 집중 케어 시간", icon: "mask" },
   { day: 7, title: "7일 루틴 완성!", desc: "축하해요! 일주일 루틴을 모두 완주했어요", icon: "celebration" },
 ];
-
-interface ChallengeState {
-  startDate: string;
-  completedDays: boolean[];
-}
-
-interface DiaryEntry {
-  condition: string;
-  memo: string;
-}
 
 const conditionEmojis: Record<string, string> = {
   good: "face-happy",
@@ -44,34 +38,30 @@ export default function ChallengePage() {
     Array(7).fill(null)
   );
 
+  const userId = user?.id ?? "anonymous";
+
   // Load challenge state + diary entries for each challenge day
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    try {
-      const data = localStorage.getItem("barda_challenge");
-      if (data) {
-        const parsed = JSON.parse(data);
-        setChallenge(parsed);
+    loadChallenge(userId).then((data) => {
+      if (!data) return;
+      setChallenge(data);
 
-        // Check if challenge is still active (within 7 days)
-        const startDate = new Date(parsed.startDate);
-        const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
-        setIsActive(daysSince < 7);
+      const startDate = new Date(data.startDate);
+      const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
+      setIsActive(daysSince < 7);
 
-        // Load diary entries for each challenge day
-        const entries: (DiaryEntry | null)[] = [];
-        for (let i = 0; i < 7; i++) {
-          const d = new Date(startDate);
-          d.setDate(d.getDate() + i);
-          const key = d.toISOString().slice(0, 10);
-          const diary = localStorage.getItem(`barda_diary_${key}`);
-          entries.push(diary ? JSON.parse(diary) : null);
-        }
-        setDiaryEntries(entries);
-      }
-    } catch { /* ignore */ }
-  }, []);
+      // Load diary entries for each challenge day
+      const promises = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const key = d.toISOString().slice(0, 10);
+        return loadDiary(userId, key);
+      });
+      Promise.all(promises).then(setDiaryEntries);
+    });
+  }, [userId]);
 
   const startChallenge = useCallback(() => {
     const newChallenge: ChallengeState = {
@@ -80,8 +70,8 @@ export default function ChallengePage() {
     };
     setChallenge(newChallenge);
     setIsActive(true);
-    localStorage.setItem("barda_challenge", JSON.stringify(newChallenge));
-  }, []);
+    saveChallenge(userId, newChallenge);
+  }, [userId]);
 
   const toggleDay = useCallback((dayIndex: number) => {
     if (!challenge) return;
@@ -92,8 +82,8 @@ export default function ChallengePage() {
       ),
     };
     setChallenge(updated);
-    localStorage.setItem("barda_challenge", JSON.stringify(updated));
-  }, [challenge]);
+    saveChallenge(userId, updated);
+  }, [challenge, userId]);
 
   const completedCount = challenge?.completedDays.filter(Boolean).length ?? 0;
   const currentDay = challenge

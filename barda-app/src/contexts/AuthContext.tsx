@@ -9,6 +9,7 @@ import {
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { STORAGE_KEYS } from "@/lib/constants";
+import { migrateLocalStorageToDB } from "@/lib/migration-helper";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface AuthState {
@@ -75,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkPaidStatus(session.user.id);
+        migrateLocalStorageToDB(session.user.id);
       }
       setIsLoading(false);
     });
