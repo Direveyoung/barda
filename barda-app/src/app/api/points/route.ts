@@ -71,7 +71,7 @@ export async function POST(
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
   }
 
-  const result = await earnPoints(user.id, action as PointActionType, reference_id);
+  const result = await earnPoints(user.id, action as PointActionType, reference_id, supabase);
 
   if (result.earned === 0 && result.reason) {
     return NextResponse.json({ ok: true, earned: 0, newBalance: result.newBalance, dailyEarned: result.dailyEarned });

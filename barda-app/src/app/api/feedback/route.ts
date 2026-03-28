@@ -51,9 +51,9 @@ export async function POST(request: Request): Promise<NextResponse<ApiOk | ApiEr
     );
   }
 
-  // 포인트 적립: 피드백 기여 (fire-and-forget)
+  // 포인트 적립: 피드백 기여 (fire-and-forget, server client 전달)
   if (userId) {
-    earnPoints(userId, "feedback", `feedback:${conflict_rule_id}:${session_id}`).catch(() => {});
+    earnPoints(userId, "feedback", `feedback:${conflict_rule_id}:${session_id}`, supabase).catch(() => {});
   }
 
   return NextResponse.json({ ok: true });

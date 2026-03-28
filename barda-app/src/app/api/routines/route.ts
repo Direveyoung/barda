@@ -157,9 +157,9 @@ export async function POST(request: Request): Promise<NextResponse<CreateRoutine
     );
   }
 
-  // 포인트 적립: 루틴 공유 (fire-and-forget)
+  // 포인트 적립: 루틴 공유 (fire-and-forget, server client 전달)
   if (user?.id && post?.id) {
-    earnPoints(user.id, "routine_share", `routine_share:${post.id}`).catch(() => {});
+    earnPoints(user.id, "routine_share", `routine_share:${post.id}`, supabase).catch(() => {});
   }
 
   return NextResponse.json({ ok: true, post }, { status: 201 });
