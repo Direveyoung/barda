@@ -8,6 +8,7 @@ import RoutinePostCard, {
 import BottomNav from "@/components/BottomNav";
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import PointsCard from "@/components/PointsCard";
 import { SKIN_TYPE_LABEL } from "@/lib/constants";
 
 type TabKey = "analysis" | "shared" | "liked" | "diary";
@@ -199,6 +200,9 @@ export default function MypageClient() {
             </Link>
           </div>
         </div>
+
+        {/* Points Card */}
+        <PointsCard />
 
         {/* Tabs */}
         <div className="flex border-b border-gray-200 mb-4 overflow-x-auto">

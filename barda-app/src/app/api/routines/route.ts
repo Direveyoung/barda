@@ -7,6 +7,7 @@ import type {
   ApiError,
 } from "@/lib/api-types";
 import { createRoutinePostSchema, parseWithZod, sanitizeString } from "@/lib/api-types";
+import { earnPoints } from "@/lib/point-repository";
 
 export async function GET(request: NextRequest): Promise<NextResponse<RoutinePostListResponse | ApiError>> {
   const supabase = await createClient();
@@ -154,6 +155,11 @@ export async function POST(request: Request): Promise<NextResponse<CreateRoutine
       { error: "Failed to create routine post" },
       { status: 500 },
     );
+  }
+
+  // 포인트 적립: 루틴 공유 (fire-and-forget)
+  if (user?.id && post?.id) {
+    earnPoints(user.id, "routine_share", `routine_share:${post.id}`).catch(() => {});
   }
 
   return NextResponse.json({ ok: true, post }, { status: 201 });

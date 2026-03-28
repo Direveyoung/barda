@@ -35,6 +35,35 @@ export const PAYMENT = {
   DISPLAY_TEXT: "₩9,900 일회성 결제",
 } as const;
 
+/* ── 포인트 시스템 ── */
+
+export const POINT_ACTIONS = {
+  checkin_am:    { points: 10,  dailyLimit: 1, label: "AM 루틴 체크인" },
+  checkin_pm:    { points: 10,  dailyLimit: 1, label: "PM 루틴 체크인" },
+  diary:         { points: 10,  dailyLimit: 1, label: "다이어리 기록" },
+  barcode_scan:  { points: 50,  dailyLimit: 3, label: "바코드 등록" },
+  ingredient_input: { points: 100, dailyLimit: 2, label: "전성분 입력" },
+  feedback:      { points: 10,  dailyLimit: 5, label: "충돌 피드백" },
+  routine_share: { points: 30,  dailyLimit: 1, label: "루틴 공유" },
+  streak_bonus:  { points: 300, dailyLimit: 1, label: "30일 연속 보너스" },
+} as const;
+
+export type PointActionType = keyof typeof POINT_ACTIONS;
+
+export const POINT_DAILY_CAP = 100;
+
+export const POINT_ACTION_ICON: Record<string, string> = {
+  checkin_am: "sun",
+  checkin_pm: "moon",
+  diary: "memo",
+  barcode_scan: "camera",
+  ingredient_input: "beaker",
+  feedback: "thumbs-up",
+  routine_share: "share",
+  streak_bonus: "fire",
+  redeem: "money",
+};
+
 /* ── localStorage 키 ── */
 
 export const STORAGE_KEYS = {
@@ -45,6 +74,7 @@ export const STORAGE_KEYS = {
   PROFILE: "barda_profile",
   CHALLENGE: "barda_challenge",
   MIGRATED: "barda_migrated_v3",
+  POINTS_BALANCE: "barda_points_balance",
   notifications: (userId: string) => `barda_notifications_${userId}`,
   diary: (date: string) => `barda_diary_${date}`,
   checks: (date: string) => `barda_checks_${date}`,

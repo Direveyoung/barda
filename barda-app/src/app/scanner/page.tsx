@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
+import PointToast from "@/components/PointToast";
+import { earnPointsClient } from "@/lib/point-repository";
 import { ALL_PRODUCTS, type Product } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import {
@@ -68,6 +70,7 @@ export default function ScannerPage() {
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState<string | null>(null);
   const [barcodeResult, setBarcodeResult] = useState<BarcodeResult | null>(null);
+  const [pointToast, setPointToast] = useState<{ points: number; label: string } | null>(null);
 
   /* Manual input */
   const [manualText, setManualText] = useState("");
@@ -170,6 +173,11 @@ export default function ScannerPage() {
       const product: OBFProduct = data.product;
       const parsed = parseIngredientsList(product.ingredientsList);
       setBarcodeResult({ product, parsedIngredients: parsed });
+
+      // 포인트 적립: 바코드 스캔
+      earnPointsClient("barcode_scan", `barcode:${code}`, (pts) =>
+        setPointToast({ points: pts, label: "바코드 스캔" }),
+      );
 
       // Try to match in local DB
       const matches = matchProductInDB(product.brand, product.productName);
@@ -710,6 +718,10 @@ export default function ScannerPage() {
 
   return (
     <div className="min-h-screen pb-16">
+      {pointToast && (
+        <PointToast points={pointToast.points} label={pointToast.label} onDismiss={() => setPointToast(null)} />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3">

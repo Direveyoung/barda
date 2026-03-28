@@ -10,6 +10,8 @@ import Icon from "@/components/Icon";
 import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip, type DailyForecast } from "@/lib/weather";
 import { DAY_NAMES_KO, SKIN_TYPE_LABEL, STORAGE_KEYS } from "@/lib/constants";
 import { saveDiary, loadDiary, saveChecklist, saveChallenge, loadChallenge } from "@/lib/user-data-repository";
+import { earnPointsClient } from "@/lib/point-repository";
+import PointToast from "@/components/PointToast";
 
 /* ─── 요일 이름 ─── */
 const DAY_NAMES = DAY_NAMES_KO;
@@ -363,6 +365,9 @@ function LoggedInHome() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherTips, setWeatherTips] = useState<WeatherTip[]>([]);
 
+  /* ── 포인트 토스트 ── */
+  const [pointToast, setPointToast] = useState<{ points: number; label: string } | null>(null);
+
   /* ── 최근 피드 ── */
   const [recentPosts, setRecentPosts] = useState<RoutinePost[]>([]);
 
@@ -499,6 +504,18 @@ function LoggedInHome() {
         const pmChecks = updated.pm.map((p) => p.checked);
         saveChecklist(userId, todayKey, amChecks, pmChecks);
 
+        // 포인트 적립: AM/PM 체크리스트 모두 완료 시
+        if (amChecks.length > 0 && amChecks.every(Boolean)) {
+          earnPointsClient("checkin_am", `checkin_am:${todayKey}`, (pts) =>
+            setPointToast({ points: pts, label: "AM 루틴 완료" }),
+          );
+        }
+        if (pmChecks.length > 0 && pmChecks.every(Boolean)) {
+          earnPointsClient("checkin_pm", `checkin_pm:${todayKey}`, (pts) =>
+            setPointToast({ points: pts, label: "PM 루틴 완료" }),
+          );
+        }
+
         return updated;
       });
     },
@@ -511,6 +528,11 @@ function LoggedInHome() {
     const todayKey = new Date().toISOString().slice(0, 10);
     saveDiary(userId, todayKey, { condition: todayCondition, memo: diaryMemo });
     setDiarySaved(true);
+
+    // 포인트 적립: 다이어리 기록
+    earnPointsClient("diary", `diary:${todayKey}`, (pts) =>
+      setPointToast({ points: pts, label: "다이어리 기록" }),
+    );
 
     // Auto-complete today's challenge day if active
     loadChallenge(userId).then((data) => {
@@ -541,6 +563,15 @@ function LoggedInHome() {
 
   return (
     <div className="min-h-screen pb-16">
+      {/* 포인트 토스트 */}
+      {pointToast && (
+        <PointToast
+          points={pointToast.points}
+          label={pointToast.label}
+          onDismiss={() => setPointToast(null)}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
