@@ -138,7 +138,7 @@ function LandingHome() {
                 <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all">
                   <Icon name={cat.icon} size={22} />
                 </div>
-                <span className="text-[11px] text-gray-600 font-medium">{cat.label}</span>
+                <span className="text-xs text-gray-600 font-medium">{cat.label}</span>
               </Link>
             ))}
           </div>
@@ -168,7 +168,7 @@ function LandingHome() {
                   <Icon name={feat.icon} size={18} />
                 </div>
                 <p className="text-sm font-bold text-gray-800 mb-1">{feat.title}</p>
-                <p className="text-[11px] text-gray-400 leading-relaxed">{feat.desc}</p>
+                <p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p>
               </Link>
             ))}
           </div>
@@ -185,7 +185,7 @@ function LandingHome() {
                 <p className="text-sm font-bold text-gray-800">
                   {totalAnalysis.toLocaleString()}개 루틴 분석 완료
                 </p>
-                <p className="text-[11px] text-gray-400">바르다 유저들이 함께 만든 데이터</p>
+                <p className="text-xs text-gray-400">바르다 유저들이 함께 만든 데이터</p>
               </div>
             </div>
           </section>
@@ -224,7 +224,7 @@ function LandingHome() {
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{tool.desc}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{tool.desc}</p>
                 </div>
                 <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -253,7 +253,7 @@ function LandingHome() {
             <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
               <Icon name="comment-bubble" size={28} className="text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-400">아직 공유된 루틴이 없어요</p>
-              <p className="text-[11px] text-gray-300 mt-1">첫 번째로 루틴을 공유해 보세요!</p>
+              <p className="text-xs text-gray-300 mt-1">첫 번째로 루틴을 공유해 보세요!</p>
             </div>
           )}
         </section>
@@ -279,7 +279,7 @@ function LandingHome() {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-bold text-gray-800">루틴 랭킹 TOP 10</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">가장 인기 있는 루틴을 확인해 보세요</p>
+                <p className="text-xs text-gray-400 mt-0.5">가장 인기 있는 루틴을 확인해 보세요</p>
               </div>
               <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -310,7 +310,7 @@ function LandingHome() {
 
       {/* Footer */}
       <footer className="max-w-lg mx-auto px-4 pb-4 text-center">
-        <p className="text-[11px] text-gray-400">
+        <p className="text-xs text-gray-400">
           BARDA는 일반적인 스킨케어 정보를 제공하며,<br />전문 의료 조언을 대체하지 않습니다.
         </p>
       </footer>
@@ -650,10 +650,10 @@ function LoggedInHome() {
             </div>
             {/* Weather summary badges */}
             <div className="flex flex-wrap gap-1.5 mb-3">
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
                 습도 {weather.humidity}%
               </span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
                 weather.uvIndex >= 6 ? "bg-red-50 text-red-600" :
                 weather.uvIndex >= 3 ? "bg-amber-50 text-amber-600" :
                 "bg-green-50 text-green-600"
@@ -661,7 +661,7 @@ function LoggedInHome() {
                 UV {weather.uvIndex}
               </span>
               {weather.pm25 !== null && (
-                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
                   weather.pm25 > 35 ? "bg-red-50 text-red-600" :
                   weather.pm25 > 15 ? "bg-amber-50 text-amber-600" :
                   "bg-green-50 text-green-600"
@@ -696,7 +696,7 @@ function LoggedInHome() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-gray-500 mt-0.5 leading-relaxed">{tip.description}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{tip.description}</p>
                   </div>
                 </div>
               ))}
@@ -710,7 +710,7 @@ function LoggedInHome() {
             <div className="flex items-center gap-2 mb-3">
               <Icon name="calendar" size={16} />
               <span className="text-sm font-semibold text-gray-800">7일 날씨 예보</span>
-              <span className="text-[10px] text-gray-400 ml-auto">루틴 가이드 포함</span>
+              <span className="text-xs text-gray-400 ml-auto">루틴 가이드 포함</span>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
               {weather.dailyForecast.map((day: DailyForecast, i: number) => {
@@ -734,11 +734,11 @@ function LoggedInHome() {
                       isToday ? "bg-primary/10 ring-1 ring-primary/30" : "bg-gray-50"
                     }`}
                   >
-                    <span className={`text-[10px] font-semibold ${isToday ? "text-primary" : "text-gray-500"}`}>
+                    <span className={`text-xs font-semibold ${isToday ? "text-primary" : "text-gray-500"}`}>
                       {isToday ? "오늘" : `${day.dayLabel}요일`}
                     </span>
                     <span className="my-0.5"><Icon name={day.icon} size={20} /></span>
-                    <div className="flex items-center gap-0.5 text-[10px]">
+                    <div className="flex items-center gap-0.5 text-xs">
                       <span className="text-blue-500 font-medium">{day.tempMin}°</span>
                       <span className="text-gray-300">/</span>
                       <span className="text-red-400 font-medium">{day.tempMax}°</span>
@@ -789,7 +789,7 @@ function LoggedInHome() {
               </div>
               <div className="flex items-center gap-2">
                 {todaySchedule && (todaySchedule.isRetinolDay || todaySchedule.isExfoliateDay) && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium">
                     선크림 필수
                   </span>
                 )}
@@ -853,7 +853,7 @@ function LoggedInHome() {
                 <Icon name={todaySchedule?.pmIcon ?? "moon"} size={16} />
                 <span className="text-sm font-semibold text-gray-800">저녁 루틴</span>
                 {todaySchedule && todaySchedule.pmLabel !== "기본 루틴" && (
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     todaySchedule.isRetinolDay
                       ? "bg-purple-50 text-purple-600"
                       : "bg-blue-50 text-blue-600"
@@ -919,10 +919,10 @@ function LoggedInHome() {
             <Icon name="memo" size={16} />
             <span className="text-sm font-semibold text-gray-800">오늘 피부 컨디션</span>
             {diarySaved && (
-              <span className="text-[10px] text-success font-medium bg-green-50 px-2 py-0.5 rounded-full">저장됨</span>
+              <span className="text-xs text-success font-medium bg-green-50 px-2 py-0.5 rounded-full">저장됨</span>
             )}
             {diarySaved && challengeActive && (
-              <span className="text-[10px] text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">챌린지 Day {challengeDay} 완료!</span>
+              <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">챌린지 Day {challengeDay} 완료!</span>
             )}
           </div>
           <div className="flex gap-2 mb-3">
@@ -941,7 +941,7 @@ function LoggedInHome() {
                 }`}
               >
                 <Icon name={opt.icon} size={22} />
-                <span className="text-[10px] text-gray-500">{opt.label}</span>
+                <span className="text-xs text-gray-500">{opt.label}</span>
               </button>
             ))}
           </div>
@@ -978,7 +978,7 @@ function LoggedInHome() {
               className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
             >
               <span className="block mb-1"><Icon name="bottle" size={20} /></span>
-              <span className="text-[11px] font-semibold text-gray-800 block">내 서랍</span>
+              <span className="text-xs font-semibold text-gray-800 block">내 서랍</span>
               <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">제품 관리</p>
             </Link>
             <Link
@@ -986,7 +986,7 @@ function LoggedInHome() {
               className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
             >
               <span className="block mb-1"><Icon name="search" size={20} /></span>
-              <span className="text-[11px] font-semibold text-gray-800 block">듀프 파인더</span>
+              <span className="text-xs font-semibold text-gray-800 block">듀프 파인더</span>
               <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">대안 제품</p>
             </Link>
             <Link
@@ -994,7 +994,7 @@ function LoggedInHome() {
               className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
             >
               <span className="block mb-1"><Icon name="medal" size={20} /></span>
-              <span className="text-[11px] font-semibold text-gray-800 block">인기 랭킹</span>
+              <span className="text-xs font-semibold text-gray-800 block">인기 랭킹</span>
               <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">TOP 10</p>
             </Link>
             <Link
@@ -1002,7 +1002,7 @@ function LoggedInHome() {
               className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
             >
               <span className="block mb-1"><Icon name="camera" size={20} /></span>
-              <span className="text-[11px] font-semibold text-gray-800 block">바코드 스캐너</span>
+              <span className="text-xs font-semibold text-gray-800 block">바코드 스캐너</span>
               <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">제품 스캔</p>
             </Link>
             <Link
@@ -1010,7 +1010,7 @@ function LoggedInHome() {
               className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
             >
               <span className="block mb-1"><Icon name="dna" size={20} /></span>
-              <span className="text-[11px] font-semibold text-gray-800 block">성분 분석</span>
+              <span className="text-xs font-semibold text-gray-800 block">성분 분석</span>
               <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">AI 분석</p>
             </Link>
             <Link
@@ -1018,7 +1018,7 @@ function LoggedInHome() {
               className="bg-white rounded-2xl border border-gray-100 p-3 hover:border-primary/30 transition-colors"
             >
               <span className="block mb-1"><Icon name="trophy" size={20} /></span>
-              <span className="text-[11px] font-semibold text-gray-800 block">챌린지</span>
+              <span className="text-xs font-semibold text-gray-800 block">챌린지</span>
               <p className="text-[9px] text-gray-400 leading-relaxed mt-0.5">7일 미션</p>
             </Link>
           </div>
@@ -1043,11 +1043,11 @@ function LoggedInHome() {
                           style={{ width: `${(challengeCompleted / 7) * 100}%` }}
                         />
                       </div>
-                      <span className="text-[10px] font-semibold text-amber-600">
+                      <span className="text-xs font-semibold text-amber-600">
                         Day {challengeDay} · {challengeCompleted}/7
                       </span>
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-0.5">
+                    <p className="text-xs text-gray-400 mt-0.5">
                       피부 컨디션 기록하면 오늘 미션 자동 완료!
                     </p>
                   </div>

@@ -128,7 +128,7 @@ export default function BottomNav() {
                 >
                   {tab.icon(isActive)}
                 </div>
-                <span className="text-[10px] text-primary font-semibold">
+                <span className="text-xs text-primary font-semibold">
                   {tab.label}
                 </span>
               </Link>
@@ -145,7 +145,7 @@ export default function BottomNav() {
             >
               {tab.icon(isActive)}
               <span
-                className={`text-[10px] ${
+                className={`text-xs ${
                   isActive
                     ? "text-primary font-semibold"
                     : "text-gray-400"

@@ -123,7 +123,7 @@ export default function RankingPage() {
                     <span className="text-sm font-medium text-gray-700">
                       {anonymize(post.user_email_prefix)}
                     </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary-bg text-primary font-medium">
+                    <span className="text-xs px-1.5 py-0.5 rounded-full bg-primary-bg text-primary font-medium">
                       {skinTypeLabel[post.skin_type] ?? post.skin_type}
                     </span>
                   </div>
@@ -135,7 +135,7 @@ export default function RankingPage() {
                 {/* Stats */}
                 <div className="text-right shrink-0">
                   <p className="text-sm font-bold text-primary">{post.score}점</p>
-                  <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
                     <span><Icon name="heart" size={12} className="text-red-500" /> {post.like_count}</span>
                     <span><Icon name="comment-bubble" size={12} /> {post.comment_count}</span>
                   </div>

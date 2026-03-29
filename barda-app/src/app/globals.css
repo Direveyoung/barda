@@ -22,6 +22,10 @@
   --color-gray-900: #111827;
 }
 
+html {
+  font-size: 17px;
+}
+
 body {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
     "Segoe UI", Roboto, sans-serif;
@@ -151,14 +155,32 @@ body {
   z-index: 10;
 }
 
-/* BottomNav + sticky headers inside phone: override fixed positioning */
-.phone-screen .fixed {
+/* Phone screen flex layout for fixed bottom nav */
+.phone-screen {
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-screen > * {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Override fixed → sticky inside phone, except nav */
+.phone-screen .fixed:not(nav) {
   position: sticky !important;
 }
+
+/* BottomNav: always pinned at bottom of phone screen */
 .phone-screen nav.fixed {
+  position: sticky !important;
   bottom: 0;
   left: auto !important;
   right: auto !important;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 /* Scrollbar-hide utility */

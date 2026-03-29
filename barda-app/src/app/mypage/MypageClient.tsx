@@ -281,11 +281,11 @@ export default function MypageClient() {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="bg-amber-50/50 rounded-xl p-2.5">
-                        <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-0.5"><Icon name="sun" size={12} /> 아침</p>
+                        <p className="text-xs text-gray-400 mb-1 flex items-center gap-0.5"><Icon name="sun" size={12} /> 아침</p>
                         <p className="text-xs text-gray-600">{h.amRoutine?.length ?? 0}개 제품</p>
                       </div>
                       <div className="bg-purple-50/50 rounded-xl p-2.5">
-                        <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-0.5"><Icon name="moon" size={12} /> 저녁</p>
+                        <p className="text-xs text-gray-400 mb-1 flex items-center gap-0.5"><Icon name="moon" size={12} /> 저녁</p>
                         <p className="text-xs text-gray-600">{h.pmRoutine?.length ?? 0}개 제품</p>
                       </div>
                     </div>
@@ -352,7 +352,7 @@ export default function MypageClient() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-gray-700">{entry.date}</span>
-                        <span className="text-[10px] text-gray-400">{conditionLabel[entry.condition] ?? entry.condition}</span>
+                        <span className="text-xs text-gray-400">{conditionLabel[entry.condition] ?? entry.condition}</span>
                       </div>
                       {entry.memo && <p className="text-xs text-gray-500 mt-0.5 truncate">{entry.memo}</p>}
                     </div>

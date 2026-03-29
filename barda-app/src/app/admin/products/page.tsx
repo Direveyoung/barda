@@ -125,7 +125,7 @@ export default function AdminProductsPage() {
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 text-center">
             <p className="text-lg font-bold text-gray-800">{s.value}</p>
-            <p className="text-[10px] text-gray-400">{s.label}</p>
+            <p className="text-xs text-gray-400">{s.label}</p>
           </div>
         ))}
       </div>
@@ -213,7 +213,7 @@ export default function AdminProductsPage() {
                   <p className="text-xs font-semibold text-gray-500 mb-1">핵심 성분</p>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedProduct.key_ingredients.map((ing) => (
-                      <span key={ing} className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{ing}</span>
+                      <span key={ing} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{ing}</span>
                     ))}
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export default function AdminProductsPage() {
                   <p className="text-xs font-semibold text-gray-500 mb-1">액티브 플래그</p>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedProduct.active_flags.map((flag) => (
-                      <span key={flag} className="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">{flag}</span>
+                      <span key={flag} className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">{flag}</span>
                     ))}
                   </div>
                 </div>
@@ -235,7 +235,7 @@ export default function AdminProductsPage() {
                   <p className="text-xs font-semibold text-gray-500 mb-1">태그</p>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedProduct.tags.map((tag) => (
-                      <span key={tag} className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{tag}</span>
+                      <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{tag}</span>
                     ))}
                   </div>
                 </div>

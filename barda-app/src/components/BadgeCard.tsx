@@ -70,7 +70,7 @@ export default function BadgeCard({ earnedBadges, compact = false }: Props) {
                         <Icon name="lock" size={16} />
                       )}
                     </div>
-                    <span className="text-[10px] font-semibold text-center leading-tight text-gray-700">
+                    <span className="text-xs font-semibold text-center leading-tight text-gray-700">
                       {badge.label}
                     </span>
                     {earned && (

@@ -159,11 +159,11 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
 
           {/* Footer */}
           <div className="mt-auto pt-8">
-            <p className="text-[11px] text-gray-400 leading-relaxed">
+            <p className="text-xs text-gray-400 leading-relaxed">
               BARDA는 일반적인 스킨케어 정보를 제공하며,<br />
               전문 의료 조언을 대체하지 않습니다.
             </p>
-            <p className="text-[11px] text-gray-300 mt-2">
+            <p className="text-xs text-gray-300 mt-2">
               &copy; 2026 BARDA. All rights reserved.
             </p>
           </div>

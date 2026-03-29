@@ -47,7 +47,7 @@ export default function PointsCard() {
             <Icon name="trophy" size={16} />
           </div>
           <div>
-            <p className="text-[10px] text-gray-400 leading-none mb-0.5">내 포인트</p>
+            <p className="text-xs text-gray-400 leading-none mb-0.5">내 포인트</p>
             <p className="text-lg font-bold text-gray-900">{data.balance.toLocaleString()}P</p>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function PointsCard() {
             />
           </div>
         </div>
-        <span className="text-[10px] text-gray-400 whitespace-nowrap">
+        <span className="text-xs text-gray-400 whitespace-nowrap">
           오늘 +{data.dailyEarned}P / {POINT_DAILY_CAP}P
         </span>
       </div>

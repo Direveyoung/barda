@@ -95,7 +95,7 @@ export default function AdminCommunityPage() {
                         type="button"
                         onClick={() => deletePost(p.id)}
                         disabled={deletingId === p.id}
-                        className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50"
+                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50"
                       >
                         삭제
                       </button>

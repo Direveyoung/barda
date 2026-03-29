@@ -303,7 +303,7 @@ export default function ProductStep({
               >
                 등록하기
               </button>
-              <p className="text-[10px] text-gray-400 text-center">
+              <p className="text-xs text-gray-400 text-center">
                 입력하신 제품은 검토 후 정식 DB에 추가됩니다
               </p>
             </div>

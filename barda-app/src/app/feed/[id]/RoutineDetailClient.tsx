@@ -369,7 +369,7 @@ export default function RoutineDetailClient({ postId }: { postId: string }) {
                         ? anonymize(c.user_email.split("@")[0])
                         : anonymize(c.user_id.slice(0, 4))}
                     </span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-xs text-gray-400">
                       {formatRelativeTime(c.created_at)}
                     </span>
                   </div>

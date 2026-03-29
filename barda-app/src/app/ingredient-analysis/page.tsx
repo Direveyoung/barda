@@ -400,7 +400,7 @@ export default function IngredientAnalysisPage() {
                     {product.name}
                   </p>
                 </div>
-                <span className="text-[10px] text-gray-300">
+                <span className="text-xs text-gray-300">
                   {getCategoryLabel(product.categoryId)}
                 </span>
               </button>
@@ -412,10 +412,10 @@ export default function IngredientAnalysisPage() {
         {selectedProduct && (
           <div className="bg-primary-bg rounded-2xl p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                 분석 대상
               </span>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-xs text-gray-400">
                 {getCategoryLabel(selectedProduct.categoryId)}
               </span>
             </div>
@@ -435,7 +435,7 @@ export default function IngredientAnalysisPage() {
                 {selectedProduct.key_ingredients?.map((ing) => (
                   <span
                     key={ing}
-                    className="text-[10px] px-2 py-0.5 rounded-full bg-white text-gray-600"
+                    className="text-xs px-2 py-0.5 rounded-full bg-white text-gray-600"
                   >
                     {ing}
                   </span>
@@ -472,7 +472,7 @@ export default function IngredientAnalysisPage() {
                     style={{ width: `${(overallScore / 5) * 100}%` }}
                   />
                 </div>
-                <p className="text-[10px] text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 mt-2">
                   {analyzedIngredients.filter((a) => a.info).length}개 성분 기반
                   분석 결과
                   {analyzedIngredients.filter((a) => !a.info).length > 0
@@ -491,7 +491,7 @@ export default function IngredientAnalysisPage() {
 
                 {synergyPairs.length > 0 && (
                   <div className="mb-3">
-                    <p className="text-[10px] text-green-600 font-medium mb-1.5">
+                    <p className="text-xs text-green-600 font-medium mb-1.5">
                       시너지 조합
                     </p>
                     <div className="space-y-1.5">
@@ -500,7 +500,7 @@ export default function IngredientAnalysisPage() {
                           key={`${pair.a}-${pair.b}`}
                           className="flex items-center gap-2 px-3 py-2 rounded-xl bg-green-50"
                         >
-                          <span className="text-[10px] font-medium text-green-700">
+                          <span className="text-xs font-medium text-green-700">
                             {pair.a}
                           </span>
                           <svg
@@ -516,7 +516,7 @@ export default function IngredientAnalysisPage() {
                               d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
                             />
                           </svg>
-                          <span className="text-[10px] font-medium text-green-700">
+                          <span className="text-xs font-medium text-green-700">
                             {pair.b}
                           </span>
                         </div>
@@ -527,7 +527,7 @@ export default function IngredientAnalysisPage() {
 
                 {conflictPairs.length > 0 && (
                   <div>
-                    <p className="text-[10px] text-red-500 font-medium mb-1.5">
+                    <p className="text-xs text-red-500 font-medium mb-1.5">
                       주의 필요 조합
                     </p>
                     <div className="space-y-1.5">
@@ -536,7 +536,7 @@ export default function IngredientAnalysisPage() {
                           key={`${pair.a}-${pair.b}`}
                           className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-50"
                         >
-                          <span className="text-[10px] font-medium text-red-600">
+                          <span className="text-xs font-medium text-red-600">
                             {pair.a}
                           </span>
                           <svg
@@ -552,7 +552,7 @@ export default function IngredientAnalysisPage() {
                               d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
                             />
                           </svg>
-                          <span className="text-[10px] font-medium text-red-600">
+                          <span className="text-xs font-medium text-red-600">
                             {pair.b}
                           </span>
                         </div>
@@ -585,7 +585,7 @@ export default function IngredientAnalysisPage() {
                             <p className="text-sm font-semibold text-gray-800">
                               {item.info.name}
                             </p>
-                            <p className="text-[10px] text-gray-400">
+                            <p className="text-xs text-gray-400">
                               {item.info.nameEn}
                             </p>
                           </div>
@@ -593,7 +593,7 @@ export default function IngredientAnalysisPage() {
                         <div className="flex flex-col items-end gap-1">
                           <SafetyDots score={item.info.safetyScore} />
                           <span
-                            className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${getSafetyBg(item.info.safetyScore)} ${getSafetyColor(item.info.safetyScore)}`}
+                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${getSafetyBg(item.info.safetyScore)} ${getSafetyColor(item.info.safetyScore)}`}
                           >
                             {getSafetyLabel(item.info.safetyScore)}
                           </span>
@@ -601,7 +601,7 @@ export default function IngredientAnalysisPage() {
                       </div>
 
                       {/* Category badge */}
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 inline-block mb-2">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 inline-block mb-2">
                         {CATEGORY_LABELS[item.info.category]}
                       </span>
 
@@ -622,14 +622,14 @@ export default function IngredientAnalysisPage() {
                       <div className="grid grid-cols-2 gap-2 mb-2">
                         {item.info.goodWith.length > 0 && (
                           <div>
-                            <p className="text-[10px] text-green-600 font-medium mb-1">
+                            <p className="text-xs text-green-600 font-medium mb-1">
                               함께 쓰면 좋은 성분
                             </p>
                             <div className="flex flex-wrap gap-1">
                               {item.info.goodWith.slice(0, 4).map((g) => (
                                 <span
                                   key={g}
-                                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-600"
+                                  className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-600"
                                 >
                                   {g}
                                 </span>
@@ -639,14 +639,14 @@ export default function IngredientAnalysisPage() {
                         )}
                         {item.info.avoidWith.length > 0 && (
                           <div>
-                            <p className="text-[10px] text-red-500 font-medium mb-1">
+                            <p className="text-xs text-red-500 font-medium mb-1">
                               같이 쓰면 주의
                             </p>
                             <div className="flex flex-wrap gap-1">
                               {item.info.avoidWith.map((a) => (
                                 <span
                                   key={a}
-                                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-500"
+                                  className="text-xs px-1.5 py-0.5 rounded-full bg-red-50 text-red-500"
                                 >
                                   {a}
                                 </span>
@@ -658,14 +658,14 @@ export default function IngredientAnalysisPage() {
 
                       {/* Skin types */}
                       <div>
-                        <p className="text-[10px] text-gray-400 mb-1">
+                        <p className="text-xs text-gray-400 mb-1">
                           추천 피부 타입
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {item.info.skinTypes.map((st) => (
                             <span
                               key={st}
-                              className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                              className={`text-xs px-1.5 py-0.5 rounded-full ${
                                 profile?.skinType === st
                                   ? "bg-primary/10 text-primary font-semibold"
                                   : "bg-gray-100 text-gray-500"
@@ -681,28 +681,28 @@ export default function IngredientAnalysisPage() {
                       {/* Enriched external data */}
                       {enrichedMap[item.name] && (
                         <div className="mt-3 pt-3 border-t border-gray-100">
-                          <p className="text-[10px] text-gray-400 font-medium mb-1.5">
+                          <p className="text-xs text-gray-400 font-medium mb-1.5">
                             외부 API 데이터
                             {enrichedLoading && " (로딩 중...)"}
                           </p>
                           <div className="space-y-1">
                             {enrichedMap[item.name].purpose && (
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-xs text-gray-500">
                                 <span className="font-medium">기능성 용도:</span> {enrichedMap[item.name].purpose}
                               </p>
                             )}
                             {enrichedMap[item.name].maxConcentration && (
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-xs text-gray-500">
                                 <span className="font-medium">최대 배합한도:</span> {enrichedMap[item.name].maxConcentration}
                               </p>
                             )}
                             {enrichedMap[item.name].regulation && (
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-xs text-gray-500">
                                 <span className="font-medium">규제:</span> {enrichedMap[item.name].regulation}
                               </p>
                             )}
                             {enrichedMap[item.name].ewgScore !== null && (
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-xs text-gray-500">
                                 <span className="font-medium">EWG 등급:</span>{" "}
                                 <span className={
                                   (enrichedMap[item.name].ewgScore ?? 0) <= 2 ? "text-green-600 font-medium" :
@@ -714,7 +714,7 @@ export default function IngredientAnalysisPage() {
                               </p>
                             )}
                             {enrichedMap[item.name].casNo && (
-                              <p className="text-[10px] text-gray-400">
+                              <p className="text-xs text-gray-400">
                                 CAS: {enrichedMap[item.name].casNo}
                               </p>
                             )}
@@ -736,7 +736,7 @@ export default function IngredientAnalysisPage() {
                           <p className="text-sm font-medium text-gray-500">
                             {item.name}
                           </p>
-                          <p className="text-[10px] text-gray-300">
+                          <p className="text-xs text-gray-300">
                             데이터베이스에 미등록된 성분입니다
                           </p>
                         </div>
@@ -745,22 +745,22 @@ export default function IngredientAnalysisPage() {
                       {/* Enriched data for unregistered ingredients */}
                       {enrichedMap[item.name] && (
                         <div className="mt-2 pl-8">
-                          <p className="text-[10px] text-blue-500 font-medium mb-1">
+                          <p className="text-xs text-blue-500 font-medium mb-1">
                             외부 API에서 찾은 정보
                           </p>
                           <div className="space-y-0.5">
                             {enrichedMap[item.name].nameEn && (
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-xs text-gray-500">
                                 {enrichedMap[item.name].nameEn}
                               </p>
                             )}
                             {enrichedMap[item.name].purpose && (
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-xs text-gray-500">
                                 용도: {enrichedMap[item.name].purpose}
                               </p>
                             )}
                             {enrichedMap[item.name].ewgScore !== null && (
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-xs text-gray-500">
                                 EWG 등급:{" "}
                                 <span className={
                                   (enrichedMap[item.name].ewgScore ?? 0) <= 2 ? "text-green-600 font-medium" :
@@ -790,11 +790,11 @@ export default function IngredientAnalysisPage() {
                   <h3 className="text-sm font-bold text-gray-800">
                     맞춤 추천 제품
                   </h3>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary-bg text-primary font-medium">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary-bg text-primary font-medium">
                     {SKIN_TYPE_LABELS[profile.skinType] ?? profile.skinType}
                   </span>
                 </div>
-                <p className="text-[10px] text-gray-400 mb-3">
+                <p className="text-xs text-gray-400 mb-3">
                   내 피부 타입에 맞는 안전한 성분 위주의 제품을 추천해 드려요
                 </p>
                 <div className="space-y-2">
@@ -807,7 +807,7 @@ export default function IngredientAnalysisPage() {
                     >
                       <Icon name={getCategoryIcon(product.categoryId)} size={18} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-gray-400">
+                        <p className="text-xs text-gray-400">
                           {product.brand}
                         </p>
                         <p className="text-xs font-medium text-gray-700 truncate">
@@ -891,7 +891,7 @@ export default function IngredientAnalysisPage() {
                   <p className="text-xs font-semibold text-green-700 mb-0.5">
                     안전도 평가
                   </p>
-                  <p className="text-[10px] text-green-600">
+                  <p className="text-xs text-green-600">
                     1~5점 기반 성분별 안전 점수
                   </p>
                 </div>
@@ -899,7 +899,7 @@ export default function IngredientAnalysisPage() {
                   <p className="text-xs font-semibold text-blue-700 mb-0.5">
                     시너지 분석
                   </p>
-                  <p className="text-[10px] text-blue-600">
+                  <p className="text-xs text-blue-600">
                     성분 간 궁합 자동 분석
                   </p>
                 </div>
@@ -907,7 +907,7 @@ export default function IngredientAnalysisPage() {
                   <p className="text-xs font-semibold text-amber-700 mb-0.5">
                     충돌 감지
                   </p>
-                  <p className="text-[10px] text-amber-600">
+                  <p className="text-xs text-amber-600">
                     같이 쓰면 안 되는 성분 경고
                   </p>
                 </div>
@@ -915,7 +915,7 @@ export default function IngredientAnalysisPage() {
                   <p className="text-xs font-semibold text-purple-700 mb-0.5">
                     맞춤 추천
                   </p>
-                  <p className="text-[10px] text-purple-600">
+                  <p className="text-xs text-purple-600">
                     내 피부 타입에 딱 맞는 제품
                   </p>
                 </div>
@@ -959,7 +959,7 @@ export default function IngredientAnalysisPage() {
                           {info.safetyScore}/5
                         </span>
                       </div>
-                      <p className="text-[10px] text-gray-400 line-clamp-2">
+                      <p className="text-xs text-gray-400 line-clamp-2">
                         {info.efficacy}
                       </p>
                     </div>
