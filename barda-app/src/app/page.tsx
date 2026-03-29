@@ -71,11 +71,11 @@ function LandingHome() {
   }, []);
 
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen pb-16 overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-primary">BARDA</h1>
+          <h1 className="text-lg font-bold text-primary">BARDA</h1>
           <div className="flex items-center gap-2">
             <Link
               href="/auth/login"
@@ -162,7 +162,7 @@ function LandingHome() {
               <Link
                 key={feat.title}
                 href="/analyze"
-                className="shrink-0 w-44 bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 hover:shadow-sm transition-all"
+                className="shrink-0 w-40 bg-white rounded-2xl border border-gray-100 p-3.5 hover:border-primary/30 hover:shadow-sm transition-all"
               >
                 <div className={`w-9 h-9 rounded-xl ${feat.color} flex items-center justify-center mb-3`}>
                   <Icon name={feat.icon} size={18} />
@@ -565,7 +565,7 @@ function LoggedInHome() {
   const pmTotal = checklist.pm.length;
 
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen pb-16 overflow-x-hidden">
       {/* 포인트 토스트 */}
       {pointToast && (
         <PointToast
