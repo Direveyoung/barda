@@ -9,7 +9,7 @@ export async function POST(request: Request): Promise<NextResponse<ConfirmPaymen
 
   if (!secretKey) {
     return NextResponse.json(
-      { error: "결제 서비스가 아직 설정되지 않았습니다. (TOSS_SECRET_KEY not configured)" },
+      { error: "결제 서비스가 아직 설정되지 않았습니다." },
       { status: 503 },
     );
   }

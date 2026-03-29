@@ -4,10 +4,12 @@ import { rateLimit, getClientIP } from "@/lib/rate-limit";
 
 /* ── Rate limit configuration per API route ── */
 const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
-  "/api/events":           { max: 10, windowMs: 60_000 },
-  "/api/payments/confirm": { max: 3,  windowMs: 60_000 },
-  "/api/barcode":          { max: 20, windowMs: 60_000 },
-  "/api/points":           { max: 20, windowMs: 60_000 },
+  "/api/events":              { max: 10, windowMs: 60_000 },
+  "/api/payments/confirm":    { max: 3,  windowMs: 60_000 },
+  "/api/barcode":             { max: 20, windowMs: 60_000 },
+  "/api/points":              { max: 20, windowMs: 60_000 },
+  "/api/admin/points/adjust": { max: 5,  windowMs: 60_000 },
+  "/api/routines":            { max: 10, windowMs: 60_000 },
 };
 const DEFAULT_API_LIMIT = { max: 30, windowMs: 60_000 };
 

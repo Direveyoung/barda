@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     });
 
     if (txError) {
-      return NextResponse.json({ error: txError.message }, { status: 500 });
+      return NextResponse.json({ error: "포인트 트랜잭션 처리에 실패했습니다." }, { status: 500 });
     }
 
     // Update balance
@@ -61,6 +61,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, adjusted: points });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Unknown error" }, { status: 500 });
+    return NextResponse.json({ error: "포인트 조정 처리 중 오류가 발생했습니다." }, { status: 500 });
   }
 }

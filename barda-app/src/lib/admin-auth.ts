@@ -10,7 +10,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 const ADMIN_EMAILS = new Set(
   (process.env.ADMIN_EMAILS ?? "")
     .split(",")
-    .map((e) => e.trim())
+    .map((e) => e.trim().toLowerCase())
     .filter(Boolean),
 );
 
@@ -45,7 +45,7 @@ export async function requireAdmin(): Promise<AdminAuthResult | NextResponse> {
     );
   }
 
-  if (!user.email || !ADMIN_EMAILS.has(user.email)) {
+  if (!user.email || !ADMIN_EMAILS.has(user.email.toLowerCase())) {
     return NextResponse.json(
       { error: "Admin access required" },
       { status: 403 },

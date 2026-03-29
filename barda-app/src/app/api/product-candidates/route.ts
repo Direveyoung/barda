@@ -76,10 +76,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<ProductCa
 
 // GET: List product candidates (admin)
 export async function GET(request: NextRequest): Promise<NextResponse<ProductCandidateListResponse | ApiError>> {
-  const supabase = await createClient();
-  if (!supabase) {
-    return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
-  }
+  const auth = await requireAdmin();
+  if (auth instanceof NextResponse) return auth as NextResponse<ApiError>;
+  const { supabase } = auth;
 
   const { searchParams } = request.nextUrl;
   const status = searchParams.get("status") ?? "pending";
