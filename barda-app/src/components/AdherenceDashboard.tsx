@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { calculateChecklistStats, type ChecklistStats } from "@/lib/checklist-stats";
+import { useMemo } from "react";
+import { calculateChecklistStats } from "@/lib/checklist-stats";
 import Icon from "@/components/Icon";
 
 function ProgressRing({ rate, color, label }: { rate: number; color: string; label: string }) {
@@ -30,13 +30,9 @@ function ProgressRing({ rate, color, label }: { rate: number; color: string; lab
 }
 
 export default function AdherenceDashboard() {
-  const [stats, setStats] = useState<ChecklistStats | null>(null);
+  const stats = useMemo(() => calculateChecklistStats(), []);
 
-  useEffect(() => {
-    setStats(calculateChecklistStats());
-  }, []);
-
-  if (!stats || stats.totalDays === 0) return null;
+  if (stats.totalDays === 0) return null;
 
   const weekLabels = ["이번 주", "2주 전", "3주 전", "4주 전"];
   const maxRate = Math.max(...stats.weeklyRates, 1);

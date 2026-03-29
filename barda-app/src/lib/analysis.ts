@@ -23,13 +23,18 @@ export function getCategoryIcon(id: string): string {
   return findCategory(id)?.icon ?? "bottle";
 }
 
-/** Get effective active IDs for a product (categoryId + active_flags) */
+/** Get effective active IDs for a product (categoryId + active_flags). Cached per product ID. */
+const activeIdsCache = new WeakMap<Product, string[]>();
 function getActiveIds(product: Product): string[] {
-  const ids = [product.categoryId];
+  let ids = activeIdsCache.get(product);
+  if (ids) return ids;
+  ids = [product.categoryId];
   if (product.active_flags) {
     ids.push(...product.active_flags);
   }
-  return [...new Set(ids)];
+  ids = [...new Set(ids)];
+  activeIdsCache.set(product, ids);
+  return ids;
 }
 
 /* ─── Types ─── */
@@ -407,20 +412,24 @@ export function checkSensitivities(
 ): SensitivityWarning[] {
   if (sensitivities.length === 0) return [];
 
+  // Pre-compute normalized ingredient names per product (avoid repeated normalization)
+  const productHaystacks = products.map((product) => ({
+    label: `${product.brand} ${product.name}`,
+    normalized: [
+      ...(product.key_ingredients ?? []),
+      ...(product.active_flags ?? []),
+    ].map(normalizeForMatch),
+  }));
+
   const warnings: SensitivityWarning[] = [];
 
   for (const sens of sensitivities) {
     const needle = normalizeForMatch(sens.ingredientName);
     const matchedProducts: string[] = [];
 
-    for (const product of products) {
-      const haystack = [
-        ...(product.key_ingredients ?? []),
-        ...(product.active_flags ?? []),
-      ];
-      const found = haystack.some((ing) => normalizeForMatch(ing).includes(needle) || needle.includes(normalizeForMatch(ing)));
-      if (found) {
-        matchedProducts.push(`${product.brand} ${product.name}`);
+    for (const { label, normalized } of productHaystacks) {
+      if (normalized.some((ing) => ing.includes(needle) || needle.includes(ing))) {
+        matchedProducts.push(label);
       }
     }
 

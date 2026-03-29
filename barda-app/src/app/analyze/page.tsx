@@ -210,8 +210,6 @@ function AnalyzeContent() {
         {step === 2 && (
           <ProductStep
             products={products}
-            skinType={skinType}
-            concerns={concerns}
             onAdd={handleAddProduct}
             onRemove={handleRemoveProduct}
             onNext={handleAnalyze}

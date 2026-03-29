@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Icon from "@/components/Icon";
 import { SKIN_TYPE_LABEL, CONCERN_LABEL } from "@/lib/constants";
+import { copyToClipboard, shareOrCopy } from "@/lib/date-utils";
 
 interface SkinHelpTemplateProps {
   skinType?: string;
@@ -56,34 +57,13 @@ export default function SkinHelpTemplate({
   }
 
   async function handleCopy() {
-    const text = generateTemplate();
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await copyToClipboard(generateTemplate());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   async function handleShare() {
-    const text = generateTemplate();
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-      } catch {
-        // User cancelled or not supported
-      }
-    } else {
-      handleCopy();
-    }
+    await shareOrCopy(generateTemplate());
   }
 
   if (!expanded) {

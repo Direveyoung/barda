@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Icon from "@/components/Icon";
 import { SKIN_TYPE_LABEL, CONCERN_LABEL } from "@/lib/constants";
+import { copyToClipboard, shareOrCopy } from "@/lib/date-utils";
 
 interface ClinicChecklistProps {
   skinType?: string;
@@ -62,32 +63,13 @@ export default function ClinicChecklist({
   }
 
   async function handleCopy() {
-    const text = generateChecklist();
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await copyToClipboard(generateChecklist());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   async function handleShare() {
-    const text = generateChecklist();
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-      } catch { /* cancelled */ }
-    } else {
-      handleCopy();
-    }
+    await shareOrCopy(generateChecklist());
   }
 
   if (!expanded) {

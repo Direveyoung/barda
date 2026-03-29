@@ -72,64 +72,55 @@ export function calculateChecklistStats(): ChecklistStats {
   }
 
   const today = new Date();
-  const allData: { date: string; data: DayData }[] = [];
 
-  // Collect last 30 days of data
-  for (let i = 0; i < 30; i++) {
+  // Single pass: load all 365 days of data once, reuse for all calculations
+  const dayCache = new Map<number, DayData | null>();
+  for (let i = 0; i < 365; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const key = formatDate(d);
-    const data = loadDayData(key);
-    if (data) {
-      allData.push({ date: key, data });
-    }
+    dayCache.set(i, loadDayData(formatDate(d)));
   }
 
-  // Weekly rates (4 weeks, 7 days each)
+  // Weekly rates (4 weeks, 7 days each) - use cached data
   const weeklyRates: number[] = [];
   for (let w = 0; w < 4; w++) {
     let completeDays = 0;
-    let totalDays = 0;
     for (let d = 0; d < 7; d++) {
-      const idx = w * 7 + d;
-      const date = new Date(today);
-      date.setDate(date.getDate() - idx);
-      const key = formatDate(date);
-      const data = loadDayData(key);
-      totalDays++;
+      const data = dayCache.get(w * 7 + d);
       if (data && isDayComplete(data)) completeDays++;
     }
-    weeklyRates.push(totalDays > 0 ? Math.round((completeDays / totalDays) * 100) : 0);
+    weeklyRates.push(Math.round((completeDays / 7) * 100));
   }
 
-  // AM/PM rates (this month)
+  // AM/PM rates + monthly data (first 30 days)
   let amSum = 0;
   let pmSum = 0;
   let amCount = 0;
   let pmCount = 0;
-  for (const { data } of allData) {
+  let totalDays = 0;
+  let monthlyComplete = 0;
+  for (let i = 0; i < 30; i++) {
+    const data = dayCache.get(i);
+    if (!data) continue;
+    totalDays++;
+    if (isDayComplete(data)) monthlyComplete++;
     const rates = dayCompletionRate(data);
     if (data.am.length > 0) { amSum += rates.am; amCount++; }
     if (data.pm.length > 0) { pmSum += rates.pm; pmCount++; }
   }
 
-  // Streak
+  // Streak (365 days) - use cached data
   let currentStreak = 0;
   let bestStreak = 0;
   let tempStreak = 0;
   for (let i = 0; i < 365; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const data = loadDayData(formatDate(d));
+    const data = dayCache.get(i);
     if (data && isDayComplete(data)) {
       tempStreak++;
-      if (i < 30) currentStreak = tempStreak; // only count from today backwards for "current"
+      if (i < 30) currentStreak = tempStreak;
       bestStreak = Math.max(bestStreak, tempStreak);
     } else {
-      if (i === 0) {
-        // Today might not be checked yet, continue
-        continue;
-      }
+      if (i === 0) continue; // Today might not be checked yet
       if (currentStreak === 0) currentStreak = tempStreak;
       tempStreak = 0;
     }
@@ -140,9 +131,9 @@ export function calculateChecklistStats(): ChecklistStats {
     weeklyRates,
     amRate: amCount > 0 ? Math.round(amSum / amCount) : 0,
     pmRate: pmCount > 0 ? Math.round(pmSum / pmCount) : 0,
-    monthlyRate: allData.length > 0 ? Math.round((allData.filter(({ data }) => isDayComplete(data)).length / 30) * 100) : 0,
+    monthlyRate: totalDays > 0 ? Math.round((monthlyComplete / 30) * 100) : 0,
     currentStreak,
     bestStreak,
-    totalDays: allData.length,
+    totalDays,
   };
 }

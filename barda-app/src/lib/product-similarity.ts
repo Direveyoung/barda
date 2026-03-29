@@ -31,18 +31,23 @@ export function findSimilarProducts(
   limit = 5,
   minSimilarity = 20,
 ): SimilarProduct[] {
-  const tIngredients = (target.key_ingredients ?? []).map(normalize);
+  const tRaw = target.key_ingredients ?? [];
+  const tIngredients = tRaw.map(normalize);
   if (tIngredients.length === 0) return [];
 
-  const results: SimilarProduct[] = [];
-
+  // Pre-compute normalized ingredients for all products in the same category
+  const candidateCache = new Map<string, { product: Product; normalized: string[] }>();
   for (const product of ALL_PRODUCTS) {
     if (product.id === target.id) continue;
     if (product.categoryId !== target.categoryId) continue;
+    const raw = product.key_ingredients ?? [];
+    if (raw.length === 0) continue;
+    candidateCache.set(product.id, { product, normalized: raw.map(normalize) });
+  }
 
-    const pIngredients = (product.key_ingredients ?? []).map(normalize);
-    if (pIngredients.length === 0) continue;
+  const results: SimilarProduct[] = [];
 
+  for (const { product, normalized: pIngredients } of candidateCache.values()) {
     // Ingredient overlap
     const matched: string[] = [];
     for (const tIng of tIngredients) {

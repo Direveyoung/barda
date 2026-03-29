@@ -122,11 +122,7 @@ export default function BottomNav() {
                 className="flex flex-col items-center gap-0.5 -mt-4"
               >
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
-                    isActive
-                      ? "bg-primary"
-                      : "bg-primary"
-                  }`}
+                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 bg-primary"
                 >
                   {tab.icon(isActive)}
                 </div>

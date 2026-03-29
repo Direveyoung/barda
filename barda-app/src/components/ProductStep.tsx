@@ -10,8 +10,6 @@ import Icon from "@/components/Icon";
 
 interface Props {
   products: RoutineProduct[];
-  skinType?: string;
-  concerns?: string[];
   onAdd: (product: RoutineProduct) => void;
   onRemove: (id: string) => void;
   onNext: () => void;

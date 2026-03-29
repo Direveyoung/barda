@@ -108,27 +108,27 @@ export function buildBadgeContext(): BadgeContext {
     return { currentStreak: 0, diaryCount: 0, drawerCount: 0, hasAnalysis: false, bestScore: 0 };
   }
 
-  // Streak: count consecutive days with checklist data
+  // Single pass: streak + diary count in one loop
   let currentStreak = 0;
+  let streakBroken = false;
+  let diaryCount = 0;
   const today = new Date();
   for (let i = 0; i < 365; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     const key = d.toISOString().slice(0, 10);
-    const data = localStorage.getItem(STORAGE_KEYS.checks(key));
-    if (data) {
-      currentStreak++;
-    } else if (i > 0) {
-      break;
-    }
-  }
 
-  // Diary count: count days with diary entries in last 365 days
-  let diaryCount = 0;
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
+    // Streak (only until first gap after day 0)
+    if (!streakBroken) {
+      const data = localStorage.getItem(STORAGE_KEYS.checks(key));
+      if (data) {
+        currentStreak++;
+      } else if (i > 0) {
+        streakBroken = true;
+      }
+    }
+
+    // Diary count
     if (localStorage.getItem(STORAGE_KEYS.diary(key))) {
       diaryCount++;
     }

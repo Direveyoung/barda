@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Icon from "@/components/Icon";
 import { COMMUNITY, SKIN_TYPE_LABEL } from "@/lib/constants";
+import { copyToClipboard } from "@/lib/date-utils";
 
 interface KakaoOpenChatProps {
   nickname?: string;
@@ -17,21 +18,9 @@ export default function KakaoOpenChat({ nickname, skinType }: KakaoOpenChatProps
 
   const handleCopyNickname = async () => {
     if (!kakaoNickname) return;
-    try {
-      await navigator.clipboard.writeText(kakaoNickname);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback for older browsers
-      const textarea = document.createElement("textarea");
-      textarea.value = kakaoNickname;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await copyToClipboard(kakaoNickname);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (

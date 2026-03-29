@@ -46,9 +46,6 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-const skinTypeLabel = SKIN_TYPE_LABEL;
-const concernLabel = CONCERN_LABEL;
-
 export default function RoutinePostCard({
   post,
   onLike,
@@ -75,14 +72,14 @@ export default function RoutinePostCard({
       {/* Badges */}
       <div className="flex flex-wrap gap-1.5 mb-3">
         <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary-bg text-primary">
-          {skinTypeLabel[post.skin_type] ?? post.skin_type}
+          {SKIN_TYPE_LABEL[post.skin_type] ?? post.skin_type}
         </span>
         {post.concerns.map((c) => (
           <span
             key={c}
             className="inline-block px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-500"
           >
-            {concernLabel[c] ?? c}
+            {CONCERN_LABEL[c] ?? c}
           </span>
         ))}
       </div>
