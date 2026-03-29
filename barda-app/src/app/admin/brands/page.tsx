@@ -54,7 +54,7 @@ export default function AdminBrandsPage() {
           <div key={tier} className="bg-white rounded-xl border border-gray-100 p-4 text-center">
             <StatusBadge status={tier === "luxury" ? "critical" : tier === "premium" ? "high" : tier === "mid" ? "medium" : "low"} label={PRICE_TIER_LABEL[tier]} />
             <p className="text-2xl font-bold text-gray-800 mt-2">{tierGroups[tier].length}</p>
-            <p className="text-[10px] text-gray-400">브랜드</p>
+            <p className="text-xs text-gray-400">브랜드</p>
           </div>
         ))}
       </div>
@@ -65,13 +65,13 @@ export default function AdminBrandsPage() {
           <div key={tier} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
             <div className={`px-4 py-3 border-b border-gray-100 ${PRICE_TIER_STYLE[tier]}`}>
               <p className="text-sm font-bold">{PRICE_TIER_LABEL[tier]}</p>
-              <p className="text-[10px] opacity-80">{tierGroups[tier].length}개 브랜드</p>
+              <p className="text-xs opacity-80">{tierGroups[tier].length}개 브랜드</p>
             </div>
             <div className="p-3 space-y-1 max-h-80 overflow-y-auto">
               {tierGroups[tier].map(({ brand, count }) => (
                 <div key={brand} className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50">
                   <span className="text-xs text-gray-700">{brand}</span>
-                  <span className="text-[10px] text-gray-400">{count}개</span>
+                  <span className="text-xs text-gray-400">{count}개</span>
                 </div>
               ))}
               {tierGroups[tier].length === 0 && (

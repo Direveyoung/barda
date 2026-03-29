@@ -66,7 +66,7 @@ export default function AdminRulesPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800">{rule.title}</p>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-xs text-gray-500">
                         [{rule.a.join(", ")}] x [{rule.b.join(", ")}]
                       </span>
                     </div>
@@ -108,17 +108,17 @@ export default function AdminRulesPage() {
                           <p className="font-semibold text-gray-500 mb-1">농도 보정</p>
                           <div className="flex gap-2">
                             {rule.concentrationModifier.any_high && (
-                              <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px]">
+                              <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs">
                                 high → {rule.concentrationModifier.any_high.severity}
                               </span>
                             )}
                             {rule.concentrationModifier.any_medium && (
-                              <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 text-[10px]">
+                              <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 text-xs">
                                 medium → {rule.concentrationModifier.any_medium.severity}
                               </span>
                             )}
                             {rule.concentrationModifier.both_low && (
-                              <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">
+                              <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-xs">
                                 both_low → {rule.concentrationModifier.both_low.severity}
                               </span>
                             )}
@@ -130,7 +130,7 @@ export default function AdminRulesPage() {
                           <p className="font-semibold text-gray-500 mb-1">피부타입 보정</p>
                           <div className="flex gap-2">
                             {Object.entries(rule.skinTypeModifier).map(([type, mod]) => (
-                              <span key={type} className="px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px]">
+                              <span key={type} className="px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs">
                                 {type}: +{mod.severityBump}
                               </span>
                             ))}
@@ -157,7 +157,7 @@ export default function AdminRulesPage() {
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">{rule.why}</p>
                 </div>
-                <span className="text-[10px] text-gray-400 font-mono">{rule.check}</span>
+                <span className="text-xs text-gray-400 font-mono">{rule.check}</span>
               </div>
             </div>
           ))}

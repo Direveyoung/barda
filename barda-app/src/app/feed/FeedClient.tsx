@@ -196,7 +196,7 @@ export default function FeedClient() {
               key={c.value}
               type="button"
               onClick={() => setConcernFilter(concernFilter === c.value ? "" : c.value)}
-              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+              className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                 concernFilter === c.value
                   ? "bg-gray-700 text-white border-gray-700"
                   : "bg-white text-gray-400 border-gray-100 hover:border-gray-300"
@@ -238,7 +238,7 @@ export default function FeedClient() {
                 setConcernFilter("");
                 setSearchQuery("");
               }}
-              className="text-[11px] text-primary font-medium"
+              className="text-xs text-primary font-medium"
             >
               필터 초기화
             </button>

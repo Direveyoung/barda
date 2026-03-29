@@ -121,19 +121,19 @@ export default function AdminCandidatesPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         {pc.status !== "approved" && (
                           <button type="button" onClick={() => updateStatus(pc.id, "approved")} disabled={updatingId === pc.id}
-                            className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50">
+                            className="px-2.5 py-1 text-xs font-medium rounded-lg bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50">
                             승인
                           </button>
                         )}
                         {pc.status !== "rejected" && (
                           <button type="button" onClick={() => updateStatus(pc.id, "rejected")} disabled={updatingId === pc.id}
-                            className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50">
+                            className="px-2.5 py-1 text-xs font-medium rounded-lg bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50">
                             거절
                           </button>
                         )}
                         {pc.status !== "pending" && (
                           <button type="button" onClick={() => updateStatus(pc.id, "pending")} disabled={updatingId === pc.id}
-                            className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 disabled:opacity-50">
+                            className="px-2.5 py-1 text-xs font-medium rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 disabled:opacity-50">
                             대기
                           </button>
                         )}

@@ -157,7 +157,7 @@ export default function DrawerPage() {
             <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 text-center">
               <Icon name={s.icon} size={16} />
               <p className="text-lg font-bold text-gray-800 mt-0.5">{s.value}</p>
-              <p className="text-[10px] text-gray-400">{s.label}</p>
+              <p className="text-xs text-gray-400">{s.label}</p>
             </div>
           ))}
         </div>
@@ -220,15 +220,15 @@ export default function DrawerPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-xs text-gray-400">{item.brand}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5 ${statusConfig.color}`}>
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5 ${statusConfig.color}`}>
                           <Icon name={statusConfig.icon} size={10} /> {statusConfig.label}
                         </span>
                       </div>
                       <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-[10px] text-gray-300">{getCategoryLabel(item.categoryId)}</span>
+                        <span className="text-xs text-gray-300">{getCategoryLabel(item.categoryId)}</span>
                         {openDays !== null && (
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-xs text-gray-400">
                             개봉 {openDays}일째
                             {openDays > 180 && (
                               <span className="text-red-400 ml-1">유통기한 확인!</span>
@@ -245,7 +245,7 @@ export default function DrawerPage() {
                       <button
                         type="button"
                         onClick={() => updateStatus(item.productId, "using")}
-                        className="px-2.5 py-1 text-[10px] font-medium bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                        className="px-2.5 py-1 text-xs font-medium bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
                       >
                         개봉하기
                       </button>
@@ -254,7 +254,7 @@ export default function DrawerPage() {
                       <button
                         type="button"
                         onClick={() => updateStatus(item.productId, "finished")}
-                        className="px-2.5 py-1 text-[10px] font-medium bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors"
                       >
                         다 썼어요
                       </button>
@@ -263,7 +263,7 @@ export default function DrawerPage() {
                       <button
                         type="button"
                         onClick={() => updateStatus(item.productId, "using")}
-                        className="px-2.5 py-1 text-[10px] font-medium bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                        className="px-2.5 py-1 text-xs font-medium bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
                       >
                         재사용
                       </button>
@@ -271,7 +271,7 @@ export default function DrawerPage() {
                     <button
                       type="button"
                       onClick={() => removeProduct(item.productId)}
-                      className="px-2.5 py-1 text-[10px] font-medium text-red-400 hover:bg-red-50 rounded-lg transition-colors"
+                      className="px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       삭제
                     </button>
@@ -305,12 +305,12 @@ export default function DrawerPage() {
                         >
                           <Icon name={getCategoryIcon(rec.product.categoryId)} size={16} />
                           <div className="flex-1 min-w-0">
-                            <p className="text-[11px] text-gray-400">{rec.product.brand}</p>
+                            <p className="text-xs text-gray-400">{rec.product.brand}</p>
                             <p className="text-xs font-medium text-gray-800 truncate">{rec.product.name}</p>
                           </div>
                           <div className="text-right shrink-0">
-                            <span className="text-[10px] font-semibold text-primary">{rec.similarity}% 유사</span>
-                            <p className="text-[10px] text-gray-400">{tier}</p>
+                            <span className="text-xs font-semibold text-primary">{rec.similarity}% 유사</span>
+                            <p className="text-xs text-gray-400">{tier}</p>
                           </div>
                         </Link>
                       );

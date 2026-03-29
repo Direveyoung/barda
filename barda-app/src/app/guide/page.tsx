@@ -113,7 +113,7 @@ export default function GuidePage() {
                     <span className="text-sm font-semibold text-gray-800">
                       {ing.name}
                     </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
                       {ing.category}
                     </span>
                   </div>
@@ -135,22 +135,22 @@ export default function GuidePage() {
             <Link href="/ingredient-analysis" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
               <span className="mb-1.5 block"><Icon name="microscope" size={20} /></span>
               <p className="text-xs font-semibold text-gray-800">성분 분석</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">제품별 성분 안전도 분석</p>
+              <p className="text-xs text-gray-400 mt-0.5">제품별 성분 안전도 분석</p>
             </Link>
             <Link href="/scanner" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
               <span className="mb-1.5 block"><Icon name="camera" size={20} /></span>
               <p className="text-xs font-semibold text-gray-800">스캐너</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">바코드/성분 스캔</p>
+              <p className="text-xs text-gray-400 mt-0.5">바코드/성분 스캔</p>
             </Link>
             <Link href="/dupe" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
               <span className="mb-1.5 block"><Icon name="cycle" size={20} /></span>
               <p className="text-xs font-semibold text-gray-800">듀프 파인더</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">저렴한 대안 제품 찾기</p>
+              <p className="text-xs text-gray-400 mt-0.5">저렴한 대안 제품 찾기</p>
             </Link>
             <Link href="/analyze" className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-primary/30 transition-colors">
               <span className="mb-1.5 block"><Icon name="bottle" size={20} /></span>
               <p className="text-xs font-semibold text-gray-800">루틴 분석</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">성분 충돌 체크</p>
+              <p className="text-xs text-gray-400 mt-0.5">성분 충돌 체크</p>
             </Link>
           </div>
         </section>

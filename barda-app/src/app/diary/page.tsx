@@ -253,15 +253,15 @@ export default function DiaryPage() {
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-white rounded-xl border border-gray-100 p-3 text-center">
                 <p className="text-xl font-bold text-primary">{avgScore.toFixed(1)}</p>
-                <p className="text-[10px] text-gray-400">평균 점수</p>
+                <p className="text-xs text-gray-400">평균 점수</p>
               </div>
               <div className="bg-white rounded-xl border border-gray-100 p-3 text-center">
                 <p className="text-xl font-bold text-gray-800">{streak}</p>
-                <p className="text-[10px] text-gray-400">연속 기록</p>
+                <p className="text-xs text-gray-400">연속 기록</p>
               </div>
               <div className="bg-white rounded-xl border border-gray-100 p-3 text-center">
                 <p className="text-xl font-bold text-gray-800">{recordDays}</p>
-                <p className="text-[10px] text-gray-400">기록 일수</p>
+                <p className="text-xs text-gray-400">기록 일수</p>
               </div>
             </div>
 
@@ -303,7 +303,7 @@ export default function DiaryPage() {
                         </span>
                       </div>
                       {entry.memo && (
-                        <span className="text-[10px] text-gray-400 truncate max-w-[120px]">{entry.memo}</span>
+                        <span className="text-xs text-gray-400 truncate max-w-[120px]">{entry.memo}</span>
                       )}
                     </div>
                   ))}

@@ -177,7 +177,7 @@ function AnalyzeContent() {
                 }`}
               />
               <span
-                className={`text-[10px] ${
+                className={`text-xs ${
                   i <= step ? "text-primary font-semibold" : "text-gray-400"
                 }`}
               >

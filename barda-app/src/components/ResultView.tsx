@@ -306,7 +306,7 @@ function WeekCalendar({
               {day.day}
             </span>
             <Icon name={day.pmIcon} size={20} />
-            <span className="text-[10px] text-gray-500 text-center leading-tight">
+            <span className="text-xs text-gray-500 text-center leading-tight">
               {day.pmLabel}
             </span>
           </div>

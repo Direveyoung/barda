@@ -118,60 +118,60 @@ export default function AdminIngredientsPage() {
               <div className="px-4 pb-4 pt-0 border-t border-gray-100">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                   <div>
-                    <p className="text-[10px] font-semibold text-gray-400 mb-1">효능</p>
+                    <p className="text-xs font-semibold text-gray-400 mb-1">효능</p>
                     <p className="text-xs text-gray-700">{ing.efficacy}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-gray-400 mb-1">주의사항</p>
+                    <p className="text-xs font-semibold text-gray-400 mb-1">주의사항</p>
                     <p className="text-xs text-gray-700">{ing.caution}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-gray-400 mb-1">적합 피부타입</p>
+                    <p className="text-xs font-semibold text-gray-400 mb-1">적합 피부타입</p>
                     <div className="flex flex-wrap gap-1">
                       {ing.skinTypes.map((t) => (
-                        <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-600">{t}</span>
+                        <span key={t} className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-600">{t}</span>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold text-gray-400 mb-1">안전점수</p>
+                    <p className="text-xs font-semibold text-gray-400 mb-1">안전점수</p>
                     <p className="text-xs text-gray-700">{ing.safetyScore}/5</p>
                   </div>
                   {ing.goodWith.length > 0 && (
                     <div>
-                      <p className="text-[10px] font-semibold text-green-500 mb-1">시너지 성분</p>
+                      <p className="text-xs font-semibold text-green-500 mb-1">시너지 성분</p>
                       <div className="flex flex-wrap gap-1">
                         {ing.goodWith.map((g) => (
-                          <span key={g} className="text-[10px] px-1.5 py-0.5 rounded bg-green-50 text-green-600">{g}</span>
+                          <span key={g} className="text-xs px-1.5 py-0.5 rounded bg-green-50 text-green-600">{g}</span>
                         ))}
                       </div>
                     </div>
                   )}
                   {ing.avoidWith.length > 0 && (
                     <div>
-                      <p className="text-[10px] font-semibold text-red-500 mb-1">충돌 성분</p>
+                      <p className="text-xs font-semibold text-red-500 mb-1">충돌 성분</p>
                       <div className="flex flex-wrap gap-1">
                         {ing.avoidWith.map((a) => (
-                          <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">{a}</span>
+                          <span key={a} className="text-xs px-1.5 py-0.5 rounded bg-red-50 text-red-600">{a}</span>
                         ))}
                       </div>
                     </div>
                   )}
                   {ing.regulation && (
                     <div>
-                      <p className="text-[10px] font-semibold text-gray-400 mb-1">규제</p>
+                      <p className="text-xs font-semibold text-gray-400 mb-1">규제</p>
                       <p className="text-xs text-gray-700">{ing.regulation}</p>
                     </div>
                   )}
                   {ing.maxConcentration && (
                     <div>
-                      <p className="text-[10px] font-semibold text-gray-400 mb-1">최대 배합한도</p>
+                      <p className="text-xs font-semibold text-gray-400 mb-1">최대 배합한도</p>
                       <p className="text-xs text-gray-700">{ing.maxConcentration}</p>
                     </div>
                   )}
                   {ing.casNo && (
                     <div>
-                      <p className="text-[10px] font-semibold text-gray-400 mb-1">CAS No.</p>
+                      <p className="text-xs font-semibold text-gray-400 mb-1">CAS No.</p>
                       <p className="text-xs text-gray-700">{ing.casNo}</p>
                     </div>
                   )}

@@ -302,7 +302,7 @@ export default function DupePage() {
                   <p className="text-xs text-gray-400">{product.brand}</p>
                   <p className="text-sm text-gray-800 truncate">{product.name}</p>
                 </div>
-                <span className="text-[10px] text-gray-300">{getCategoryLabel(product.categoryId)}</span>
+                <span className="text-xs text-gray-300">{getCategoryLabel(product.categoryId)}</span>
               </button>
             ))}
           </div>
@@ -314,7 +314,7 @@ export default function DupePage() {
             {/* Original product card */}
             <div className="bg-primary-bg rounded-2xl p-4 mb-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                   원본 제품
                 </span>
                 <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[getBrandPriceTier(selectedProduct.brand)]}`}>
@@ -327,10 +327,10 @@ export default function DupePage() {
                   <p className="text-xs text-gray-500">{selectedProduct.brand}</p>
                   <p className="text-sm font-semibold text-gray-800">{selectedProduct.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-xs text-gray-400">
                       {getCategoryLabel(selectedProduct.categoryId)}
                     </p>
-                    <p className="text-[10px] text-gray-500 font-medium">
+                    <p className="text-xs text-gray-500 font-medium">
                       ~{formatPrice(getEstimatedPrice(getBrandPriceTier(selectedProduct.brand), selectedProduct.categoryId).min)}~{formatPrice(getEstimatedPrice(getBrandPriceTier(selectedProduct.brand), selectedProduct.categoryId).max)}
                     </p>
                   </div>
@@ -341,7 +341,7 @@ export default function DupePage() {
                   {selectedProduct.key_ingredients?.map((ing) => (
                     <span
                       key={ing}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-white text-gray-600"
+                      className="text-xs px-2 py-0.5 rounded-full bg-white text-gray-600"
                     >
                       {ing}
                     </span>
@@ -358,7 +358,7 @@ export default function DupePage() {
                   <p className="text-xs font-bold text-green-700">
                     최대 ~{formatPrice(savingsInfo.savingEstimate)} 절약 가능
                   </p>
-                  <p className="text-[10px] text-green-600 mt-0.5">
+                  <p className="text-xs text-green-600 mt-0.5">
                     {savingsInfo.cheapestProduct.brand} {savingsInfo.cheapestProduct.name}으로 전환 시
                   </p>
                 </div>
@@ -385,7 +385,7 @@ export default function DupePage() {
                         key={mode}
                         type="button"
                         onClick={() => setSortMode(mode)}
-                        className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
+                        className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
                           sortMode === mode
                             ? "bg-gray-800 text-white"
                             : "text-gray-400 hover:text-gray-600"
@@ -404,7 +404,7 @@ export default function DupePage() {
                       key={tier}
                       type="button"
                       onClick={() => setPriceFilter(tier)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors ${
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                         priceFilter === tier
                           ? "bg-primary text-white border-primary"
                           : "bg-white text-gray-500 border-gray-200"
@@ -429,7 +429,7 @@ export default function DupePage() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <p className="text-[10px] text-gray-400 mb-1">원본</p>
+                        <p className="text-xs text-gray-400 mb-1">원본</p>
                         <p className="text-xs font-semibold text-gray-800 mb-1">{selectedProduct.brand} {selectedProduct.name}</p>
                         <div className="flex items-center gap-1 flex-wrap">
                           <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[getBrandPriceTier(selectedProduct.brand)]}`}>
@@ -445,7 +445,7 @@ export default function DupePage() {
                               m => normalizeIngredient(m) === normalizeIngredient(ing) || normalizeIngredient(m).includes(normalizeIngredient(ing)) || normalizeIngredient(ing).includes(normalizeIngredient(m))
                             );
                             return (
-                              <p key={ing} className={`text-[10px] flex items-center gap-0.5 ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
+                              <p key={ing} className={`text-xs flex items-center gap-0.5 ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
                                 {isMatched ? (
                                   <svg className="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                                 ) : (
@@ -458,7 +458,7 @@ export default function DupePage() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-400 mb-1">대안 (유사도 {compareTarget.similarity}%)</p>
+                        <p className="text-xs text-gray-400 mb-1">대안 (유사도 {compareTarget.similarity}%)</p>
                         <p className="text-xs font-semibold text-gray-800 mb-1">{compareTarget.product.brand} {compareTarget.product.name}</p>
                         <div className="flex items-center gap-1 flex-wrap">
                           <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${PRICE_TIER_STYLE[compareTarget.priceTier]}`}>
@@ -474,7 +474,7 @@ export default function DupePage() {
                               m => normalizeIngredient(m) === normalizeIngredient(ing) || normalizeIngredient(m).includes(normalizeIngredient(ing)) || normalizeIngredient(ing).includes(normalizeIngredient(m))
                             );
                             return (
-                              <p key={ing} className={`text-[10px] flex items-center gap-0.5 ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
+                              <p key={ing} className={`text-xs flex items-center gap-0.5 ${isMatched ? "text-green-600 font-medium" : "text-gray-400"}`}>
                                 {isMatched ? (
                                   <svg className="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                                 ) : (
@@ -524,7 +524,7 @@ export default function DupePage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                             <span className="text-xs text-gray-400">{dupe.product.brand}</span>
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
                               dupe.similarity >= 70
                                 ? "bg-green-50 text-green-600"
                                 : dupe.similarity >= 40
@@ -541,11 +541,11 @@ export default function DupePage() {
 
                           {/* Price + Popularity row */}
                           <div className="flex items-center gap-3 mt-1">
-                            <span className="text-[10px] text-gray-500">
+                            <span className="text-xs text-gray-500">
                               ~{formatPrice(dupe.priceRange.min)}~{formatPrice(dupe.priceRange.max)}
                             </span>
-                            <span className="text-[10px] text-gray-300">|</span>
-                            <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                            <span className="text-xs text-gray-300">|</span>
+                            <span className="text-xs text-gray-400 flex items-center gap-0.5">
                               인기
                               <span className="inline-flex items-center">
                                 {Array.from({ length: 5 }).map((_, i) => (
@@ -567,7 +567,7 @@ export default function DupePage() {
                             {dupe.matchedIngredients.map((ing) => (
                               <span
                                 key={ing}
-                                className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-600"
+                                className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-600"
                               >
                                 {ing}
                               </span>
@@ -577,7 +577,7 @@ export default function DupePage() {
                               .map((ing) => (
                                 <span
                                   key={ing}
-                                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-400"
+                                  className="text-xs px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-400"
                                 >
                                   {ing}
                                 </span>
@@ -587,11 +587,11 @@ export default function DupePage() {
                           {/* Concern match */}
                           {dupe.concernMatch.length > 0 && (
                             <div className="flex items-center gap-1 mt-1.5">
-                              <span className="text-[10px] text-gray-400">고민 매칭:</span>
+                              <span className="text-xs text-gray-400">고민 매칭:</span>
                               {dupe.concernMatch.map((tag) => (
                                 <span
                                   key={tag}
-                                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500"
+                                  className="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500"
                                 >
                                   {tag}
                                 </span>
@@ -608,7 +608,7 @@ export default function DupePage() {
                                 .map((tag) => (
                                 <span
                                   key={tag}
-                                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500"
+                                  className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500"
                                 >
                                   #{tag}
                                 </span>
@@ -617,7 +617,7 @@ export default function DupePage() {
                             <button
                               type="button"
                               onClick={() => setCompareTarget(compareTarget?.product.id === dupe.product.id ? null : dupe)}
-                              className={`text-[10px] px-2 py-1 rounded-lg font-medium transition-colors ${
+                              className={`text-xs px-2 py-1 rounded-lg font-medium transition-colors ${
                                 compareTarget?.product.id === dupe.product.id
                                   ? "bg-primary text-white"
                                   : "bg-gray-100 text-gray-500 hover:bg-gray-200"
@@ -677,7 +677,7 @@ export default function DupePage() {
                     <Icon name={info.icon} size={18} />
                     <div>
                       <p className="text-xs font-medium text-gray-700">{info.label}</p>
-                      <p className="text-[10px] text-gray-400">{info.count}개 제품</p>
+                      <p className="text-xs text-gray-400">{info.count}개 제품</p>
                     </div>
                   </Link>
                 ))}
@@ -693,30 +693,30 @@ export default function DupePage() {
               </p>
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 font-medium">70%+</span>
-                  <span className="text-[10px] text-gray-400">매우 유사한 대안</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 font-medium">70%+</span>
+                  <span className="text-xs text-gray-400">매우 유사한 대안</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium">40~69%</span>
-                  <span className="text-[10px] text-gray-400">부분적으로 유사</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium">40~69%</span>
+                  <span className="text-xs text-gray-400">부분적으로 유사</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-500 font-medium">15~39%</span>
-                  <span className="text-[10px] text-gray-400">일부 성분 겹침</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-500 font-medium">15~39%</span>
+                  <span className="text-xs text-gray-400">일부 성분 겹침</span>
                 </div>
               </div>
               <div className="mt-3 pt-3 border-t border-gray-200 space-y-1.5">
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">가장 유사</span>
-                  <span className="text-[10px] text-gray-400">성분이 가장 비슷한 제품</span>
+                  <span className="text-xs text-gray-400">성분이 가장 비슷한 제품</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-bold">Best Value</span>
-                  <span className="text-[10px] text-gray-400">가격 대비 유사도 최고</span>
+                  <span className="text-xs text-gray-400">가격 대비 유사도 최고</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold">인기</span>
-                  <span className="text-[10px] text-gray-400">올리브영 베스트 등 인기 제품</span>
+                  <span className="text-xs text-gray-400">올리브영 베스트 등 인기 제품</span>
                 </div>
               </div>
             </section>

@@ -65,12 +65,12 @@ export default function SensitivityManager({ userId }: { userId: string }) {
             const opt = SEVERITY_OPTIONS.find((o) => o.value === item.severity);
             return (
               <div key={item.ingredientName} className="flex items-center gap-2 bg-white rounded-xl px-3 py-2">
-                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${opt?.color ?? ""}`}>
+                <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${opt?.color ?? ""}`}>
                   {opt?.label}
                 </span>
                 <span className="flex-1 text-sm font-medium text-gray-800">{item.ingredientName}</span>
                 {item.reactionNote && (
-                  <span className="text-[10px] text-gray-400 truncate max-w-[80px]">{item.reactionNote}</span>
+                  <span className="text-xs text-gray-400 truncate max-w-[80px]">{item.reactionNote}</span>
                 )}
                 <button
                   onClick={() => handleDelete(item.ingredientName)}

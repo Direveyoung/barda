@@ -41,7 +41,7 @@ export default function AdminChallengesPage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <StatusBadge status="low" label={preset.theme} />
-                  <span className="text-[10px] text-gray-400 font-mono">{preset.id}</span>
+                  <span className="text-xs text-gray-400 font-mono">{preset.id}</span>
                   <svg className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
@@ -57,7 +57,7 @@ export default function AdminChallengesPage() {
                         <Icon name={tip.icon} size={14} />
                         <div>
                           <p className="text-xs font-semibold text-gray-700">Day {i + 1}: {tip.title}</p>
-                          <p className="text-[11px] text-gray-500">{tip.desc}</p>
+                          <p className="text-xs text-gray-500">{tip.desc}</p>
                         </div>
                       </div>
                     ))}

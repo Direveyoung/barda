@@ -80,7 +80,7 @@ export default function AdminApiHealthPage() {
                   <p className="font-semibold text-gray-800 text-sm">{api.label}</p>
                 </div>
                 <p className="text-xs text-gray-500">{api.desc}</p>
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 mt-1">
                   API 키: {api.key === "obf" ? "불필요" : apiHealth[api.key].hasKey ? "설정됨" : "미설정"}
                 </p>
               </div>

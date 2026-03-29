@@ -24,7 +24,7 @@ function ProgressRing({ rate, color, label }: { rate: number; color: string; lab
           {rate}%
         </span>
       </div>
-      <span className="text-[10px] text-gray-500 mt-1">{label}</span>
+      <span className="text-xs text-gray-500 mt-1">{label}</span>
     </div>
   );
 }
@@ -47,7 +47,7 @@ export default function AdherenceDashboard() {
       <div className="flex items-end gap-2 h-20 mb-4">
         {stats.weeklyRates.map((rate, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
-            <span className="text-[10px] font-semibold text-gray-600">{rate}%</span>
+            <span className="text-xs font-semibold text-gray-600">{rate}%</span>
             <div className="w-full bg-gray-100 rounded-t-lg relative" style={{ height: "48px" }}>
               <div
                 className="absolute bottom-0 w-full rounded-t-lg bg-primary/80 transition-all"
@@ -70,15 +70,15 @@ export default function AdherenceDashboard() {
       <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
         <div className="text-center">
           <p className="text-lg font-bold text-gray-800">{stats.currentStreak}</p>
-          <p className="text-[10px] text-gray-400">현재 연속</p>
+          <p className="text-xs text-gray-400">현재 연속</p>
         </div>
         <div className="text-center">
           <p className="text-lg font-bold text-gray-800">{stats.bestStreak}</p>
-          <p className="text-[10px] text-gray-400">최장 연속</p>
+          <p className="text-xs text-gray-400">최장 연속</p>
         </div>
         <div className="text-center">
           <p className="text-lg font-bold text-gray-800">{stats.totalDays}</p>
-          <p className="text-[10px] text-gray-400">총 기록일</p>
+          <p className="text-xs text-gray-400">총 기록일</p>
         </div>
       </div>
     </div>

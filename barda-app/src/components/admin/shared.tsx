@@ -46,7 +46,7 @@ const BADGE_STYLES: Record<string, string> = {
 
 export function StatusBadge({ status, label }: { status: string; label?: string }) {
   return (
-    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${BADGE_STYLES[status] ?? "bg-gray-100 text-gray-600"}`}>
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${BADGE_STYLES[status] ?? "bg-gray-100 text-gray-600"}`}>
       {label ?? status}
     </span>
   );

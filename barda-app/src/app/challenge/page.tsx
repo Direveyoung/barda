@@ -152,12 +152,12 @@ export default function ChallengePage() {
                       <Icon name={tip.icon} size={16} />
                       <div>
                         <p className="text-xs font-semibold text-gray-700">Day {i + 1}: {tip.title}</p>
-                        <p className="text-[11px] text-gray-500">{tip.desc}</p>
+                        <p className="text-xs text-gray-500">{tip.desc}</p>
                       </div>
                     </div>
                   ))}
                   {previewPreset.days > 7 && (
-                    <p className="text-[11px] text-gray-400 text-center">... 외 {previewPreset.days - 7}일</p>
+                    <p className="text-xs text-gray-400 text-center">... 외 {previewPreset.days - 7}일</p>
                   )}
                 </div>
                 <button
@@ -192,7 +192,7 @@ export default function ChallengePage() {
                   {Array.from({ length: duration }, (_, i) => (
                     <div
                       key={i}
-                      className={`text-[10px] font-medium ${
+                      className={`text-xs font-medium ${
                         i < currentDay
                           ? challenge?.completedDays[i] ? "text-primary" : "text-gray-400"
                           : "text-gray-300"
@@ -232,16 +232,16 @@ export default function ChallengePage() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-bold text-gray-700">Day {i + 1}</span>
                           {isToday && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary text-white font-medium">오늘</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-white font-medium">오늘</span>
                           )}
                           {isCompleted && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-600 font-medium">완료</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600 font-medium">완료</span>
                           )}
                         </div>
                         <p className="text-sm font-semibold text-gray-800 mb-0.5">{tip.title}</p>
                         <p className="text-xs text-gray-500">{tip.desc}</p>
                         {diaryEntries[i] && (
-                          <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-gray-400">
+                          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-400">
                             <Icon name={conditionIcons[diaryEntries[i]!.condition] ?? "face-neutral"} size={16} />
                             <span>피부: {CONDITION_LABEL[diaryEntries[i]!.condition] ?? diaryEntries[i]!.condition}</span>
                             {diaryEntries[i]!.memo && (

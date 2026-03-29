@@ -79,21 +79,21 @@ export default function PointsPage() {
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-white/15 rounded-xl py-2">
                 <p className="text-lg font-bold">{balance.lifetimeEarned.toLocaleString()}</p>
-                <p className="text-[10px] opacity-70">총 적립</p>
+                <p className="text-xs opacity-70">총 적립</p>
               </div>
               <div className="bg-white/15 rounded-xl py-2">
                 <p className="text-lg font-bold">{balance.currentStreak}</p>
-                <p className="text-[10px] opacity-70">연속 기록</p>
+                <p className="text-xs opacity-70">연속 기록</p>
               </div>
               <div className="bg-white/15 rounded-xl py-2">
                 <p className="text-lg font-bold">{balance.longestStreak}</p>
-                <p className="text-[10px] opacity-70">최장 기록</p>
+                <p className="text-xs opacity-70">최장 기록</p>
               </div>
             </div>
 
             {/* 오늘 프로그레스 */}
             <div className="mt-3">
-              <div className="flex justify-between text-[10px] opacity-70 mb-1">
+              <div className="flex justify-between text-xs opacity-70 mb-1">
                 <span>오늘 적립</span>
                 <span>{balance.dailyEarned}/{POINT_DAILY_CAP}P</span>
               </div>
@@ -155,7 +155,7 @@ export default function PointsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-700">{tx.description}</p>
-                      <p className="text-[10px] text-gray-400">{formatTime(tx.createdAt)}</p>
+                      <p className="text-xs text-gray-400">{formatTime(tx.createdAt)}</p>
                     </div>
                     <span className={`text-sm font-bold ${tx.points > 0 ? "text-primary" : "text-gray-500"}`}>
                       {tx.points > 0 ? "+" : ""}{tx.points}P

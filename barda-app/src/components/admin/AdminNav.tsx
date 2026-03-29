@@ -62,7 +62,7 @@ export default function AdminNav() {
     <nav className="w-56 shrink-0 bg-white border-r border-gray-200 min-h-[calc(100vh-57px)] py-4 hidden lg:block">
       {NAV_GROUPS.map((group) => (
         <div key={group.title} className="mb-4">
-          <p className="px-4 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+          <p className="px-4 mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
             {group.title}
           </p>
           {group.items.map((item) => {

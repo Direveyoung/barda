@@ -70,7 +70,7 @@ export default function AdminUsersPage() {
                     <td className="py-2.5 px-3">
                       <div className="flex flex-wrap gap-1">
                         {(u.concerns ?? []).slice(0, 3).map((c) => (
-                          <span key={c} className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">{c}</span>
+                          <span key={c} className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">{c}</span>
                         ))}
                       </div>
                     </td>

@@ -240,19 +240,19 @@ export default function ScannerPage() {
         <div className="grid grid-cols-4 gap-2">
           <div className="bg-gray-50 rounded-xl p-2.5 text-center">
             <p className="text-lg font-bold text-gray-800">{stats.total}</p>
-            <p className="text-[10px] text-gray-400">전체</p>
+            <p className="text-xs text-gray-400">전체</p>
           </div>
           <div className="bg-green-50 rounded-xl p-2.5 text-center">
             <p className="text-lg font-bold text-green-600">{stats.safe}</p>
-            <p className="text-[10px] text-green-500">안전</p>
+            <p className="text-xs text-green-500">안전</p>
           </div>
           <div className="bg-amber-50 rounded-xl p-2.5 text-center">
             <p className="text-lg font-bold text-amber-600">{stats.moderate}</p>
-            <p className="text-[10px] text-amber-500">보통</p>
+            <p className="text-xs text-amber-500">보통</p>
           </div>
           <div className="bg-red-50 rounded-xl p-2.5 text-center">
             <p className="text-lg font-bold text-red-600">{stats.caution}</p>
-            <p className="text-[10px] text-red-500">주의</p>
+            <p className="text-xs text-red-500">주의</p>
           </div>
         </div>
 
@@ -302,11 +302,11 @@ export default function ScannerPage() {
                       <span className="text-sm font-medium text-gray-800 truncate">
                         {ing.info.name}
                       </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${config.bg} ${config.text}`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${config.bg} ${config.text}`}>
                         {config.label}
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-400 truncate">{ing.info.nameEn}</p>
+                    <p className="text-xs text-gray-400 truncate">{ing.info.nameEn}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{ing.info.efficacy}</p>
                   </div>
                   <span className={`text-xs font-bold ${config.text} shrink-0`}>
@@ -324,9 +324,9 @@ export default function ScannerPage() {
                 <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-gray-300" />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm text-gray-500 truncate block">{ing.raw}</span>
-                  <p className="text-[11px] text-gray-300">DB에 없는 성분</p>
+                  <p className="text-xs text-gray-300">DB에 없는 성분</p>
                 </div>
-                <span className="text-[10px] text-gray-300 shrink-0">-</span>
+                <span className="text-xs text-gray-300 shrink-0">-</span>
               </div>
             );
           })}
@@ -353,7 +353,7 @@ export default function ScannerPage() {
                 <p className="text-xs text-gray-400">{product.brand}</p>
                 <p className="text-sm font-medium text-gray-800 truncate">{product.name}</p>
                 {product.key_ingredients && product.key_ingredients.length > 0 && (
-                  <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">
                     {product.key_ingredients.slice(0, 3).join(", ")}
                   </p>
                 )}
@@ -587,7 +587,7 @@ export default function ScannerPage() {
                   <p className="text-sm font-bold text-gray-800">
                     {barcodeResult.product.productName || "제품명 없음"}
                   </p>
-                  <p className="text-[11px] text-gray-300 mt-0.5">
+                  <p className="text-xs text-gray-300 mt-0.5">
                     바코드: {barcodeResult.product.code}
                   </p>
                 </div>
@@ -646,7 +646,7 @@ export default function ScannerPage() {
             className="w-full h-40 px-4 py-3 rounded-xl border border-gray-200 text-sm bg-gray-50 resize-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-colors"
           />
           <div className="flex items-center justify-between">
-            <p className="text-[11px] text-gray-300">
+            <p className="text-xs text-gray-300">
               {Object.keys(INGREDIENT_DB).length}개 성분 DB 보유
             </p>
             <button
