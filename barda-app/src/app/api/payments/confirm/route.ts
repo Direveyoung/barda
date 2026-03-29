@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ConfirmPaymentResponse, ApiError } from "@/lib/api-types";
 import { confirmPaymentSchema, parseWithZod } from "@/lib/api-types";
+import { API_URLS, PAYMENT } from "@/lib/constants";
 
 export async function POST(request: Request): Promise<NextResponse<ConfirmPaymentResponse | ApiError>> {
   const secretKey = process.env.TOSS_SECRET_KEY;
 
   if (!secretKey) {
     return NextResponse.json(
-      { error: "결제 서비스가 아직 설정되지 않았습니다. (TOSS_SECRET_KEY not configured)" },
+      { error: "결제 서비스가 아직 설정되지 않았습니다." },
       { status: 503 },
     );
   }
@@ -46,6 +47,14 @@ export async function POST(request: Request): Promise<NextResponse<ConfirmPaymen
 
   const { paymentKey, orderId, amount } = result.data;
 
+  /* ---- Server-side amount validation ---- */
+  if (amount !== PAYMENT.PREMIUM_PRICE) {
+    return NextResponse.json(
+      { error: "결제 금액이 올바르지 않습니다." },
+      { status: 400 },
+    );
+  }
+
   /* ---- Idempotency check: prevent duplicate payments ---- */
   const { data: existingPayment } = await supabase
     .from("payments")
@@ -65,7 +74,7 @@ export async function POST(request: Request): Promise<NextResponse<ConfirmPaymen
   const basicAuth = Buffer.from(`${secretKey}:`).toString("base64");
 
   const tossRes = await fetch(
-    "https://api.tosspayments.com/v1/payments/confirm",
+    API_URLS.TOSS_CONFIRM,
     {
       method: "POST",
       headers: {

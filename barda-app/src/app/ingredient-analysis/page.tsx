@@ -13,7 +13,7 @@ import {
   type IngredientInfo,
 } from "@/data/ingredients";
 import { getCategoryLabel, getCategoryIcon } from "@/lib/analysis";
-import { getSafetyConfig } from "@/lib/constants";
+import { getSafetyConfig, STORAGE_KEYS } from "@/lib/constants";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 
@@ -110,12 +110,14 @@ export default function IngredientAnalysisPage() {
 
   // Fetch enriched data from external APIs when product is selected
   useEffect(() => {
+    let cancelled = false;
+
     if (!selectedProduct?.key_ingredients) {
-      setEnrichedMap({});
-      return;
+      // Reset async to avoid synchronous setState in effect
+      queueMicrotask(() => { if (!cancelled) setEnrichedMap({}); });
+      return () => { cancelled = true; };
     }
 
-    let cancelled = false;
     const ingredients = selectedProduct.key_ingredients;
 
     async function fetchEnriched() {
@@ -160,7 +162,7 @@ export default function IngredientAnalysisPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const data = localStorage.getItem("barda_profile");
+      const data = localStorage.getItem(STORAGE_KEYS.PROFILE);
       if (data) {
         const parsed: unknown = JSON.parse(data);
         if (
@@ -169,7 +171,8 @@ export default function IngredientAnalysisPage() {
           "skinType" in parsed &&
           typeof (parsed as ProfileData).skinType === "string"
         ) {
-          setProfile(parsed as ProfileData);
+          const profileData = parsed as ProfileData;
+          queueMicrotask(() => setProfile(profileData));
         }
       }
     } catch {

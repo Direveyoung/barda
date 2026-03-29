@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { AnalysisResult, RoutineProduct } from "@/lib/analysis";
+import type { AnalysisResult, RoutineProduct, SensitivityWarning } from "@/lib/analysis";
 import {
   scoreColor,
   scoreLabel,
@@ -11,6 +11,9 @@ import {
 import BlurOverlay from "@/components/BlurOverlay";
 import FeedbackButtons from "@/components/FeedbackButtons";
 import ShareRoutineModal from "@/components/ShareRoutineModal";
+import KakaoOpenChat from "@/components/KakaoOpenChat";
+import SkinHelpTemplate from "@/components/SkinHelpTemplate";
+import { STORAGE_KEYS } from "@/lib/constants";
 import Icon from "@/components/Icon";
 
 interface Props {
@@ -245,6 +248,42 @@ function MissingStepCard({
   );
 }
 
+/* ─── Sensitivity Warning Card ─── */
+
+const SEVERITY_STYLE: Record<string, { bg: string; border: string; text: string; badge: string; label: string }> = {
+  severe:   { bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-800", badge: "bg-rose-500", label: "심각" },
+  moderate: { bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-800", badge: "bg-pink-500", label: "주의" },
+  mild:     { bg: "bg-fuchsia-50", border: "border-fuchsia-200", text: "text-fuchsia-800", badge: "bg-fuchsia-400", label: "경미" },
+};
+
+function SensitivityCard({ warning }: { warning: SensitivityWarning }) {
+  const style = SEVERITY_STYLE[warning.severity] ?? SEVERITY_STYLE.mild;
+  return (
+    <div className={`rounded-2xl p-4 border ${style.bg} ${style.border}`}>
+      <div className="flex items-start gap-3">
+        <span className={`px-2 py-0.5 rounded-full text-xs font-bold text-white shrink-0 ${style.badge}`}>
+          {style.label}
+        </span>
+        <div className="flex-1">
+          <h4 className={`font-semibold text-sm mb-1 ${style.text}`}>
+            <Icon name="alert" size={14} /> {warning.ingredientName} — 민감 성분 감지
+          </h4>
+          {warning.reactionNote && (
+            <p className={`text-xs mb-2 ${style.text} opacity-80`}>내 반응: {warning.reactionNote}</p>
+          )}
+          <div className="flex flex-wrap gap-1">
+            {warning.foundInProducts.map((name) => (
+              <span key={name} className={`px-2 py-0.5 rounded-full text-xs bg-white/60 ${style.text}`}>
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Calendar ─── */
 
 function WeekCalendar({
@@ -303,7 +342,7 @@ export default function ResultView({
 
     try {
       localStorage.setItem(
-        "barda_last_routine",
+        STORAGE_KEYS.LAST_ROUTINE,
         JSON.stringify({
           score: result.score,
           amRoutine: result.amProducts,
@@ -374,6 +413,20 @@ export default function ResultView({
         />
       )}
 
+      {/* Sensitivity Warnings */}
+      {result.sensitivityWarnings.length > 0 && (
+        <div>
+          <h3 className="text-lg font-bold text-rose-700 mb-3 flex items-center gap-1.5">
+            <Icon name="alert" size={16} /> 내 민감 성분 감지 ({result.sensitivityWarnings.length})
+          </h3>
+          <div className="space-y-3">
+            {result.sensitivityWarnings.map((w) => (
+              <SensitivityCard key={w.ingredientName} warning={w} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Conflicts */}
       {result.conflicts.length > 0 && (
         <div>
@@ -437,6 +490,16 @@ export default function ResultView({
       >
         내 루틴 공유하기
       </button>
+
+      {/* Community */}
+      <div className="space-y-3 pt-2">
+        <KakaoOpenChat skinType={skinType} />
+        <SkinHelpTemplate
+          skinType={skinType}
+          concerns={concerns}
+          recentProducts={products.map((p) => p.name)}
+        />
+      </div>
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">

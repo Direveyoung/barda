@@ -15,6 +15,7 @@ export const CONCERN_LABEL: Record<string, string> = {
   acne: "여드름",
   wrinkle: "주름",
   pigmentation: "색소침착",
+  pigment: "잡티·색소침착",
   dryness: "건조",
   sensitivity: "민감",
   pore: "모공",
@@ -22,6 +23,7 @@ export const CONCERN_LABEL: Record<string, string> = {
   whitehead: "화이트헤드",
   redness: "홍조",
   darkCircle: "다크서클",
+  dullness: "칙칙함·톤업",
 };
 
 /* ── 결제 ── */
@@ -33,6 +35,35 @@ export const PAYMENT = {
   DISPLAY_TEXT: "₩9,900 일회성 결제",
 } as const;
 
+/* ── 포인트 시스템 ── */
+
+export const POINT_ACTIONS = {
+  checkin_am:    { points: 10,  dailyLimit: 1, label: "AM 루틴 체크인" },
+  checkin_pm:    { points: 10,  dailyLimit: 1, label: "PM 루틴 체크인" },
+  diary:         { points: 10,  dailyLimit: 1, label: "다이어리 기록" },
+  barcode_scan:  { points: 50,  dailyLimit: 3, label: "바코드 등록" },
+  ingredient_input: { points: 100, dailyLimit: 2, label: "전성분 입력" },
+  feedback:      { points: 10,  dailyLimit: 5, label: "충돌 피드백" },
+  routine_share: { points: 30,  dailyLimit: 1, label: "루틴 공유" },
+  streak_bonus:  { points: 300, dailyLimit: 1, label: "30일 연속 보너스" },
+} as const;
+
+export type PointActionType = keyof typeof POINT_ACTIONS;
+
+export const POINT_DAILY_CAP = 100;
+
+export const POINT_ACTION_ICON: Record<string, string> = {
+  checkin_am: "sun",
+  checkin_pm: "moon",
+  diary: "memo",
+  barcode_scan: "camera",
+  ingredient_input: "beaker",
+  feedback: "thumbs-up",
+  routine_share: "share",
+  streak_bonus: "fire",
+  redeem: "money",
+};
+
 /* ── localStorage 키 ── */
 
 export const STORAGE_KEYS = {
@@ -40,8 +71,42 @@ export const STORAGE_KEYS = {
   SESSION_ID: "barda_session_id",
   DEV_UNLOCK: "barda_dev_unlock",
   DRAWER: "barda_drawer",
+  PROFILE: "barda_profile",
+  CHALLENGE: "barda_challenge",
+  MIGRATED: "barda_migrated_v3",
+  POINTS_BALANCE: "barda_points_balance",
+  LAST_ROUTINE: "barda_last_routine",
+  SENSITIVITIES: "barda_sensitivities",
+  BADGES: "barda_badges",
   notifications: (userId: string) => `barda_notifications_${userId}`,
+  diary: (date: string) => `barda_diary_${date}`,
+  checks: (date: string) => `barda_checks_${date}`,
 } as const;
+
+/* ── 커뮤니티/카카오톡 ── */
+
+export const COMMUNITY = {
+  KAKAO_OPEN_CHAT_URL: process.env.NEXT_PUBLIC_KAKAO_OPEN_CHAT_URL ?? "https://open.kakao.com/o/gXXXXXXX",
+  CLINIC_LIST_URL: process.env.NEXT_PUBLIC_CLINIC_LIST_URL ?? "https://clinic-list.vercel.app/",
+} as const;
+
+/* ── 다이어리 컨디션 점수 매핑 ── */
+
+export const CONDITION_SCORE: Record<string, number> = {
+  good: 5,
+  normal: 4,
+  meh: 3,
+  bad: 2,
+  terrible: 1,
+};
+
+export const CONDITION_LABEL: Record<string, string> = {
+  good: "좋음",
+  normal: "보통",
+  meh: "그저그럭",
+  bad: "별로",
+  terrible: "나쁨",
+};
 
 /* ── 외부 API ── */
 
@@ -52,7 +117,12 @@ export const API_URLS = {
   WEATHER: "https://api.open-meteo.com/v1/forecast",
   AIR_QUALITY: "https://air-quality-api.open-meteo.com/v1/air-quality",
   TOSS_SDK: "https://js.tosspayments.com/v1/payment",
+  TOSS_CONFIRM: "https://api.tosspayments.com/v1/payments/confirm",
 } as const;
+
+/* ── 앱 URL ── */
+
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://barda.vercel.app";
 
 export const API_TIMEOUT_MS = 8000;
 export const HEALTH_CHECK_TIMEOUT_MS = 5000;
@@ -83,6 +153,11 @@ export const SCORE = {
     high: 15,
     medium: 8,
     low: 3,
+  },
+  SENSITIVITY: {
+    severe: 15,
+    moderate: 8,
+    mild: 3,
   },
   MISSING_STEP: {
     critical: 25,
@@ -142,7 +217,43 @@ export const SEARCH_DEFAULTS = {
 export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 10,
   MAX_PAGE_SIZE: 50,
+  LANDING_FEED: 3,
+  RANKING: 20,
+  POINTS_HISTORY: 20,
+  LIKED_POSTS: 50,
 } as const;
+
+/* ── UI 타이밍 (ms) ── */
+
+export const UI_TIMING = {
+  SEARCH_DEBOUNCE: 400,
+  BANNER_ROTATE: 4000,
+  TOAST_DISMISS: 2500,
+  PAYMENT_TOAST: 4000,
+  SAVE_CONFIRM: 2000,
+} as const;
+
+/* ── 배지 정의 ── */
+
+export interface BadgeDefinition {
+  id: string;
+  label: string;
+  icon: string;
+  category: "streak" | "analysis" | "diary" | "drawer";
+  threshold?: number;
+}
+
+export const BADGE_DEFINITIONS: BadgeDefinition[] = [
+  { id: "streak_3",  label: "3일 연속",      icon: "fire",    category: "streak",   threshold: 3  },
+  { id: "streak_7",  label: "일주일 달성",    icon: "star",    category: "streak",   threshold: 7  },
+  { id: "streak_14", label: "2주 연속",       icon: "trophy",  category: "streak",   threshold: 14 },
+  { id: "streak_30", label: "한 달 마스터",   icon: "crown",   category: "streak",   threshold: 30 },
+  { id: "first_analysis", label: "첫 분석",   icon: "beaker",  category: "analysis" },
+  { id: "score_90",  label: "루틴 달인",      icon: "gold-medal", category: "analysis", threshold: 90 },
+  { id: "diary_7",   label: "꾸준한 기록자",  icon: "memo",    category: "diary",    threshold: 7  },
+  { id: "diary_30",  label: "스킨케어 일기장", icon: "book",    category: "diary",    threshold: 30 },
+  { id: "drawer_10", label: "화장대 수집가",  icon: "package", category: "drawer",   threshold: 10 },
+];
 
 /* ── Safety 등급 색상 (safetyScore 1~5) ── */
 

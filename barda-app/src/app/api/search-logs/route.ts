@@ -46,6 +46,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<SearchStat
     return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
   }
 
+  // Admin-only: verify authenticated user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   const { searchParams } = request.nextUrl;
   const type = searchParams.get("type") ?? "stats";
 

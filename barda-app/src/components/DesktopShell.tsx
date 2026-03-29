@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { APP_URL } from "@/lib/constants";
 
 /* ─── QR Code SVG Component ─── */
 /* Generates a simple visual QR-like pattern. In production, replace with real QR. */
@@ -120,7 +121,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
           <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
             <div className="flex items-center gap-4">
               <div className="shrink-0">
-                <QRCode url="https://barda.vercel.app" size={120} />
+                <QRCode url={APP_URL} size={120} />
               </div>
               <div>
                 <p className="text-sm font-bold text-gray-800 mb-1">

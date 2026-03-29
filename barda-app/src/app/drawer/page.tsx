@@ -1,26 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import { ALL_PRODUCTS, type Product } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import { getCategoryLabel, getCategoryIcon } from "@/lib/analysis";
-import { STORAGE_KEYS } from "@/lib/constants";
 import Icon from "@/components/Icon";
-
-/* ─── Types ─── */
-
-interface DrawerItem {
-  productId: string;
-  brand: string;
-  name: string;
-  categoryId: string;
-  openedDate: string | null; // ISO date string
-  status: "unopened" | "using" | "finished";
-  addedAt: string; // ISO date string
-}
+import { saveDrawerItems, loadDrawerItems, type DrawerItem } from "@/lib/user-data-repository";
+import { findSimilarProducts, type SimilarProduct } from "@/lib/product-similarity";
+import { getBrandPriceTier } from "@/data/brand-tiers";
 
 const STATUS_CONFIG = {
   unopened: { label: "미개봉", icon: "package", color: "bg-gray-100 text-gray-600" },
@@ -39,38 +29,35 @@ export default function DrawerPage() {
   const [loaded, setLoaded] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
+
   const [filterStatus, setFilterStatus] = useState<"all" | "unopened" | "using" | "finished">("all");
 
-  // Load from localStorage
+  // Load from DB (dual-read: DB → localStorage fallback)
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const userId = user?.id ?? "anonymous";
 
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.DRAWER);
-      if (saved) {
-        setItems(JSON.parse(saved));
-      }
-    } catch { /* ignore */ }
-    setLoaded(true);
-  }, []);
+    loadDrawerItems(userId).then((data) => {
+      setItems(data);
+      setLoaded(true);
+    });
+  }, [user]);
 
-  // Save to localStorage
+  // Save to DB + localStorage
   const saveItems = useCallback((newItems: DrawerItem[]) => {
     setItems(newItems);
-    localStorage.setItem(STORAGE_KEYS.DRAWER, JSON.stringify(newItems));
-  }, []);
+    const userId = user?.id ?? "anonymous";
+    saveDrawerItems(userId, newItems);
+  }, [user]);
 
-  // Search products
-  useEffect(() => {
+  // Search products (derived state)
+  const searchResults = useMemo(() => {
     if (searchQuery.trim().length >= 1) {
       const results = searchProducts(searchQuery, ALL_PRODUCTS, 10);
-      // Filter out already added products
       const existing = new Set(items.map((i) => i.productId));
-      setSearchResults(results.filter((r) => !existing.has(r.id)));
-    } else {
-      setSearchResults([]);
+      return results.filter((r) => !existing.has(r.id));
     }
+    return [];
   }, [searchQuery, items]);
 
   const addProduct = useCallback((product: Product) => {
@@ -113,6 +100,23 @@ export default function DrawerPage() {
     unopened: items.filter((i) => i.status === "unopened").length,
     finished: items.filter((i) => i.status === "finished").length,
   };
+
+  // Repurchase recommendations for finished products
+  const repurchaseRecs = useMemo(() => {
+    const finished = items.filter((i) => i.status === "finished");
+    if (finished.length === 0) return [];
+
+    const recs: { item: DrawerItem; recommendations: SimilarProduct[] }[] = [];
+    for (const fi of finished) {
+      const product = ALL_PRODUCTS.find((p) => p.id === fi.productId);
+      if (!product) continue;
+      const similar = findSimilarProducts(product, 3, 20);
+      if (similar.length > 0) {
+        recs.push({ item: fi, recommendations: similar });
+      }
+    }
+    return recs;
+  }, [items]);
 
   if (!loaded) {
     return (
@@ -275,6 +279,46 @@ export default function DrawerPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Repurchase Recommendations */}
+        {repurchaseRecs.length > 0 && (
+          <div className="mt-6 mb-4">
+            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1.5">
+              <Icon name="sparkle" size={14} /> 다 쓴 제품, 이런 건 어때요?
+            </h3>
+            <div className="space-y-3">
+              {repurchaseRecs.map(({ item, recommendations }) => (
+                <div key={item.productId} className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <p className="text-xs text-gray-400 mb-2">
+                    <span className="font-medium text-gray-600">{item.brand} {item.name}</span> 대안
+                  </p>
+                  <div className="space-y-2">
+                    {recommendations.map((rec) => {
+                      const tier = getBrandPriceTier(rec.product.brand);
+                      return (
+                        <Link
+                          key={rec.product.id}
+                          href={`/dupe?q=${encodeURIComponent(item.name)}`}
+                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                        >
+                          <Icon name={getCategoryIcon(rec.product.categoryId)} size={16} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] text-gray-400">{rec.product.brand}</p>
+                            <p className="text-xs font-medium text-gray-800 truncate">{rec.product.name}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-[10px] font-semibold text-primary">{rec.similarity}% 유사</span>
+                            <p className="text-[10px] text-gray-400">{tier}</p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

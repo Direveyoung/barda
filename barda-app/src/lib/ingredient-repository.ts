@@ -19,11 +19,9 @@ interface DBIngredient {
   efficacy: string | null;
   caution: string | null;
   skin_types: string[] | null;
-}
-
-interface DBInteraction {
-  interaction_type: string;
-  partner: { name_ko: string };
+  regulation_status: string | null;
+  max_concentration: string | null;
+  cas_no: string | null;
 }
 
 /* ─── Cache ─── */
@@ -49,7 +47,7 @@ export async function getIngredientDB(): Promise<Record<string, IngredientInfo>>
 
     const { data: ingredients, error } = await supabase
       .from("ingredients")
-      .select("name_ko, name_en, category, safety_score, efficacy, caution, skin_types");
+      .select("name_ko, name_en, category, safety_score, efficacy, caution, skin_types, regulation_status, max_concentration, cas_no");
 
     if (error || !ingredients || ingredients.length === 0) {
       return INGREDIENT_DB;
@@ -94,6 +92,9 @@ export async function getIngredientDB(): Promise<Record<string, IngredientInfo>>
         goodWith: synergyMap[row.name_ko] ?? [],
         avoidWith: conflictMap[row.name_ko] ?? [],
         skinTypes: row.skin_types ?? [],
+        regulation: row.regulation_status ?? undefined,
+        maxConcentration: row.max_concentration ?? undefined,
+        casNo: row.cas_no ?? undefined,
       };
     }
 

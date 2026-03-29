@@ -63,8 +63,8 @@ const tabs = [
     ),
   },
   {
-    label: "가이드",
-    href: "/guide",
+    label: "다이어리",
+    href: "/diary",
     icon: (active: boolean) => (
       <svg
         className={`w-6 h-6 ${active ? "text-primary" : "text-gray-400"}`}
@@ -76,7 +76,7 @@ const tabs = [
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+          d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
         />
       </svg>
     ),
@@ -106,7 +106,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]">
+    <nav aria-label="메인 메뉴" className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around max-w-lg mx-auto h-16">
         {tabs.map((tab) => {
           const isActive =
@@ -119,14 +119,12 @@ export default function BottomNav() {
               <Link
                 key={tab.href}
                 href={tab.href}
+                aria-current={isActive ? "page" : undefined}
+                aria-label={tab.label}
                 className="flex flex-col items-center gap-0.5 -mt-4"
               >
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
-                    isActive
-                      ? "bg-primary"
-                      : "bg-primary"
-                  }`}
+                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 bg-primary"
                 >
                   {tab.icon(isActive)}
                 </div>
@@ -141,6 +139,8 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={tab.label}
               className="flex flex-col items-center gap-0.5"
             >
               {tab.icon(isActive)}

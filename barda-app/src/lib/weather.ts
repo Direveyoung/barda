@@ -407,8 +407,9 @@ export function generateWeatherTips(
   const hour = new Date().getHours();
   if (hour < 12) {
     // 아침 시간대
-    if (weather.hourlyUV) {
-      const afternoonUV = Math.max(...weather.hourlyUV.slice(11, 15));
+    if (weather.hourlyUV && weather.hourlyUV.length > 11) {
+      const uvSlice = weather.hourlyUV.slice(11, 15);
+      const afternoonUV = uvSlice.length > 0 ? Math.max(...uvSlice) : 0;
       if (afternoonUV >= 6) {
         tips.push({
           icon: "clock",
@@ -419,8 +420,9 @@ export function generateWeatherTips(
         });
       }
     }
-    if (weather.hourlyTemp) {
-      const afternoonMax = Math.max(...weather.hourlyTemp.slice(12, 18));
+    if (weather.hourlyTemp && weather.hourlyTemp.length > 12) {
+      const tempSlice = weather.hourlyTemp.slice(12, 18);
+      const afternoonMax = tempSlice.length > 0 ? Math.max(...tempSlice) : weather.temperature;
       const tempDiff = afternoonMax - weather.temperature;
       if (tempDiff >= 10) {
         tips.push({

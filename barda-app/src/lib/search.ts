@@ -167,17 +167,19 @@ function fuzzyMatch(
       const fullDist = levenshtein(nQuery, target);
       bestDistance = Math.min(bestDistance, fullDist);
 
-      // Also try sliding window: compare query against substrings
-      // of similar length to catch partial matches within longer strings
+      // Early exit: already within threshold, no need for sliding window
+      if (bestDistance <= 1) break;
+
+      // Sliding window: compare query against substrings of similar length
       if (target.length > nQuery.length) {
         const windowSize = nQuery.length;
         for (let i = 0; i <= target.length - windowSize; i++) {
           const substr = target.slice(i, i + windowSize);
           const dist = levenshtein(nQuery, substr);
-          bestDistance = Math.min(bestDistance, dist);
-
-          // Short-circuit if we found a perfect or near-perfect match
-          if (bestDistance <= 1) break;
+          if (dist < bestDistance) {
+            bestDistance = dist;
+            if (bestDistance <= 1) break;
+          }
         }
       }
 

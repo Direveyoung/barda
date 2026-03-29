@@ -8,13 +8,13 @@ import NotificationBell from "@/components/NotificationBell";
 import RoutinePostCard, { type RoutinePost } from "@/components/RoutinePostCard";
 import Icon from "@/components/Icon";
 import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip, type DailyForecast } from "@/lib/weather";
-import { DAY_NAMES_KO, SKIN_TYPE_LABEL } from "@/lib/constants";
+import { DAY_NAMES_KO, STORAGE_KEYS, PAGINATION, UI_TIMING } from "@/lib/constants";
+import { saveDiary, loadDiary, saveChecklist, saveChallenge, loadChallenge } from "@/lib/user-data-repository";
+import { earnPointsClient } from "@/lib/point-repository";
+import PointToast from "@/components/PointToast";
 
 /* ─── 요일 이름 ─── */
 const DAY_NAMES = DAY_NAMES_KO;
-
-/* ─── 피부타입 라벨 ─── */
-const skinTypeLabel = SKIN_TYPE_LABEL;
 
 /* ─── 피부 컨디션 옵션 ─── */
 const conditionOptions = [
@@ -53,7 +53,7 @@ function LandingHome() {
   const [bannerIndex, setBannerIndex] = useState(0);
 
   useEffect(() => {
-    fetch("/api/routines?sort=latest&page=1&limit=3")
+    fetch(`/api/routines?sort=latest&page=1&limit=${PAGINATION.LANDING_FEED}`)
       .then((r) => r.json())
       .then((json) => {
         setFeedPosts(json.posts ?? []);
@@ -66,7 +66,7 @@ function LandingHome() {
   useEffect(() => {
     const timer = setInterval(() => {
       setBannerIndex((prev) => (prev + 1) % BANNERS.length);
-    }, 4000);
+    }, UI_TIMING.BANNER_ROTATE);
     return () => clearInterval(timer);
   }, []);
 
@@ -324,7 +324,7 @@ function LandingHome() {
    로그인 홈 — 오늘의 루틴 체크리스트 + 다이어리
    ──────────────────────────────────────────────── */
 function LoggedInHome() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const today = new Date();
   const dayName = DAY_NAMES[today.getDay()];
   const dateStr = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayName})`;
@@ -362,17 +362,22 @@ function LoggedInHome() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherTips, setWeatherTips] = useState<WeatherTip[]>([]);
 
+  /* ── 포인트 토스트 ── */
+  const [pointToast, setPointToast] = useState<{ points: number; label: string } | null>(null);
+
   /* ── 최근 피드 ── */
   const [recentPosts, setRecentPosts] = useState<RoutinePost[]>([]);
 
-  // Load saved checklist & diary from localStorage
+  const userId = user?.id ?? "anonymous";
+
+  // Load saved checklist & diary
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const todayKey = today.toISOString().slice(0, 10);
 
-    // Load last routine analysis result
-    const savedRoutine = localStorage.getItem("barda_last_routine");
+    // Load last routine analysis result (session cache — stays in localStorage)
+    const savedRoutine = localStorage.getItem(STORAGE_KEYS.LAST_ROUTINE);
     if (savedRoutine) {
       try {
         const parsed = JSON.parse(savedRoutine);
@@ -385,8 +390,8 @@ function LoggedInHome() {
           checked: false,
         }));
 
-        // Restore today's checked state
-        const savedChecks = localStorage.getItem(`barda_checks_${todayKey}`);
+        // Restore today's checked state from localStorage (fast)
+        const savedChecks = localStorage.getItem(STORAGE_KEYS.checks(todayKey));
         if (savedChecks) {
           const checks = JSON.parse(savedChecks);
           amProducts.forEach((p: { name: string; checked: boolean }, i: number) => {
@@ -397,9 +402,6 @@ function LoggedInHome() {
           });
         }
 
-        setChecklist({ am: amProducts, pm: pmProducts });
-        setHasRoutine(true);
-
         // Load 7-day calendar schedule for today
         const calendarData = parsed.calendar as Array<{
           day: string;
@@ -408,55 +410,51 @@ function LoggedInHome() {
           pmIcon: string;
           pmLabel: string;
         }> | undefined;
+        let schedule: { day: string; isRetinolDay: boolean; isExfoliateDay: boolean; pmIcon: string; pmLabel: string } | null = null;
         if (calendarData && calendarData.length === 7) {
-          // Calendar is 월(0)~일(6), JS getDay() is 일(0)~토(6)
-          // Map: JS 일(0)→cal 6, 월(1)→cal 0, 화(2)→cal 1, ...
           const jsDay = today.getDay();
           const calIndex = jsDay === 0 ? 6 : jsDay - 1;
-          setTodaySchedule(calendarData[calIndex]);
+          schedule = calendarData[calIndex];
         }
+
+        const cl = { am: amProducts, pm: pmProducts };
+        queueMicrotask(() => {
+          setChecklist(cl);
+          setHasRoutine(true);
+          if (schedule) setTodaySchedule(schedule);
+        });
       } catch {
         // ignore
       }
     }
-    setRoutineLoaded(true);
+    queueMicrotask(() => setRoutineLoaded(true));
 
-    // Load challenge state
-    try {
-      const challengeData = localStorage.getItem("barda_challenge");
-      if (challengeData) {
-        const parsed = JSON.parse(challengeData);
-        const startDate = new Date(parsed.startDate);
-        const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
-        if (daysSince < 7) {
-          setChallengeActive(true);
-          setChallengeDay(daysSince + 1);
-          setChallengeCompleted(
-            (parsed.completedDays as boolean[]).filter(Boolean).length
-          );
-        }
+    // Load challenge state (dual-read)
+    loadChallenge(userId).then((data) => {
+      if (!data) return;
+      const startDate = new Date(data.startDate);
+      const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
+      if (daysSince < 7) {
+        setChallengeActive(true);
+        setChallengeDay(daysSince + 1);
+        setChallengeCompleted(data.completedDays.filter(Boolean).length);
       }
-    } catch { /* ignore */ }
+    });
 
-    // Load today's diary
-    const savedDiary = localStorage.getItem(`barda_diary_${todayKey}`);
-    if (savedDiary) {
-      try {
-        const parsed = JSON.parse(savedDiary);
-        setTodayCondition(parsed.condition ?? null);
-        setDiaryMemo(parsed.memo ?? "");
-        setDiarySaved(true);
-      } catch {
-        // ignore
-      }
-    }
+    // Load today's diary (dual-read)
+    loadDiary(userId, todayKey).then((entry) => {
+      if (!entry) return;
+      setTodayCondition(entry.condition);
+      setDiaryMemo(entry.memo);
+      setDiarySaved(true);
+    });
 
-    // Calculate streak
+    // Calculate streak from localStorage (fast local check)
     let count = 0;
     const d = new Date(today);
     for (let i = 0; i < 30; i++) {
       const key = d.toISOString().slice(0, 10);
-      const checks = localStorage.getItem(`barda_checks_${key}`);
+      const checks = localStorage.getItem(STORAGE_KEYS.checks(key));
       if (checks) {
         count++;
         d.setDate(d.getDate() - 1);
@@ -464,10 +462,11 @@ function LoggedInHome() {
         break;
       }
     }
-    setStreak(count);
+    const streakCount = count;
+    queueMicrotask(() => setStreak(streakCount));
 
     // Fetch recent feed
-    fetch("/api/routines?sort=latest&page=1&limit=3")
+    fetch(`/api/routines?sort=latest&page=1&limit=${PAGINATION.LANDING_FEED}`)
       .then((r) => r.json())
       .then((json) => setRecentPosts(json.posts ?? []))
       .catch(() => {});
@@ -476,9 +475,8 @@ function LoggedInHome() {
     fetchWeather().then((data) => {
       if (data) {
         setWeather(data);
-        // Get retinol/AHA info from saved routine
         try {
-          const saved = localStorage.getItem("barda_last_routine");
+          const saved = localStorage.getItem(STORAGE_KEYS.LAST_ROUTINE);
           if (saved) {
             const parsed = JSON.parse(saved);
             setWeatherTips(generateWeatherTips(data, parsed.skinType, parsed.hasRetinol, parsed.hasAHA));
@@ -490,7 +488,7 @@ function LoggedInHome() {
         }
       }
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Toggle checklist item
   const toggleCheck = useCallback(
@@ -503,50 +501,59 @@ function LoggedInHome() {
           checked: !updated[time][index].checked,
         };
 
-        // Save to localStorage
+        // Save to DB + localStorage
         const todayKey = new Date().toISOString().slice(0, 10);
-        const checks = {
-          am: updated.am.map((p) => p.checked),
-          pm: updated.pm.map((p) => p.checked),
-        };
-        localStorage.setItem(`barda_checks_${todayKey}`, JSON.stringify(checks));
+        const amChecks = updated.am.map((p) => p.checked);
+        const pmChecks = updated.pm.map((p) => p.checked);
+        saveChecklist(userId, todayKey, amChecks, pmChecks);
+
+        // 포인트 적립: AM/PM 체크리스트 모두 완료 시
+        if (amChecks.length > 0 && amChecks.every(Boolean)) {
+          earnPointsClient("checkin_am", `checkin_am:${todayKey}`, (pts) =>
+            setPointToast({ points: pts, label: "AM 루틴 완료" }),
+          );
+        }
+        if (pmChecks.length > 0 && pmChecks.every(Boolean)) {
+          earnPointsClient("checkin_pm", `checkin_pm:${todayKey}`, (pts) =>
+            setPointToast({ points: pts, label: "PM 루틴 완료" }),
+          );
+        }
 
         return updated;
       });
     },
-    []
+    [userId]
   );
 
   // Save diary + auto-update challenge
-  const saveDiary = useCallback(() => {
+  const handleSaveDiary = useCallback(() => {
     if (!todayCondition) return;
     const todayKey = new Date().toISOString().slice(0, 10);
-    localStorage.setItem(
-      `barda_diary_${todayKey}`,
-      JSON.stringify({ condition: todayCondition, memo: diaryMemo })
-    );
+    saveDiary(userId, todayKey, { condition: todayCondition, memo: diaryMemo });
     setDiarySaved(true);
 
+    // 포인트 적립: 다이어리 기록
+    earnPointsClient("diary", `diary:${todayKey}`, (pts) =>
+      setPointToast({ points: pts, label: "다이어리 기록" }),
+    );
+
     // Auto-complete today's challenge day if active
-    try {
-      const challengeData = localStorage.getItem("barda_challenge");
-      if (challengeData) {
-        const parsed = JSON.parse(challengeData);
-        const startDate = new Date(parsed.startDate);
-        const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
-        if (daysSince >= 0 && daysSince < 7 && !parsed.completedDays[daysSince]) {
-          parsed.completedDays[daysSince] = true;
-          localStorage.setItem("barda_challenge", JSON.stringify(parsed));
-          setChallengeCompleted((prev) => prev + 1);
-        }
+    loadChallenge(userId).then((data) => {
+      if (!data) return;
+      const startDate = new Date(data.startDate);
+      const daysSince = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
+      if (daysSince >= 0 && daysSince < 7 && !data.completedDays[daysSince]) {
+        data.completedDays[daysSince] = true;
+        saveChallenge(userId, data);
+        setChallengeCompleted((prev) => prev + 1);
       }
-    } catch { /* ignore */ }
-  }, [todayCondition, diaryMemo]);
+    });
+  }, [todayCondition, diaryMemo, userId]);
 
   // Score for last analysis
   const lastScore = (() => {
     try {
-      const saved = localStorage.getItem("barda_last_routine");
+      const saved = localStorage.getItem(STORAGE_KEYS.LAST_ROUTINE);
       if (saved) return JSON.parse(saved).score ?? null;
     } catch { /* ignore */ }
     return null;
@@ -559,6 +566,15 @@ function LoggedInHome() {
 
   return (
     <div className="min-h-screen pb-16">
+      {/* 포인트 토스트 */}
+      {pointToast && (
+        <PointToast
+          points={pointToast.points}
+          label={pointToast.label}
+          onDismiss={() => setPointToast(null)}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
@@ -942,7 +958,7 @@ function LoggedInHome() {
             />
             <button
               type="button"
-              onClick={saveDiary}
+              onClick={handleSaveDiary}
               disabled={!todayCondition || diarySaved}
               className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-white disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
             >

@@ -10,8 +10,6 @@ import Icon from "@/components/Icon";
 
 interface Props {
   products: RoutineProduct[];
-  skinType?: string;
-  concerns?: string[];
   onAdd: (product: RoutineProduct) => void;
   onRemove: (id: string) => void;
   onNext: () => void;
@@ -34,8 +32,6 @@ function logSearch(query: string, resultsCount: number, selectedId?: string) {
 
 export default function ProductStep({
   products,
-  skinType,
-  concerns,
   onAdd,
   onRemove,
   onNext,
@@ -318,7 +314,7 @@ export default function ProductStep({
       {/* Category Browse */}
       <div className="mb-4">
         <div className="flex flex-wrap gap-2 mb-3">
-          {Object.entries(CATEGORIES).map(([groupKey, group]) =>
+          {Object.entries(CATEGORIES).map(([, group]) =>
             group.items.map((cat) => (
               <button
                 key={cat.id}

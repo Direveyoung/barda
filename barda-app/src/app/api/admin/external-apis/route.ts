@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
       default:
         return NextResponse.json(
-          { error: `Unknown API: ${api}` },
+          { error: "지원하지 않는 API입니다." },
           { status: 400 },
         );
     }

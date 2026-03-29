@@ -7,7 +7,8 @@ import { analyzeRoutine } from "@/lib/analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestPayment } from "@/lib/payments";
 import { trackEvent } from "@/lib/events";
-import { PAYMENT } from "@/lib/constants";
+import { PAYMENT, UI_TIMING } from "@/lib/constants";
+import { loadSensitivitiesSync } from "@/lib/user-data-repository";
 import SkinTypeStep from "@/components/SkinTypeStep";
 import ConcernStep from "@/components/ConcernStep";
 import ProductStep from "@/components/ProductStep";
@@ -31,21 +32,22 @@ function AnalyzeContent() {
   const [concerns, setConcerns] = useState<string[]>([]);
   const [products, setProducts] = useState<RoutineProduct[]>([]);
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [paymentToast, setPaymentToast] = useState<"success" | "fail" | null>(null);
-
-  // Handle payment callback query params
-  useEffect(() => {
+  const [paymentToast, setPaymentToast] = useState<"success" | "fail" | null>(() => {
     const payment = searchParams.get("payment");
-    if (payment === "success" || payment === "fail") {
-      setPaymentToast(payment);
-      if (payment === "success") trackEvent("payment_completed");
-      // Defer URL cleanup to next frame so toast renders first
-      requestAnimationFrame(() => {
-        window.history.replaceState({}, "", "/analyze");
-      });
-      setTimeout(() => setPaymentToast(null), 4000);
-    }
-  }, [searchParams]);
+    return payment === "success" || payment === "fail" ? payment : null;
+  });
+
+  // Handle payment callback side effects
+  useEffect(() => {
+    if (!paymentToast) return;
+    if (paymentToast === "success") trackEvent("payment_completed");
+    // Defer URL cleanup to next frame so toast renders first
+    requestAnimationFrame(() => {
+      window.history.replaceState({}, "", "/analyze");
+    });
+    const timer = setTimeout(() => setPaymentToast(null), UI_TIMING.PAYMENT_TOAST);
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track wizard start
   useEffect(() => {
@@ -69,7 +71,8 @@ function AnalyzeContent() {
 
   const handleAnalyze = useCallback(() => {
     trackEvent("analysis_started", { productCount: products.length });
-    const analysisResult = analyzeRoutine(products, skinType, concerns);
+    const sensitivities = loadSensitivitiesSync();
+    const analysisResult = analyzeRoutine(products, skinType, concerns, sensitivities);
     setResult(analysisResult);
     setStep(3);
     trackEvent("result_viewed", { score: analysisResult.score, conflictCount: analysisResult.conflicts.length });
@@ -207,8 +210,6 @@ function AnalyzeContent() {
         {step === 2 && (
           <ProductStep
             products={products}
-            skinType={skinType}
-            concerns={concerns}
             onAdd={handleAddProduct}
             onRemove={handleRemoveProduct}
             onNext={handleAnalyze}

@@ -6,29 +6,18 @@ import RoutinePostCard, {
 } from "@/components/RoutinePostCard";
 import BottomNav from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
+import { SKIN_TYPE_LABEL, CONCERN_LABEL, UI_TIMING, PAGINATION } from "@/lib/constants";
 
 const skinTypes = [
   { value: "", label: "전체" },
-  { value: "dry", label: "건성" },
-  { value: "oily", label: "지성" },
-  { value: "combination", label: "복합성" },
-  { value: "sensitive", label: "민감성" },
-  { value: "normal", label: "중성" },
+  ...Object.entries(SKIN_TYPE_LABEL).map(([value, label]) => ({ value, label })),
 ] as const;
 
-const concerns = [
-  { value: "acne", label: "여드름" },
-  { value: "wrinkle", label: "주름" },
-  { value: "pigmentation", label: "색소침착" },
-  { value: "dryness", label: "건조" },
-  { value: "sensitivity", label: "민감" },
-  { value: "pore", label: "모공" },
-  { value: "blackhead", label: "블랙헤드" },
-  { value: "redness", label: "홍조" },
-  { value: "darkCircle", label: "다크서클" },
-] as const;
+const concerns = Object.entries(CONCERN_LABEL)
+  .filter(([key]) => key !== "pigment" && key !== "whitehead" && key !== "dullness")
+  .map(([value, label]) => ({ value, label })) as readonly { value: string; label: string }[];
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = PAGINATION.DEFAULT_PAGE_SIZE;
 
 export default function FeedClient() {
   const { user } = useAuth();
@@ -48,7 +37,7 @@ export default function FeedClient() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-    }, 400);
+    }, UI_TIMING.SEARCH_DEBOUNCE);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 

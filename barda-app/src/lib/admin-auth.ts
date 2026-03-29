@@ -4,12 +4,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Admin emails allowed to access admin API endpoints.
- * In production, this should be managed via a Supabase `admins` table or RLS policies.
+ * Configured via ADMIN_EMAILS environment variable (comma-separated).
+ * Falls back to empty set (no admin access) if not configured.
  */
-const ADMIN_EMAILS = new Set([
-  "test@barda.dev",
-  // Add more admin emails here
-]);
+const ADMIN_EMAILS = new Set(
+  (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean),
+);
 
 interface AdminAuthResult {
   supabase: SupabaseClient;
@@ -42,7 +45,7 @@ export async function requireAdmin(): Promise<AdminAuthResult | NextResponse> {
     );
   }
 
-  if (!user.email || !ADMIN_EMAILS.has(user.email)) {
+  if (!user.email || !ADMIN_EMAILS.has(user.email.toLowerCase())) {
     return NextResponse.json(
       { error: "Admin access required" },
       { status: 403 },

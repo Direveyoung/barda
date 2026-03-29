@@ -5,32 +5,22 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
+import SensitivityManager from "@/components/SensitivityManager";
+import { saveProfile, loadProfile, type ProfileData } from "@/lib/user-data-repository";
+import { SKIN_TYPE_LABEL, CONCERN_LABEL, UI_TIMING } from "@/lib/constants";
 
-const skinTypes = [
-  { value: "dry", label: "건성", icon: "desert" },
-  { value: "oily", label: "지성", icon: "drop" },
-  { value: "combination", label: "복합성", icon: "cycle" },
-  { value: "sensitive", label: "민감성", icon: "cherry-blossom" },
-  { value: "normal", label: "중성", icon: "sparkle" },
-];
+const SKIN_TYPE_ICONS: Record<string, string> = {
+  dry: "desert", oily: "drop", combination: "cycle",
+  sensitive: "cherry-blossom", normal: "sparkle",
+};
 
-const allConcerns = [
-  { value: "acne", label: "여드름" },
-  { value: "wrinkle", label: "주름" },
-  { value: "pigmentation", label: "색소침착" },
-  { value: "dryness", label: "건조" },
-  { value: "sensitivity", label: "민감" },
-  { value: "pore", label: "모공" },
-  { value: "blackhead", label: "블랙헤드" },
-  { value: "redness", label: "홍조" },
-  { value: "darkCircle", label: "다크서클" },
-];
+const skinTypes = Object.entries(SKIN_TYPE_LABEL).map(([value, label]) => ({
+  value, label, icon: SKIN_TYPE_ICONS[value] ?? "sparkle",
+}));
 
-interface ProfileData {
-  nickname: string;
-  skinType: string;
-  concerns: string[];
-}
+const allConcerns = Object.entries(CONCERN_LABEL)
+  .filter(([key]) => key !== "pigment" && key !== "whitehead" && key !== "dullness")
+  .map(([value, label]) => ({ value, label }));
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
@@ -43,18 +33,17 @@ export default function ProfileSettingsPage() {
   });
   const [saved, setSaved] = useState(false);
 
-  // Load profile from localStorage
+  // Load profile from DB (dual-read: DB → localStorage fallback)
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const userId = user?.id ?? "anonymous";
 
-    try {
-      const data = localStorage.getItem("barda_profile");
+    loadProfile(userId).then((data) => {
       if (data) {
-        const parsed = JSON.parse(data);
         setProfile({
-          nickname: parsed.nickname ?? "",
-          skinType: parsed.skinType ?? "",
-          concerns: parsed.concerns ?? [],
+          nickname: data.nickname,
+          skinType: data.skinType,
+          concerns: data.concerns,
         });
       } else if (user?.email) {
         setProfile((prev) => ({
@@ -62,7 +51,7 @@ export default function ProfileSettingsPage() {
           nickname: user.email!.split("@")[0],
         }));
       }
-    } catch { /* ignore */ }
+    });
   }, [user]);
 
   const toggleConcern = useCallback((value: string) => {
@@ -77,12 +66,12 @@ export default function ProfileSettingsPage() {
   }, []);
 
   const handleSave = useCallback(() => {
-    try {
-      localStorage.setItem("barda_profile", JSON.stringify(profile));
+    const userId = user?.id ?? "anonymous";
+    saveProfile(userId, profile).then(() => {
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch { /* ignore */ }
-  }, [profile]);
+      setTimeout(() => setSaved(false), UI_TIMING.SAVE_CONFIRM);
+    });
+  }, [profile, user]);
 
   if (authLoading) {
     return (
@@ -193,6 +182,9 @@ export default function ProfileSettingsPage() {
             ))}
           </div>
         </div>
+
+        {/* Sensitivities */}
+        <SensitivityManager userId={user.id} />
 
         {/* Save */}
         <button

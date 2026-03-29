@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ApiOk, ApiError } from "@/lib/api-types";
 import { feedbackSchema, parseWithZod } from "@/lib/api-types";
+import { earnPoints } from "@/lib/point-repository";
 
 export async function POST(request: Request): Promise<NextResponse<ApiOk | ApiError>> {
   const supabase = await createClient();
@@ -48,6 +49,11 @@ export async function POST(request: Request): Promise<NextResponse<ApiOk | ApiEr
       { error: "Failed to store feedback" },
       { status: 500 },
     );
+  }
+
+  // 포인트 적립: 피드백 기여 (fire-and-forget, server client 전달)
+  if (userId) {
+    earnPoints(userId, "feedback", `feedback:${conflict_rule_id}:${session_id}`, supabase).catch(() => {});
   }
 
   return NextResponse.json({ ok: true });

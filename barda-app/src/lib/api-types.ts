@@ -239,6 +239,51 @@ export interface UpdateCandidateRequest {
   status: "approved" | "rejected" | "pending";
 }
 
+/* ─── /api/points ─── */
+
+export const earnPointsSchema = z.object({
+  action: z.string().min(1).max(50),
+  reference_id: z.string().max(200).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const redeemPointsSchema = z.object({
+  points: z.number().int().positive().max(100000),
+  description: z.string().min(1).max(200),
+});
+
+export interface PointBalanceResponse {
+  balance: number;
+  lifetimeEarned: number;
+  lifetimeRedeemed: number;
+  dailyEarned: number;
+  dailyRemaining: number;
+  currentStreak: number;
+  longestStreak: number;
+}
+
+export interface PointTransactionItem {
+  id: string;
+  action: string;
+  points: number;
+  referenceId: string | null;
+  description: string;
+  createdAt: string;
+}
+
+export interface PointHistoryResponse {
+  transactions: PointTransactionItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface EarnPointsResponse extends ApiOk {
+  earned: number;
+  newBalance: number;
+  dailyEarned: number;
+}
+
 /* ─── /api/barcode ─── */
 
 export interface BarcodeResponse {

@@ -8,7 +8,12 @@ import RoutinePostCard, {
 import BottomNav from "@/components/BottomNav";
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { SKIN_TYPE_LABEL } from "@/lib/constants";
+import PointsCard from "@/components/PointsCard";
+import BadgeCard from "@/components/BadgeCard";
+import AdherenceDashboard from "@/components/AdherenceDashboard";
+import { SKIN_TYPE_LABEL, STORAGE_KEYS, PAGINATION } from "@/lib/constants";
+import { loadBadgeState, buildBadgeContext, evaluateBadges, saveBadgeState } from "@/lib/badge-repository";
+import type { EarnedBadge } from "@/lib/badge-repository";
 
 type TabKey = "analysis" | "shared" | "liked" | "diary";
 
@@ -52,13 +57,14 @@ export default function MypageClient() {
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [analysisHistory, setAnalysisHistory] = useState<AnalysisHistory[]>([]);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
+  const [badges, setBadges] = useState<EarnedBadge[]>([]);
 
   // Load analysis history + diary from localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     try {
-      const saved = localStorage.getItem("barda_last_routine");
+      const saved = localStorage.getItem(STORAGE_KEYS.LAST_ROUTINE);
       if (saved) {
         const parsed = JSON.parse(saved);
         setAnalysisHistory([parsed]);
@@ -72,7 +78,7 @@ export default function MypageClient() {
       d.setDate(d.getDate() - i);
       const key = d.toISOString().slice(0, 10);
       try {
-        const data = localStorage.getItem(`barda_diary_${key}`);
+        const data = localStorage.getItem(STORAGE_KEYS.diary(key));
         if (data) {
           const parsed = JSON.parse(data);
           entries.push({ date: key, condition: parsed.condition, memo: parsed.memo ?? "" });
@@ -80,6 +86,13 @@ export default function MypageClient() {
       } catch { /* ignore */ }
     }
     setDiaryEntries(entries);
+
+    // Evaluate badges
+    const ctx = buildBadgeContext();
+    const state = loadBadgeState();
+    const { updatedState } = evaluateBadges(ctx, state);
+    saveBadgeState(updatedState);
+    setBadges(updatedState.earnedBadges);
   }, []);
 
   const fetchSharedPosts = useCallback(async () => {
@@ -103,7 +116,7 @@ export default function MypageClient() {
     if (!user) return;
     setIsLoadingPosts(true);
     try {
-      const res = await fetch(`/api/routines?sort=popular&page=1&limit=50`);
+      const res = await fetch(`/api/routines?sort=popular&page=1&limit=${PAGINATION.LIKED_POSTS}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const json = await res.json();
       setLikedPosts(json.posts ?? []);
@@ -120,14 +133,14 @@ export default function MypageClient() {
   }, [activeTab, fetchSharedPosts, fetchLikedPosts]);
 
   function handleLike(postId: string) {
-    const update = (posts: RoutinePost[], setter: (p: RoutinePost[]) => void) => {
-      setter(posts.map((p) => p.id === postId ? { ...p, like_count: p.like_count + 1 } : p));
+    const update = (setter: (fn: (prev: RoutinePost[]) => RoutinePost[]) => void) => {
+      setter((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: p.like_count + 1 } : p));
       fetch(`/api/routines/${postId}/like`, { method: "POST" }).catch(() => {
-        setter(posts.map((p) => p.id === postId ? { ...p, like_count: p.like_count - 1 } : p));
+        setter((prev) => prev.map((p) => p.id === postId ? { ...p, like_count: p.like_count - 1 } : p));
       });
     };
-    if (activeTab === "shared") update(sharedPosts, setSharedPosts);
-    if (activeTab === "liked") update(likedPosts, setLikedPosts);
+    if (activeTab === "shared") update(setSharedPosts);
+    if (activeTab === "liked") update(setLikedPosts);
   }
 
   function formatDate(dateStr: string | undefined): string {
@@ -198,6 +211,17 @@ export default function MypageClient() {
               프로필 설정
             </Link>
           </div>
+        </div>
+
+        {/* Points Card */}
+        <PointsCard />
+
+        {/* Badges */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
+          <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1.5">
+            <Icon name="trophy" size={14} /> 배지
+          </h3>
+          <BadgeCard earnedBadges={badges} />
         </div>
 
         {/* Tabs */}
@@ -313,6 +337,7 @@ export default function MypageClient() {
         {/* Tab: 다이어리 */}
         {activeTab === "diary" && (
           <div>
+            <AdherenceDashboard />
             {diaryEntries.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                 <span className="mb-2 text-gray-300"><Icon name="memo" size={24} /></span>

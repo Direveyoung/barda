@@ -4,6 +4,31 @@
 
 ---
 
+## [1.6.0] - 2026-03-29
+
+### Added
+- **에러 페이지**: `error.tsx` (글로벌 에러 바운더리) + `not-found.tsx` (404 페이지)
+- **SEO**: `robots.ts` (크롤링 규칙) + `sitemap.ts` (동적 사이트맵 10개 페이지)
+- **PWA manifest**: `manifest.ts` (앱 이름, 테마 색상, 아이콘)
+- **Rate Limiting**: `lib/rate-limit.ts` 인메모리 sliding window + middleware 통합 (API별 분당 3~30회)
+- **환경변수 문서**: `.env.example` (필수/선택 변수 7개 + 설명)
+- **Twitter 카드 메타**: layout.tsx에 twitter card + metadataBase 추가
+
+### Fixed
+- **페이월 우회 차단**: DEV_UNLOCK + TEST_USER를 `NODE_ENV === 'development'`일 때만 동작하도록 변경
+- **BlurOverlay 보안**: 잠긴 상태에서 children 미렌더링 (placeholder 표시) → DevTools 우회 차단
+- **결제 금액 서버 검증**: `PAYMENT.PREMIUM_PRICE` (9900) 대조 후 Toss 승인 요청
+- **관리자 하드코딩 제거**: `ADMIN_EMAILS` 환경변수 기반으로 전환 (쉼표 구분)
+- **테스트 로그인 버튼**: 프로덕션 빌드에서 숨김 처리
+
+### Changed
+- **보안 헤더**: `next.config.ts`에 X-Frame-Options(DENY), X-Content-Type-Options, Referrer-Policy, Permissions-Policy 추가
+- **BottomNav 접근성**: `aria-label="메인 메뉴"`, `aria-current="page"`, 각 탭 `aria-label` 추가
+- **BlurOverlay 접근성**: 잠금 영역에 `role="region"` + `aria-label="유료 콘텐츠"` 추가
+- **TODO.md 정리**: P0 민감도/P1 배지/P2 준수율 이미 구현 완료 확인 → 완료 항목으로 이동
+
+---
+
 ## [1.5.1] - 2026-02-25
 
 ### Added

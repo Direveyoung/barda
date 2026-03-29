@@ -10,6 +10,7 @@ import {
   CACHE_MAX_SIZE,
   CACHE_EVICT_TARGET,
 } from "@/lib/constants";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 
 /* ─── In-memory Cache ─── */
 
@@ -388,7 +389,7 @@ export async function lookupIngredientEnriched(
     return createErrorResult("enriched", "외부 API에서 성분 정보를 찾지 못했습니다");
   }
 
-  const result = createSuccessResult<EnrichedIngredient>("enriched", {
+  const enrichedData: EnrichedIngredient = {
     name: ingredientName,
     nameEn,
     casNo,
@@ -398,9 +399,36 @@ export async function lookupIngredientEnriched(
     ewgScore,
     category,
     sources,
-  });
+  };
+
+  // Fire-and-forget: persist enrichment data to DB
+  saveEnrichedToDB(enrichedData).catch(() => {/* ignore */});
+
+  const result = createSuccessResult<EnrichedIngredient>("enriched", enrichedData);
   setCache(cacheKey, result);
   return result;
+}
+
+async function saveEnrichedToDB(enriched: EnrichedIngredient): Promise<void> {
+  try {
+    const supabase = await createServerClient();
+    if (!supabase) return;
+
+    await supabase.from("ingredients").upsert(
+      {
+        name_ko: enriched.name,
+        name_en: enriched.nameEn,
+        cas_no: enriched.casNo,
+        regulation_status: enriched.regulation,
+        max_concentration: enriched.maxConcentration,
+        regulation_source: enriched.sources.join(","),
+        regulation_updated_at: new Date().toISOString(),
+      },
+      { onConflict: "name_ko" },
+    );
+  } catch {
+    // Best-effort, don't block user
+  }
 }
 
 /* ─── API 상태 체크 ─── */

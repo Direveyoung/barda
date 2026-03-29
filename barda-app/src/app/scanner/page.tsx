@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
+import PointToast from "@/components/PointToast";
+import { earnPointsClient } from "@/lib/point-repository";
 import { ALL_PRODUCTS, type Product } from "@/data/products";
 import { searchProducts } from "@/lib/search";
 import {
@@ -68,6 +70,7 @@ export default function ScannerPage() {
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState<string | null>(null);
   const [barcodeResult, setBarcodeResult] = useState<BarcodeResult | null>(null);
+  const [pointToast, setPointToast] = useState<{ points: number; label: string } | null>(null);
 
   /* Manual input */
   const [manualText, setManualText] = useState("");
@@ -171,9 +174,27 @@ export default function ScannerPage() {
       const parsed = parseIngredientsList(product.ingredientsList);
       setBarcodeResult({ product, parsedIngredients: parsed });
 
+      // 포인트 적립: 바코드 스캔
+      earnPointsClient("barcode_scan", `barcode:${code}`, (pts) =>
+        setPointToast({ points: pts, label: "바코드 스캔" }),
+      );
+
       // Try to match in local DB
       const matches = matchProductInDB(product.brand, product.productName);
       setDbMatches(matches);
+
+      // Auto-create product candidate if OBF found it but no DB match
+      if (product.productName && matches.length === 0) {
+        fetch("/api/product-candidates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            brand: product.brand || "Unknown",
+            name: product.productName,
+            category_guess: null,
+          }),
+        }).catch(() => {/* fire-and-forget */});
+      }
     } catch {
       setBarcodeError("네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
     } finally {
@@ -439,6 +460,7 @@ export default function ScannerPage() {
           )}
 
           {cameraState === "captured" && capturedImage && (
+            /* eslint-disable-next-line @next/next/no-img-element -- data URL from camera capture */
             <img
               src={capturedImage}
               alt="촬영된 이미지"
@@ -553,6 +575,7 @@ export default function ScannerPage() {
             <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
               <div className="flex items-start gap-3">
                 {barcodeResult.product.imageUrl && (
+                  /* eslint-disable-next-line @next/next/no-img-element -- external URL from Open Beauty Facts */
                   <img
                     src={barcodeResult.product.imageUrl}
                     alt={barcodeResult.product.productName}
@@ -697,6 +720,10 @@ export default function ScannerPage() {
 
   return (
     <div className="min-h-screen pb-16">
+      {pointToast && (
+        <PointToast points={pointToast.points} label={pointToast.label} onDismiss={() => setPointToast(null)} />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3">

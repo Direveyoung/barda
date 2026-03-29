@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-auth";
+import { parseWithZod } from "@/lib/api-types";
 import {
   runAutoPromotePipeline,
   generateSearchMissReport,
   analyzeCommunityProducts,
   generateWeeklyReport,
 } from "@/lib/pipeline";
+
+const pipelineActionSchema = z.object({
+  action: z.enum(["auto_promote", "search_miss", "community", "weekly_report"]),
+  days: z.number().int().min(1).max(365).optional(),
+});
 
 /**
  * POST /api/admin/pipeline
@@ -19,8 +26,11 @@ export async function POST(request: NextRequest) {
   const { supabase } = auth;
 
   try {
-    const body = await request.json();
-    const { action, days } = body as { action: string; days?: number };
+    const result = parseWithZod(pipelineActionSchema, await request.json().catch(() => null));
+    if ("error" in result) {
+      return NextResponse.json({ error: `Invalid request: ${result.error}` }, { status: 400 });
+    }
+    const { action, days } = result.data;
 
     switch (action) {
       case "auto_promote": {

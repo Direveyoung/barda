@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -9,6 +10,7 @@ import {
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { STORAGE_KEYS } from "@/lib/constants";
+import { migrateLocalStorageToDB } from "@/lib/migration-helper";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface AuthState {
@@ -21,6 +23,7 @@ interface AuthState {
 }
 
 const TEST_USER_KEY = "barda_test_user";
+const IS_DEV = process.env.NODE_ENV === "development";
 
 function makeTestUser(): User {
   return {
@@ -43,29 +46,41 @@ const AuthContext = createContext<AuthState>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const isTestUser = IS_DEV && typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true";
+  const [user, setUser] = useState<User | null>(() => isTestUser ? makeTestUser() : null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isPaid, setIsPaid] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isPaid, setIsPaid] = useState(() => isTestUser);
+  const [isLoading, setIsLoading] = useState(() => !isTestUser);
 
-  // Restore test user from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
-      setUser(makeTestUser());
+  const checkPaidStatus = useCallback(async (userId: string) => {
+    // Dev override — only in development mode
+    if (IS_DEV && typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.DEV_UNLOCK) === "true") {
       setIsPaid(true);
-      setIsLoading(false);
+      return;
     }
+
+    const supabase = createClient();
+    if (!supabase) return;
+
+    const { data } = await supabase
+      .from("payments")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "success")
+      .limit(1);
+
+    setIsPaid((data?.length ?? 0) > 0);
   }, []);
 
   useEffect(() => {
-    // Skip Supabase init if test user is active
-    if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
+    // Skip Supabase init if test user is active (development only)
+    if (IS_DEV && typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
       return;
     }
 
     const supabase = createClient();
     if (!supabase) {
-      setIsLoading(false);
+      queueMicrotask(() => setIsLoading(false));
       return;
     }
 
@@ -75,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkPaidStatus(session.user.id);
+        migrateLocalStorageToDB(session.user.id);
       }
       setIsLoading(false);
     });
@@ -93,29 +109,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  async function checkPaidStatus(userId: string) {
-    // Dev override
-    if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.DEV_UNLOCK) === "true") {
-      setIsPaid(true);
-      return;
-    }
-
-    const supabase = createClient();
-    if (!supabase) return;
-
-    const { data } = await supabase
-      .from("payments")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("status", "success")
-      .limit(1);
-
-    setIsPaid((data?.length ?? 0) > 0);
-  }
+  }, [checkPaidStatus]);
 
   const testLogin = () => {
+    if (!IS_DEV) return;
     localStorage.setItem(TEST_USER_KEY, "true");
     localStorage.setItem(STORAGE_KEYS.DEV_UNLOCK, "true");
     setUser(makeTestUser());
