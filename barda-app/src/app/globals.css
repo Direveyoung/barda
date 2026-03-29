@@ -23,7 +23,7 @@
 }
 
 html {
-  font-size: 17px;
+  font-size: 16px;
 }
 
 body {
@@ -32,157 +32,20 @@ body {
   background: linear-gradient(180deg, #FFF5F0 0%, #F0F5FF 100%);
   min-height: 100vh;
   color: #1F2937;
+  overflow-x: hidden;
 }
 
-/* Score reveal animation */
 @keyframes scoreReveal {
   from { stroke-dasharray: 0 314; }
 }
 
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-up {
-  animation: fadeUp 0.5s ease-out;
-}
+.animate-fade-up { animation: fadeUp 0.5s ease-out; }
+.animate-score { animation: scoreReveal 1.5s ease-out; }
 
-.animate-score {
-  animation: scoreReveal 1.5s ease-out;
-}
-
-/* ─── Desktop Shell (PC에서 모바일 앱처럼 보이기) ─── */
-
-.desktop-shell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 60px;
-  min-height: 100vh;
-  padding: 40px;
-  background: linear-gradient(135deg, #FFF5F0 0%, #FDE8E4 30%, #F0F5FF 100%);
-}
-
-.desktop-sidebar {
-  width: 360px;
-  flex-shrink: 0;
-}
-
-.sidebar-content {
-  display: flex;
-  flex-direction: column;
-  min-height: 680px;
-}
-
-.desktop-phone-area {
-  flex-shrink: 0;
-}
-
-/* Phone mockup frame */
-.phone-mockup {
-  position: relative;
-  width: 375px;
-  height: 812px;
-  border-radius: 44px;
-  background: #000;
-  padding: 12px;
-  box-shadow:
-    0 0 0 2px #333,
-    0 25px 80px rgba(0, 0, 0, 0.25),
-    0 10px 30px rgba(0, 0, 0, 0.12);
-}
-
-/* Phone notch */
-.phone-notch {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 160px;
-  height: 28px;
-  background: #000;
-  border-radius: 0 0 18px 18px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.phone-notch-inner {
-  width: 80px;
-  height: 6px;
-  background: #333;
-  border-radius: 3px;
-}
-
-/* Phone screen content area */
-.phone-screen {
-  width: 100%;
-  height: 100%;
-  border-radius: 34px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background: linear-gradient(180deg, #FFF5F0 0%, #F0F5FF 100%);
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Hide scrollbar in phone */
-.phone-screen::-webkit-scrollbar {
-  display: none;
-}
-.phone-screen {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Phone home indicator */
-.phone-home-indicator {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 134px;
-  height: 5px;
-  background: #555;
-  border-radius: 3px;
-  z-index: 10;
-}
-
-/* Phone screen flex layout for fixed bottom nav */
-.phone-screen {
-  display: flex;
-  flex-direction: column;
-}
-
-.phone-screen > * {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-/* Override fixed → sticky inside phone, except nav */
-.phone-screen .fixed:not(nav) {
-  position: sticky !important;
-}
-
-/* BottomNav: always pinned at bottom of phone screen */
-.phone-screen nav.fixed {
-  position: sticky !important;
-  bottom: 0;
-  left: auto !important;
-  right: auto !important;
-  flex-shrink: 0;
-  margin-top: auto;
-}
-
-/* Scrollbar-hide utility */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
