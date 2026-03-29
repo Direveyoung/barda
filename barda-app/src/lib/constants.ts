@@ -76,6 +76,8 @@ export const STORAGE_KEYS = {
   MIGRATED: "barda_migrated_v3",
   POINTS_BALANCE: "barda_points_balance",
   LAST_ROUTINE: "barda_last_routine",
+  SENSITIVITIES: "barda_sensitivities",
+  BADGES: "barda_badges",
   notifications: (userId: string) => `barda_notifications_${userId}`,
   diary: (date: string) => `barda_diary_${date}`,
   checks: (date: string) => `barda_checks_${date}`,
@@ -152,6 +154,11 @@ export const SCORE = {
     medium: 8,
     low: 3,
   },
+  SENSITIVITY: {
+    severe: 15,
+    moderate: 8,
+    mild: 3,
+  },
   MISSING_STEP: {
     critical: 25,
     warning: 10,
@@ -225,6 +232,28 @@ export const UI_TIMING = {
   PAYMENT_TOAST: 4000,
   SAVE_CONFIRM: 2000,
 } as const;
+
+/* ── 배지 정의 ── */
+
+export interface BadgeDefinition {
+  id: string;
+  label: string;
+  icon: string;
+  category: "streak" | "analysis" | "diary" | "drawer";
+  threshold?: number;
+}
+
+export const BADGE_DEFINITIONS: BadgeDefinition[] = [
+  { id: "streak_3",  label: "3일 연속",      icon: "fire",    category: "streak",   threshold: 3  },
+  { id: "streak_7",  label: "일주일 달성",    icon: "star",    category: "streak",   threshold: 7  },
+  { id: "streak_14", label: "2주 연속",       icon: "trophy",  category: "streak",   threshold: 14 },
+  { id: "streak_30", label: "한 달 마스터",   icon: "crown",   category: "streak",   threshold: 30 },
+  { id: "first_analysis", label: "첫 분석",   icon: "beaker",  category: "analysis" },
+  { id: "score_90",  label: "루틴 달인",      icon: "gold-medal", category: "analysis", threshold: 90 },
+  { id: "diary_7",   label: "꾸준한 기록자",  icon: "memo",    category: "diary",    threshold: 7  },
+  { id: "diary_30",  label: "스킨케어 일기장", icon: "book",    category: "diary",    threshold: 30 },
+  { id: "drawer_10", label: "화장대 수집가",  icon: "package", category: "drawer",   threshold: 10 },
+];
 
 /* ── Safety 등급 색상 (safetyScore 1~5) ── */
 

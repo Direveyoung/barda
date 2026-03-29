@@ -3,6 +3,7 @@ import { CATEGORIES } from "@/data/products";
 import { CONFLICT_RULES, MISSING_STEP_RULES } from "@/data/rules";
 import type { ConflictRule } from "@/data/rules";
 import { SCORE, WEEKDAY_NAMES_KO, SCHEDULE_DAYS } from "@/lib/constants";
+import type { IngredientSensitivity } from "@/lib/user-data-repository";
 
 /* ─── Helpers ─── */
 
@@ -50,6 +51,13 @@ export interface MissingStep {
   why: string;
 }
 
+export interface SensitivityWarning {
+  ingredientName: string;
+  severity: "mild" | "moderate" | "severe";
+  reactionNote?: string;
+  foundInProducts: string[];
+}
+
 export interface DaySchedule {
   day: string;
   isRetinolDay: boolean;
@@ -64,6 +72,7 @@ export interface AnalysisResult {
   pmProducts: RoutineProduct[];
   conflicts: DetectedConflict[];
   missingSteps: MissingStep[];
+  sensitivityWarnings: SensitivityWarning[];
   amTips: string[];
   pmTips: string[];
   calendar: DaySchedule[];
@@ -386,18 +395,72 @@ function buildCalendar(products: RoutineProduct[]): DaySchedule[] {
   });
 }
 
+/* ─── Sensitivity Check ─── */
+
+function normalizeForMatch(s: string): string {
+  return s.toLowerCase().replace(/[\s\-_]/g, "");
+}
+
+export function checkSensitivities(
+  products: RoutineProduct[],
+  sensitivities: IngredientSensitivity[]
+): SensitivityWarning[] {
+  if (sensitivities.length === 0) return [];
+
+  const warnings: SensitivityWarning[] = [];
+
+  for (const sens of sensitivities) {
+    const needle = normalizeForMatch(sens.ingredientName);
+    const matchedProducts: string[] = [];
+
+    for (const product of products) {
+      const haystack = [
+        ...(product.key_ingredients ?? []),
+        ...(product.active_flags ?? []),
+      ];
+      const found = haystack.some((ing) => normalizeForMatch(ing).includes(needle) || needle.includes(normalizeForMatch(ing)));
+      if (found) {
+        matchedProducts.push(`${product.brand} ${product.name}`);
+      }
+    }
+
+    if (matchedProducts.length > 0) {
+      warnings.push({
+        ingredientName: sens.ingredientName,
+        severity: sens.severity,
+        reactionNote: sens.reactionNote,
+        foundInProducts: matchedProducts,
+      });
+    }
+  }
+
+  // Sort: severe first
+  const order = { severe: 0, moderate: 1, mild: 2 };
+  warnings.sort((a, b) => order[a.severity] - order[b.severity]);
+  return warnings;
+}
+
 /* ─── Main Analysis ─── */
 
 export function analyzeRoutine(
   products: RoutineProduct[],
   skinType?: string,
-  concerns?: string[]
+  concerns?: string[],
+  sensitivities?: IngredientSensitivity[]
 ): AnalysisResult {
   const amProducts = buildAMRoutine(products);
   const pmProducts = buildPMRoutine(products);
   const conflicts = checkConflicts(products, skinType);
   const missingSteps = checkMissingSteps(products);
-  const score = calculateScore(conflicts, missingSteps, products);
+  const sensitivityWarnings = checkSensitivities(products, sensitivities ?? []);
+
+  // Calculate score with sensitivity penalty
+  let score = calculateScore(conflicts, missingSteps, products);
+  for (const w of sensitivityWarnings) {
+    score -= SCORE.SENSITIVITY[w.severity];
+  }
+  score = Math.max(0, Math.min(100, score));
+
   const amTips = generateAMTips(amProducts, skinType, concerns);
   const pmTips = generatePMTips(pmProducts, skinType);
   const calendar = buildCalendar(products);
@@ -409,6 +472,7 @@ export function analyzeRoutine(
     pmProducts,
     conflicts,
     missingSteps,
+    sensitivityWarnings,
     amTips,
     pmTips,
     calendar,

@@ -36,6 +36,8 @@ export interface DrawerItem {
 export interface ChallengeState {
   startDate: string;
   completedDays: boolean[];
+  presetId?: string;
+  duration?: number;
 }
 
 export interface IngredientSensitivity {
@@ -368,9 +370,37 @@ export async function loadChallenge(userId: string): Promise<ChallengeState | nu
   }
 }
 
-/* ─── Ingredient Sensitivities ─── */
+/* ─── Ingredient Sensitivities (Dual-read: Supabase → localStorage) ─── */
+
+function loadSensitivitiesLocal(): IngredientSensitivity[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SENSITIVITIES);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSensitivitiesLocal(items: IngredientSensitivity[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEYS.SENSITIVITIES, JSON.stringify(items));
+  } catch { /* ignore */ }
+}
 
 export async function saveSensitivity(userId: string, sensitivity: IngredientSensitivity): Promise<void> {
+  // Always save to localStorage
+  const current = loadSensitivitiesLocal();
+  const idx = current.findIndex((s) => s.ingredientName === sensitivity.ingredientName);
+  if (idx >= 0) {
+    current[idx] = sensitivity;
+  } else {
+    current.push(sensitivity);
+  }
+  saveSensitivitiesLocal(current);
+
+  // Also try Supabase
   try {
     const supabase = createClient();
     if (!supabase) return;
@@ -382,31 +412,50 @@ export async function saveSensitivity(userId: string, sensitivity: IngredientSen
       reaction_note: sensitivity.reactionNote ?? null,
     });
   } catch {
-    // Silently fail
+    // localStorage already saved — OK
   }
 }
 
 export async function loadSensitivities(userId: string): Promise<IngredientSensitivity[]> {
+  // Try Supabase first
   try {
     const supabase = createClient();
-    if (!supabase) return [];
+    if (supabase) {
+      const { data } = await supabase
+        .from("user_ingredient_sensitivities")
+        .select("ingredient_name, severity, reaction_note")
+        .eq("user_id", userId);
 
-    const { data } = await supabase
-      .from("user_ingredient_sensitivities")
-      .select("ingredient_name, severity, reaction_note")
-      .eq("user_id", userId);
-
-    return (data ?? []).map((row) => ({
-      ingredientName: row.ingredient_name,
-      severity: row.severity,
-      reactionNote: row.reaction_note ?? undefined,
-    }));
+      if (data && data.length > 0) {
+        const items = data.map((row) => ({
+          ingredientName: row.ingredient_name as string,
+          severity: row.severity as IngredientSensitivity["severity"],
+          reactionNote: (row.reaction_note as string | null) ?? undefined,
+        }));
+        // Sync to localStorage
+        saveSensitivitiesLocal(items);
+        return items;
+      }
+    }
   } catch {
-    return [];
+    // Fall through to localStorage
   }
+
+  // Fallback: localStorage
+  return loadSensitivitiesLocal();
+}
+
+/** Synchronous load from localStorage only (for analysis engine) */
+export function loadSensitivitiesSync(): IngredientSensitivity[] {
+  return loadSensitivitiesLocal();
 }
 
 export async function deleteSensitivity(userId: string, ingredientName: string): Promise<void> {
+  // Always remove from localStorage
+  const current = loadSensitivitiesLocal();
+  saveSensitivitiesLocal(current.filter((s) => s.ingredientName !== ingredientName));
+
+  // Also try Supabase
   try {
     const supabase = createClient();
     if (!supabase) return;
@@ -417,6 +466,6 @@ export async function deleteSensitivity(userId: string, ingredientName: string):
       .eq("user_id", userId)
       .eq("ingredient_name", ingredientName);
   } catch {
-    // Silently fail
+    // localStorage already updated — OK
   }
 }

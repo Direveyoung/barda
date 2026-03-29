@@ -9,7 +9,11 @@ import BottomNav from "@/components/BottomNav";
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import PointsCard from "@/components/PointsCard";
+import BadgeCard from "@/components/BadgeCard";
+import AdherenceDashboard from "@/components/AdherenceDashboard";
 import { SKIN_TYPE_LABEL, STORAGE_KEYS, PAGINATION } from "@/lib/constants";
+import { loadBadgeState, buildBadgeContext, evaluateBadges, saveBadgeState } from "@/lib/badge-repository";
+import type { EarnedBadge } from "@/lib/badge-repository";
 
 type TabKey = "analysis" | "shared" | "liked" | "diary";
 
@@ -53,6 +57,7 @@ export default function MypageClient() {
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [analysisHistory, setAnalysisHistory] = useState<AnalysisHistory[]>([]);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
+  const [badges, setBadges] = useState<EarnedBadge[]>([]);
 
   // Load analysis history + diary from localStorage
   useEffect(() => {
@@ -81,6 +86,13 @@ export default function MypageClient() {
       } catch { /* ignore */ }
     }
     setDiaryEntries(entries);
+
+    // Evaluate badges
+    const ctx = buildBadgeContext();
+    const state = loadBadgeState();
+    const { updatedState } = evaluateBadges(ctx, state);
+    saveBadgeState(updatedState);
+    setBadges(updatedState.earnedBadges);
   }, []);
 
   const fetchSharedPosts = useCallback(async () => {
@@ -204,6 +216,14 @@ export default function MypageClient() {
         {/* Points Card */}
         <PointsCard />
 
+        {/* Badges */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
+          <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1.5">
+            <Icon name="trophy" size={14} /> 배지
+          </h3>
+          <BadgeCard earnedBadges={badges} />
+        </div>
+
         {/* Tabs */}
         <div className="flex border-b border-gray-200 mb-4 overflow-x-auto">
           {tabs.map((tab) => (
@@ -317,6 +337,7 @@ export default function MypageClient() {
         {/* Tab: 다이어리 */}
         {activeTab === "diary" && (
           <div>
+            <AdherenceDashboard />
             {diaryEntries.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                 <span className="mb-2 text-gray-300"><Icon name="memo" size={24} /></span>

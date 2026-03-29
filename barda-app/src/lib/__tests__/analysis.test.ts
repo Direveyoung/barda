@@ -3,6 +3,7 @@ import {
   analyzeRoutine,
   checkConflicts,
   checkMissingSteps,
+  checkSensitivities,
   findCategory,
   scoreColor,
   scoreLabel,
@@ -375,5 +376,80 @@ describe("severityConfig", () => {
 
   it("unknown severity defaults to low config", () => {
     expect(severityConfig("unknown").label).toBe("낮음");
+  });
+});
+
+/* ─── checkSensitivities ─── */
+
+describe("checkSensitivities", () => {
+  it("returns empty array when no sensitivities", () => {
+    const result = checkSensitivities([RETINOL, VITAMIN_C], []);
+    expect(result).toEqual([]);
+  });
+
+  it("detects sensitivity matching key_ingredients", () => {
+    const product = makeProduct({
+      id: "test-serum",
+      name: "나이아신 세럼",
+      categoryId: "niacinamide",
+      key_ingredients: ["나이아신아마이드", "히알루론산"],
+    });
+    const result = checkSensitivities(
+      [product],
+      [{ ingredientName: "나이아신아마이드", severity: "moderate" }]
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].ingredientName).toBe("나이아신아마이드");
+    expect(result[0].severity).toBe("moderate");
+    expect(result[0].foundInProducts).toContain("테스트 나이아신 세럼");
+  });
+
+  it("detects sensitivity matching active_flags", () => {
+    const result = checkSensitivities(
+      [RETINOL],
+      [{ ingredientName: "retinol", severity: "severe" }]
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].severity).toBe("severe");
+    expect(result[0].foundInProducts.length).toBeGreaterThan(0);
+  });
+
+  it("returns no warnings when sensitivity does not match any product", () => {
+    const result = checkSensitivities(
+      [CLEANSER, TONER],
+      [{ ingredientName: "레티놀", severity: "severe" }]
+    );
+    expect(result).toHaveLength(0);
+  });
+
+  it("sorts warnings by severity (severe first)", () => {
+    const serum1 = makeProduct({
+      id: "s1", name: "세럼A", categoryId: "serum",
+      key_ingredients: ["레티놀"],
+    });
+    const serum2 = makeProduct({
+      id: "s2", name: "세럼B", categoryId: "serum",
+      key_ingredients: ["나이아신아마이드"],
+    });
+    const result = checkSensitivities(
+      [serum1, serum2],
+      [
+        { ingredientName: "나이아신아마이드", severity: "mild" },
+        { ingredientName: "레티놀", severity: "severe" },
+      ]
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0].severity).toBe("severe");
+    expect(result[1].severity).toBe("mild");
+  });
+
+  it("integrates with analyzeRoutine and reduces score", () => {
+    const products = [CLEANSER, TONER, CREAM, SUNSCREEN, RETINOL];
+    const withoutSens = analyzeRoutine(products, "normal");
+    const withSens = analyzeRoutine(products, "normal", [], [
+      { ingredientName: "retinol", severity: "severe" },
+    ]);
+    expect(withSens.sensitivityWarnings).toHaveLength(1);
+    expect(withSens.score).toBeLessThan(withoutSens.score);
   });
 });

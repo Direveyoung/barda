@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
+import SensitivityManager from "@/components/SensitivityManager";
 import { saveProfile, loadProfile, type ProfileData } from "@/lib/user-data-repository";
 import { SKIN_TYPE_LABEL, CONCERN_LABEL, UI_TIMING } from "@/lib/constants";
 
@@ -181,6 +182,9 @@ export default function ProfileSettingsPage() {
             ))}
           </div>
         </div>
+
+        {/* Sensitivities */}
+        <SensitivityManager userId={user.id} />
 
         {/* Save */}
         <button

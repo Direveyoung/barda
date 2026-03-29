@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { requestPayment } from "@/lib/payments";
 import { trackEvent } from "@/lib/events";
 import { PAYMENT, UI_TIMING } from "@/lib/constants";
+import { loadSensitivitiesSync } from "@/lib/user-data-repository";
 import SkinTypeStep from "@/components/SkinTypeStep";
 import ConcernStep from "@/components/ConcernStep";
 import ProductStep from "@/components/ProductStep";
@@ -70,7 +71,8 @@ function AnalyzeContent() {
 
   const handleAnalyze = useCallback(() => {
     trackEvent("analysis_started", { productCount: products.length });
-    const analysisResult = analyzeRoutine(products, skinType, concerns);
+    const sensitivities = loadSensitivitiesSync();
+    const analysisResult = analyzeRoutine(products, skinType, concerns, sensitivities);
     setResult(analysisResult);
     setStep(3);
     trackEvent("result_viewed", { score: analysisResult.score, conflictCount: analysisResult.conflicts.length });
