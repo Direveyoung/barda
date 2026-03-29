@@ -460,6 +460,7 @@ export default function ScannerPage() {
           )}
 
           {cameraState === "captured" && capturedImage && (
+            /* eslint-disable-next-line @next/next/no-img-element -- data URL from camera capture */
             <img
               src={capturedImage}
               alt="촬영된 이미지"
@@ -574,6 +575,7 @@ export default function ScannerPage() {
             <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
               <div className="flex items-start gap-3">
                 {barcodeResult.product.imageUrl && (
+                  /* eslint-disable-next-line @next/next/no-img-element -- external URL from Open Beauty Facts */
                   <img
                     src={barcodeResult.product.imageUrl}
                     alt={barcodeResult.product.productName}

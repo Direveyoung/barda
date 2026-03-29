@@ -34,7 +34,8 @@ export default function NotificationBell() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.notifications(user.id));
       if (data) {
-        setNotifications(JSON.parse(data));
+        const parsed = JSON.parse(data) as Notification[];
+        queueMicrotask(() => setNotifications(parsed));
       }
     } catch { /* ignore */ }
   }, [user]);

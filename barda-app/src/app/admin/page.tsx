@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 /* ---------- Types ---------- */
 
@@ -340,20 +341,6 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  /* ---- Error state ---- */
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-red-200 p-8 max-w-md text-center">
-          <p className="text-red-600 font-semibold mb-2">
-            데이터를 불러올 수 없습니다
-          </p>
-          <p className="text-sm text-gray-500">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
   /* ---- Funnel helpers ---- */
   const orderedFunnel = stats
     ? FUNNEL_ORDER.map((name) => ({
@@ -370,6 +357,20 @@ export default function AdminDashboard() {
     return stats.productCandidates.filter((pc) => pc.status === candidateFilter);
   }, [stats, candidateFilter]);
 
+  /* ---- Error state ---- */
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-white rounded-2xl border border-red-200 p-8 max-w-md text-center">
+          <p className="text-red-600 font-semibold mb-2">
+            데이터를 불러올 수 없습니다
+          </p>
+          <p className="text-sm text-gray-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -381,12 +382,12 @@ export default function AdminDashboard() {
               Admin
             </span>
           </div>
-          <a
+          <Link
             href="/"
             className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
           >
             사이트로 돌아가기
-          </a>
+          </Link>
         </div>
       </header>
 

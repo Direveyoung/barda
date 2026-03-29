@@ -32,7 +32,7 @@ export default function RankingPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
+    queueMicrotask(() => setIsLoading(true));
     const sort = tab === "popular" ? "popular" : "latest";
     fetch(`/api/routines?sort=${sort}&page=1&limit=20`)
       .then((r) => r.json())

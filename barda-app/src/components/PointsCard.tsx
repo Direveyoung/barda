@@ -13,7 +13,10 @@ export default function PointsCard() {
     // localStorage에서 캐시 즉시 렌더
     try {
       const cached = localStorage.getItem(STORAGE_KEYS.POINTS_BALANCE);
-      if (cached) setData(JSON.parse(cached));
+      if (cached) {
+        const parsed = JSON.parse(cached) as PointBalanceResponse;
+        queueMicrotask(() => setData(parsed));
+      }
     } catch { /* ignore */ }
 
     // API에서 최신 데이터 fetch

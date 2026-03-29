@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 import { loadDiaryRange, type DiaryEntry } from "@/lib/user-data-repository";
-import { CONDITION_SCORE, CONDITION_LABEL, SKIN_TYPE_LABEL } from "@/lib/constants";
+import { CONDITION_SCORE, CONDITION_LABEL } from "@/lib/constants";
 import ClinicChecklist from "@/components/ClinicChecklist";
 
 const CONDITION_ICON: Record<string, string> = {

@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -44,18 +45,30 @@ const AuthContext = createContext<AuthState>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const isTestUser = typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true";
+  const [user, setUser] = useState<User | null>(() => isTestUser ? makeTestUser() : null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isPaid, setIsPaid] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isPaid, setIsPaid] = useState(() => isTestUser);
+  const [isLoading, setIsLoading] = useState(() => !isTestUser);
 
-  // Restore test user from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
-      setUser(makeTestUser());
+  const checkPaidStatus = useCallback(async (userId: string) => {
+    // Dev override
+    if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.DEV_UNLOCK) === "true") {
       setIsPaid(true);
-      setIsLoading(false);
+      return;
     }
+
+    const supabase = createClient();
+    if (!supabase) return;
+
+    const { data } = await supabase
+      .from("payments")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "success")
+      .limit(1);
+
+    setIsPaid((data?.length ?? 0) > 0);
   }, []);
 
   useEffect(() => {
@@ -66,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const supabase = createClient();
     if (!supabase) {
-      setIsLoading(false);
+      queueMicrotask(() => setIsLoading(false));
       return;
     }
 
@@ -95,27 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  async function checkPaidStatus(userId: string) {
-    // Dev override
-    if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.DEV_UNLOCK) === "true") {
-      setIsPaid(true);
-      return;
-    }
-
-    const supabase = createClient();
-    if (!supabase) return;
-
-    const { data } = await supabase
-      .from("payments")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("status", "success")
-      .limit(1);
-
-    setIsPaid((data?.length ?? 0) > 0);
-  }
+  }, [checkPaidStatus]);
 
   const testLogin = () => {
     localStorage.setItem(TEST_USER_KEY, "true");

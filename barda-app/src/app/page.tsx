@@ -8,16 +8,13 @@ import NotificationBell from "@/components/NotificationBell";
 import RoutinePostCard, { type RoutinePost } from "@/components/RoutinePostCard";
 import Icon from "@/components/Icon";
 import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip, type DailyForecast } from "@/lib/weather";
-import { DAY_NAMES_KO, SKIN_TYPE_LABEL, STORAGE_KEYS } from "@/lib/constants";
+import { DAY_NAMES_KO, STORAGE_KEYS } from "@/lib/constants";
 import { saveDiary, loadDiary, saveChecklist, saveChallenge, loadChallenge } from "@/lib/user-data-repository";
 import { earnPointsClient } from "@/lib/point-repository";
 import PointToast from "@/components/PointToast";
 
 /* ─── 요일 이름 ─── */
 const DAY_NAMES = DAY_NAMES_KO;
-
-/* ─── 피부타입 라벨 ─── */
-const skinTypeLabel = SKIN_TYPE_LABEL;
 
 /* ─── 피부 컨디션 옵션 ─── */
 const conditionOptions = [
@@ -327,7 +324,7 @@ function LandingHome() {
    로그인 홈 — 오늘의 루틴 체크리스트 + 다이어리
    ──────────────────────────────────────────────── */
 function LoggedInHome() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const today = new Date();
   const dayName = DAY_NAMES[today.getDay()];
   const dateStr = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayName})`;
@@ -405,9 +402,6 @@ function LoggedInHome() {
           });
         }
 
-        setChecklist({ am: amProducts, pm: pmProducts });
-        setHasRoutine(true);
-
         // Load 7-day calendar schedule for today
         const calendarData = parsed.calendar as Array<{
           day: string;
@@ -416,16 +410,24 @@ function LoggedInHome() {
           pmIcon: string;
           pmLabel: string;
         }> | undefined;
+        let schedule: { day: string; isRetinolDay: boolean; isExfoliateDay: boolean; pmIcon: string; pmLabel: string } | null = null;
         if (calendarData && calendarData.length === 7) {
           const jsDay = today.getDay();
           const calIndex = jsDay === 0 ? 6 : jsDay - 1;
-          setTodaySchedule(calendarData[calIndex]);
+          schedule = calendarData[calIndex];
         }
+
+        const cl = { am: amProducts, pm: pmProducts };
+        queueMicrotask(() => {
+          setChecklist(cl);
+          setHasRoutine(true);
+          if (schedule) setTodaySchedule(schedule);
+        });
       } catch {
         // ignore
       }
     }
-    setRoutineLoaded(true);
+    queueMicrotask(() => setRoutineLoaded(true));
 
     // Load challenge state (dual-read)
     loadChallenge(userId).then((data) => {
@@ -460,7 +462,8 @@ function LoggedInHome() {
         break;
       }
     }
-    setStreak(count);
+    const streakCount = count;
+    queueMicrotask(() => setStreak(streakCount));
 
     // Fetch recent feed
     fetch("/api/routines?sort=latest&page=1&limit=3")

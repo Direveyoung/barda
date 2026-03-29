@@ -31,21 +31,22 @@ function AnalyzeContent() {
   const [concerns, setConcerns] = useState<string[]>([]);
   const [products, setProducts] = useState<RoutineProduct[]>([]);
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [paymentToast, setPaymentToast] = useState<"success" | "fail" | null>(null);
-
-  // Handle payment callback query params
-  useEffect(() => {
+  const [paymentToast, setPaymentToast] = useState<"success" | "fail" | null>(() => {
     const payment = searchParams.get("payment");
-    if (payment === "success" || payment === "fail") {
-      setPaymentToast(payment);
-      if (payment === "success") trackEvent("payment_completed");
-      // Defer URL cleanup to next frame so toast renders first
-      requestAnimationFrame(() => {
-        window.history.replaceState({}, "", "/analyze");
-      });
-      setTimeout(() => setPaymentToast(null), 4000);
-    }
-  }, [searchParams]);
+    return payment === "success" || payment === "fail" ? payment : null;
+  });
+
+  // Handle payment callback side effects
+  useEffect(() => {
+    if (!paymentToast) return;
+    if (paymentToast === "success") trackEvent("payment_completed");
+    // Defer URL cleanup to next frame so toast renders first
+    requestAnimationFrame(() => {
+      window.history.replaceState({}, "", "/analyze");
+    });
+    const timer = setTimeout(() => setPaymentToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track wizard start
   useEffect(() => {

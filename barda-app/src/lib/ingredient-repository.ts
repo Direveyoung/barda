@@ -24,11 +24,6 @@ interface DBIngredient {
   cas_no: string | null;
 }
 
-interface DBInteraction {
-  interaction_type: string;
-  partner: { name_ko: string };
-}
-
 /* ─── Cache ─── */
 
 let cachedDB: Record<string, IngredientInfo> | null = null;

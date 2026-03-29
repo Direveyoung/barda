@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { CommentListResponse, CreateCommentResponse, ApiError } from "@/lib/api-types";
 import { createCommentSchema, parseWithZod, sanitizeString } from "@/lib/api-types";
 
 export async function GET(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
@@ -27,7 +27,7 @@ export default function DrawerPage() {
   const [loaded, setLoaded] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
+
   const [filterStatus, setFilterStatus] = useState<"all" | "unopened" | "using" | "finished">("all");
 
   // Load from DB (dual-read: DB → localStorage fallback)
@@ -48,16 +48,14 @@ export default function DrawerPage() {
     saveDrawerItems(userId, newItems);
   }, [user]);
 
-  // Search products
-  useEffect(() => {
+  // Search products (derived state)
+  const searchResults = useMemo(() => {
     if (searchQuery.trim().length >= 1) {
       const results = searchProducts(searchQuery, ALL_PRODUCTS, 10);
-      // Filter out already added products
       const existing = new Set(items.map((i) => i.productId));
-      setSearchResults(results.filter((r) => !existing.has(r.id)));
-    } else {
-      setSearchResults([]);
+      return results.filter((r) => !existing.has(r.id));
     }
+    return [];
   }, [searchQuery, items]);
 
   const addProduct = useCallback((product: Product) => {

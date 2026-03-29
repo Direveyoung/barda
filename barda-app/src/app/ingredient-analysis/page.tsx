@@ -110,12 +110,14 @@ export default function IngredientAnalysisPage() {
 
   // Fetch enriched data from external APIs when product is selected
   useEffect(() => {
+    let cancelled = false;
+
     if (!selectedProduct?.key_ingredients) {
-      setEnrichedMap({});
-      return;
+      // Reset async to avoid synchronous setState in effect
+      queueMicrotask(() => { if (!cancelled) setEnrichedMap({}); });
+      return () => { cancelled = true; };
     }
 
-    let cancelled = false;
     const ingredients = selectedProduct.key_ingredients;
 
     async function fetchEnriched() {
@@ -169,7 +171,8 @@ export default function IngredientAnalysisPage() {
           "skinType" in parsed &&
           typeof (parsed as ProfileData).skinType === "string"
         ) {
-          setProfile(parsed as ProfileData);
+          const profileData = parsed as ProfileData;
+          queueMicrotask(() => setProfile(profileData));
         }
       }
     } catch {

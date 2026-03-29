@@ -86,8 +86,9 @@ export default function ChallengePage() {
   }, [challenge, userId]);
 
   const completedCount = challenge?.completedDays.filter(Boolean).length ?? 0;
+  const [now] = useState(() => Date.now());
   const currentDay = challenge
-    ? Math.min(7, Math.floor((Date.now() - new Date(challenge.startDate).getTime()) / 86_400_000) + 1)
+    ? Math.min(7, Math.floor((now - new Date(challenge.startDate).getTime()) / 86_400_000) + 1)
     : 0;
 
   return (
