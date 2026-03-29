@@ -106,7 +106,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]">
+    <nav aria-label="메인 메뉴" className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around max-w-lg mx-auto h-16">
         {tabs.map((tab) => {
           const isActive =
@@ -119,6 +119,8 @@ export default function BottomNav() {
               <Link
                 key={tab.href}
                 href={tab.href}
+                aria-current={isActive ? "page" : undefined}
+                aria-label={tab.label}
                 className="flex flex-col items-center gap-0.5 -mt-4"
               >
                 <div
@@ -137,6 +139,8 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={tab.label}
               className="flex flex-col items-center gap-0.5"
             >
               {tab.icon(isActive)}

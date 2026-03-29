@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ConfirmPaymentResponse, ApiError } from "@/lib/api-types";
 import { confirmPaymentSchema, parseWithZod } from "@/lib/api-types";
-import { API_URLS } from "@/lib/constants";
+import { API_URLS, PAYMENT } from "@/lib/constants";
 
 export async function POST(request: Request): Promise<NextResponse<ConfirmPaymentResponse | ApiError>> {
   const secretKey = process.env.TOSS_SECRET_KEY;
@@ -46,6 +46,14 @@ export async function POST(request: Request): Promise<NextResponse<ConfirmPaymen
   }
 
   const { paymentKey, orderId, amount } = result.data;
+
+  /* ---- Server-side amount validation ---- */
+  if (amount !== PAYMENT.PREMIUM_PRICE) {
+    return NextResponse.json(
+      { error: "결제 금액이 올바르지 않습니다." },
+      { status: 400 },
+    );
+  }
 
   /* ---- Idempotency check: prevent duplicate payments ---- */
   const { data: existingPayment } = await supabase

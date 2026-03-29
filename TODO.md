@@ -29,6 +29,11 @@
 - [x] PC 데스크톱 셸 + 랜딩 페이지 리디자인 (화해/파우더룸 스타일) (2026.02.20)
 - [x] 테스트 계정 로그인 기능 (test@barda.dev + 프리미엄 포함) (2026.02.25)
 - [x] 하드코딩 제거: URL/localStorage키/API limit/UI 타이밍/라벨 상수화, 듀프 데이터 분리 (2026.03.29)
+- [x] 베타 보안 강화: ��이월 우회 차단, 테스�� 유저 환경 분기, 결제 금액 서버 검증, 보안 헤더, Rate Limiting, 관리자 환경변수화 (2026.03.29)
+- [x] 프로덕션 인프라: error.tsx/not-found.tsx, robots.ts/sitemap.ts, .env.example, PWA manifest (2026.03.29)
+- [x] P0 성분 민감도 알림: checkSensitivities() + analyzeRoutine() 연동 + ResultView 경고 UI + SensitivityManager (구현 완료 확인)
+- [x] P1 배지/업적 시스템: badge-repository.ts + BadgeCard + MypageClient 통합 (��현 완료 확인)
+- [x] P2 체크리스트 준수율 대시보드: checklist-stats.ts + AdherenceDashboard + MypageClient 통합 (구현 완료 확인)
 
 ---
 
@@ -60,54 +65,6 @@
 ## Phase 4A: 지금 구현 가능 (외부 의존성 없음)
 
 > localStorage + 인메모리 데이터만으로 구현 가능한 기능들
-
-### 🔴 P0: 성분 민감도 알림 (분석 엔진 연동)
-> 데이터 모델(IngredientSensitivity) 존재하나 analysis.ts에 연동 제로. 가장 높은 임팩트.
-
-- [ ] `constants.ts`에 `STORAGE_KEYS.SENSITIVITIES` 추가
-- [ ] `user-data-repository.ts` 민감도 CRUD에 localStorage fallback 추가
-  - 현재 Supabase 전용 → DB 없으면 아무것도 안됨
-  - `barda_sensitivities` 키로 localStorage 저장/로드
-- [ ] `analysis.ts`에 `SensitivityWarning` 타입 + `checkSensitivities()` 함수 추가
-  - 제품의 `key_ingredients` + `active_flags` vs 유저 민감 성분 매칭
-  - severe → 스코어 -15점, moderate → -8점, mild → -3점
-- [ ] `AnalysisResult`에 `sensitivityWarnings: SensitivityWarning[]` 필드 추가
-- [ ] `analyzeRoutine()` 호출 시 민감도 체크 통합
-- [ ] `ResultView.tsx`에 민감도 경고 섹션 추가 (충돌 섹션 위, 빨간 배너)
-- [ ] `mypage/profile/page.tsx`에 민감 성분 등록/삭제 UI 추가
-  - 성분 검색 (ingredients.ts 30종 기반) + 심각도 선택 + 메모
-- [ ] 테스트 추가: 민감도 체크 로직 (analysis.test.ts)
-
-### 🟠 P1: 배지/업적 시스템
-> 스트릭 데이터 이미 계산됨(page.tsx). localStorage 기반 배지 시스템.
-
-- [ ] `constants.ts`에 `BADGE_DEFINITIONS` 추가
-  - 스트릭: 3일/7일/14일/30일 연속
-  - 분석: 첫 분석, 90점 이상 달성
-  - 다이어리: 7일/30일 기록
-  - 서랍: 10개 제품 등록
-  - `STORAGE_KEYS.BADGES` 추가 (`barda_badges`)
-- [ ] `lib/badge-repository.ts` 신규 생성
-  - `evaluateBadges(context)`: 현재 스트릭/다이어리/서랍 데이터로 배지 판정
-  - `getEarnedBadges()`: localStorage에서 획득 배지 로드
-  - `saveBadge(badgeId)`: 신규 획득 배지 저장 (획득 날짜 포함)
-- [ ] `components/BadgeCard.tsx` 신규 생성
-  - 배지 아이콘 + 라벨 + 획득일 표시
-  - 미획득 배지 회색 처리 + 잠금 아이콘
-- [ ] `mypage/MypageClient.tsx`에 배지 그리드 섹션 추가
-- [ ] `page.tsx` 홈 로드 시 배지 판정 + 신규 획득 시 토스트 표시
-
-### 🟠 P2: 체크리스트 준수율 대시보드
-> 체크리스트 데이터(barda_checks_YYYY-MM-DD) 이미 localStorage에 축적 중.
-
-- [ ] `lib/checklist-stats.ts` 신규 생성
-  - `calculateStats()`: 최근 30일 체크리스트 데이터 순회
-  - 반환: 주간 준수율(4주), AM/PM 완료율, 최장 스트릭, 총 기록일
-- [ ] `mypage/MypageClient.tsx` "분석" 탭에 통계 카드 추가
-  - 주간 막대 차트 (최근 4주, Tailwind 기반 CSS 차트)
-  - AM/PM 원형 진행률
-  - 최장 스트릭 + 총 기록일 숫자 카드
-- [ ] 홈페이지 체크리스트 섹션 아래에 "이번 주 준수율 N%" 미니 배지 추가
 
 ### 🟡 P3: 확장 챌린지 (21/30일 + 테마별)
 > 7일 챌린지 구조 확장. ChallengeState.completedDays[] 길이 가변화.

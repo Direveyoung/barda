@@ -207,26 +207,28 @@ function LoginForm() {
           </div>
         )}
 
-        {/* Test Login */}
-        <div className="mt-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">개발용</span>
-            <div className="flex-1 h-px bg-gray-200" />
+        {/* Test Login — development only */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs text-gray-400">개발용</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+            <button
+              onClick={handleTestLogin}
+              className="w-full py-3 rounded-2xl font-semibold text-white bg-gray-800 hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+              테스트 계정으로 로그인
+            </button>
+            <p className="text-center text-xs text-gray-400 mt-2">
+              test@barda.dev · 프리미엄 기능 포함
+            </p>
           </div>
-          <button
-            onClick={handleTestLogin}
-            className="w-full py-3 rounded-2xl font-semibold text-white bg-gray-800 hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-            테스트 계정으로 로그인
-          </button>
-          <p className="text-center text-xs text-gray-400 mt-2">
-            test@barda.dev · 프리미엄 기능 포함
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );
