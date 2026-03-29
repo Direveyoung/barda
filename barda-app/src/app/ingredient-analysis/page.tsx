@@ -13,7 +13,7 @@ import {
   type IngredientInfo,
 } from "@/data/ingredients";
 import { getCategoryLabel, getCategoryIcon } from "@/lib/analysis";
-import { getSafetyConfig } from "@/lib/constants";
+import { getSafetyConfig, STORAGE_KEYS } from "@/lib/constants";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 
@@ -162,7 +162,7 @@ export default function IngredientAnalysisPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const data = localStorage.getItem("barda_profile");
+      const data = localStorage.getItem(STORAGE_KEYS.PROFILE);
       if (data) {
         const parsed: unknown = JSON.parse(data);
         if (

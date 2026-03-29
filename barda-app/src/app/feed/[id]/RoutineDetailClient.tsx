@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
-import { SKIN_TYPE_LABEL, CONCERN_LABEL } from "@/lib/constants";
+import { SKIN_TYPE_LABEL, CONCERN_LABEL, STORAGE_KEYS, UI_TIMING } from "@/lib/constants";
 import { formatRelativeTime } from "@/lib/date-utils";
 
 /* ─── Types ─── */
@@ -83,9 +83,9 @@ export default function RoutineDetailClient({ postId }: { postId: string }) {
         savedAt: new Date().toISOString(),
         followedFrom: post.user_email_prefix,
       };
-      localStorage.setItem("barda_last_routine", JSON.stringify(routineData));
+      localStorage.setItem(STORAGE_KEYS.LAST_ROUTINE, JSON.stringify(routineData));
       setFollowedToast(true);
-      setTimeout(() => setFollowedToast(false), 2500);
+      setTimeout(() => setFollowedToast(false), UI_TIMING.TOAST_DISMISS);
     } catch { /* ignore */ }
   }, [post]);
 

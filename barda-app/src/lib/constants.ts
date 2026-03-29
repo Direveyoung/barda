@@ -75,6 +75,7 @@ export const STORAGE_KEYS = {
   CHALLENGE: "barda_challenge",
   MIGRATED: "barda_migrated_v3",
   POINTS_BALANCE: "barda_points_balance",
+  LAST_ROUTINE: "barda_last_routine",
   notifications: (userId: string) => `barda_notifications_${userId}`,
   diary: (date: string) => `barda_diary_${date}`,
   checks: (date: string) => `barda_checks_${date}`,
@@ -83,8 +84,8 @@ export const STORAGE_KEYS = {
 /* ── 커뮤니티/카카오톡 ── */
 
 export const COMMUNITY = {
-  KAKAO_OPEN_CHAT_URL: "https://open.kakao.com/o/gXXXXXXX",  // TODO: 실제 오픈톡 URL로 교체
-  CLINIC_LIST_URL: "https://clinic-list.vercel.app/",
+  KAKAO_OPEN_CHAT_URL: process.env.NEXT_PUBLIC_KAKAO_OPEN_CHAT_URL ?? "https://open.kakao.com/o/gXXXXXXX",
+  CLINIC_LIST_URL: process.env.NEXT_PUBLIC_CLINIC_LIST_URL ?? "https://clinic-list.vercel.app/",
 } as const;
 
 /* ── 다이어리 컨디션 점수 매핑 ── */
@@ -114,7 +115,12 @@ export const API_URLS = {
   WEATHER: "https://api.open-meteo.com/v1/forecast",
   AIR_QUALITY: "https://air-quality-api.open-meteo.com/v1/air-quality",
   TOSS_SDK: "https://js.tosspayments.com/v1/payment",
+  TOSS_CONFIRM: "https://api.tosspayments.com/v1/payments/confirm",
 } as const;
+
+/* ── 앱 URL ── */
+
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://barda.vercel.app";
 
 export const API_TIMEOUT_MS = 8000;
 export const HEALTH_CHECK_TIMEOUT_MS = 5000;
@@ -204,6 +210,20 @@ export const SEARCH_DEFAULTS = {
 export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 10,
   MAX_PAGE_SIZE: 50,
+  LANDING_FEED: 3,
+  RANKING: 20,
+  POINTS_HISTORY: 20,
+  LIKED_POSTS: 50,
+} as const;
+
+/* ── UI 타이밍 (ms) ── */
+
+export const UI_TIMING = {
+  SEARCH_DEBOUNCE: 400,
+  BANNER_ROTATE: 4000,
+  TOAST_DISMISS: 2500,
+  PAYMENT_TOAST: 4000,
+  SAVE_CONFIRM: 2000,
 } as const;
 
 /* ── Safety 등급 색상 (safetyScore 1~5) ── */

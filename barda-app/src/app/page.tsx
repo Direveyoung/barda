@@ -8,7 +8,7 @@ import NotificationBell from "@/components/NotificationBell";
 import RoutinePostCard, { type RoutinePost } from "@/components/RoutinePostCard";
 import Icon from "@/components/Icon";
 import { fetchWeather, generateWeatherTips, type WeatherData, type WeatherTip, type DailyForecast } from "@/lib/weather";
-import { DAY_NAMES_KO, STORAGE_KEYS } from "@/lib/constants";
+import { DAY_NAMES_KO, STORAGE_KEYS, PAGINATION, UI_TIMING } from "@/lib/constants";
 import { saveDiary, loadDiary, saveChecklist, saveChallenge, loadChallenge } from "@/lib/user-data-repository";
 import { earnPointsClient } from "@/lib/point-repository";
 import PointToast from "@/components/PointToast";
@@ -53,7 +53,7 @@ function LandingHome() {
   const [bannerIndex, setBannerIndex] = useState(0);
 
   useEffect(() => {
-    fetch("/api/routines?sort=latest&page=1&limit=3")
+    fetch(`/api/routines?sort=latest&page=1&limit=${PAGINATION.LANDING_FEED}`)
       .then((r) => r.json())
       .then((json) => {
         setFeedPosts(json.posts ?? []);
@@ -66,7 +66,7 @@ function LandingHome() {
   useEffect(() => {
     const timer = setInterval(() => {
       setBannerIndex((prev) => (prev + 1) % BANNERS.length);
-    }, 4000);
+    }, UI_TIMING.BANNER_ROTATE);
     return () => clearInterval(timer);
   }, []);
 
@@ -377,7 +377,7 @@ function LoggedInHome() {
     const todayKey = today.toISOString().slice(0, 10);
 
     // Load last routine analysis result (session cache — stays in localStorage)
-    const savedRoutine = localStorage.getItem("barda_last_routine");
+    const savedRoutine = localStorage.getItem(STORAGE_KEYS.LAST_ROUTINE);
     if (savedRoutine) {
       try {
         const parsed = JSON.parse(savedRoutine);
@@ -466,7 +466,7 @@ function LoggedInHome() {
     queueMicrotask(() => setStreak(streakCount));
 
     // Fetch recent feed
-    fetch("/api/routines?sort=latest&page=1&limit=3")
+    fetch(`/api/routines?sort=latest&page=1&limit=${PAGINATION.LANDING_FEED}`)
       .then((r) => r.json())
       .then((json) => setRecentPosts(json.posts ?? []))
       .catch(() => {});
@@ -476,7 +476,7 @@ function LoggedInHome() {
       if (data) {
         setWeather(data);
         try {
-          const saved = localStorage.getItem("barda_last_routine");
+          const saved = localStorage.getItem(STORAGE_KEYS.LAST_ROUTINE);
           if (saved) {
             const parsed = JSON.parse(saved);
             setWeatherTips(generateWeatherTips(data, parsed.skinType, parsed.hasRetinol, parsed.hasAHA));
@@ -553,7 +553,7 @@ function LoggedInHome() {
   // Score for last analysis
   const lastScore = (() => {
     try {
-      const saved = localStorage.getItem("barda_last_routine");
+      const saved = localStorage.getItem(STORAGE_KEYS.LAST_ROUTINE);
       if (saved) return JSON.parse(saved).score ?? null;
     } catch { /* ignore */ }
     return null;

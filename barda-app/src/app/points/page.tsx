@@ -5,7 +5,7 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import BottomNav from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
-import { POINT_DAILY_CAP, POINT_ACTION_ICON } from "@/lib/constants";
+import { POINT_DAILY_CAP, POINT_ACTION_ICON, PAGINATION } from "@/lib/constants";
 import type { PointBalanceResponse, PointTransactionItem } from "@/lib/api-types";
 
 export default function PointsPage() {
@@ -26,7 +26,7 @@ export default function PointsPage() {
   const fetchHistory = useCallback(async (p: number) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/points/history?page=${p}&limit=20`);
+      const res = await fetch(`/api/points/history?page=${p}&limit=${PAGINATION.POINTS_HISTORY}`);
       if (!res.ok) return;
       const json = await res.json();
       setTransactions(json.transactions ?? []);

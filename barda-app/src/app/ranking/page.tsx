@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import BottomNav from "@/components/BottomNav";
-import { SKIN_TYPE_LABEL } from "@/lib/constants";
+import { SKIN_TYPE_LABEL, PAGINATION } from "@/lib/constants";
 
 interface RankedPost {
   id: string;
@@ -34,7 +34,7 @@ export default function RankingPage() {
   useEffect(() => {
     queueMicrotask(() => setIsLoading(true));
     const sort = tab === "popular" ? "popular" : "latest";
-    fetch(`/api/routines?sort=${sort}&page=1&limit=20`)
+    fetch(`/api/routines?sort=${sort}&page=1&limit=${PAGINATION.RANKING}`)
       .then((r) => r.json())
       .then((json) => {
         let data: RankedPost[] = json.posts ?? [];

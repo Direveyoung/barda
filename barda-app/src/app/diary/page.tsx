@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 import { loadDiaryRange, type DiaryEntry } from "@/lib/user-data-repository";
-import { CONDITION_SCORE, CONDITION_LABEL } from "@/lib/constants";
+import { CONDITION_SCORE, CONDITION_LABEL, STORAGE_KEYS } from "@/lib/constants";
 import ClinicChecklist from "@/components/ClinicChecklist";
 
 const CONDITION_ICON: Record<string, string> = {
@@ -183,7 +183,7 @@ export default function DiaryPage() {
   }
 
   // Profile info for clinic checklist
-  const profileRaw = typeof window !== "undefined" ? localStorage.getItem("barda_profile") : null;
+  const profileRaw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.PROFILE) : null;
   const profile = profileRaw ? JSON.parse(profileRaw) : null;
 
   // Share handler

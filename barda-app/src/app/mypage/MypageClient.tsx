@@ -9,7 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import PointsCard from "@/components/PointsCard";
-import { SKIN_TYPE_LABEL } from "@/lib/constants";
+import { SKIN_TYPE_LABEL, STORAGE_KEYS, PAGINATION } from "@/lib/constants";
 
 type TabKey = "analysis" | "shared" | "liked" | "diary";
 
@@ -59,7 +59,7 @@ export default function MypageClient() {
     if (typeof window === "undefined") return;
 
     try {
-      const saved = localStorage.getItem("barda_last_routine");
+      const saved = localStorage.getItem(STORAGE_KEYS.LAST_ROUTINE);
       if (saved) {
         const parsed = JSON.parse(saved);
         setAnalysisHistory([parsed]);
@@ -73,7 +73,7 @@ export default function MypageClient() {
       d.setDate(d.getDate() - i);
       const key = d.toISOString().slice(0, 10);
       try {
-        const data = localStorage.getItem(`barda_diary_${key}`);
+        const data = localStorage.getItem(STORAGE_KEYS.diary(key));
         if (data) {
           const parsed = JSON.parse(data);
           entries.push({ date: key, condition: parsed.condition, memo: parsed.memo ?? "" });
@@ -104,7 +104,7 @@ export default function MypageClient() {
     if (!user) return;
     setIsLoadingPosts(true);
     try {
-      const res = await fetch(`/api/routines?sort=popular&page=1&limit=50`);
+      const res = await fetch(`/api/routines?sort=popular&page=1&limit=${PAGINATION.LIKED_POSTS}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const json = await res.json();
       setLikedPosts(json.posts ?? []);

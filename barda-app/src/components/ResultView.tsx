@@ -13,6 +13,7 @@ import FeedbackButtons from "@/components/FeedbackButtons";
 import ShareRoutineModal from "@/components/ShareRoutineModal";
 import KakaoOpenChat from "@/components/KakaoOpenChat";
 import SkinHelpTemplate from "@/components/SkinHelpTemplate";
+import { STORAGE_KEYS } from "@/lib/constants";
 import Icon from "@/components/Icon";
 
 interface Props {
@@ -305,7 +306,7 @@ export default function ResultView({
 
     try {
       localStorage.setItem(
-        "barda_last_routine",
+        STORAGE_KEYS.LAST_ROUTINE,
         JSON.stringify({
           score: result.score,
           amRoutine: result.amProducts,

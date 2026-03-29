@@ -7,7 +7,7 @@ import { analyzeRoutine } from "@/lib/analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestPayment } from "@/lib/payments";
 import { trackEvent } from "@/lib/events";
-import { PAYMENT } from "@/lib/constants";
+import { PAYMENT, UI_TIMING } from "@/lib/constants";
 import SkinTypeStep from "@/components/SkinTypeStep";
 import ConcernStep from "@/components/ConcernStep";
 import ProductStep from "@/components/ProductStep";
@@ -44,7 +44,7 @@ function AnalyzeContent() {
     requestAnimationFrame(() => {
       window.history.replaceState({}, "", "/analyze");
     });
-    const timer = setTimeout(() => setPaymentToast(null), 4000);
+    const timer = setTimeout(() => setPaymentToast(null), UI_TIMING.PAYMENT_TOAST);
     return () => clearTimeout(timer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

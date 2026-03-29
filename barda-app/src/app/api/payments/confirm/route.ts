@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ConfirmPaymentResponse, ApiError } from "@/lib/api-types";
 import { confirmPaymentSchema, parseWithZod } from "@/lib/api-types";
+import { API_URLS } from "@/lib/constants";
 
 export async function POST(request: Request): Promise<NextResponse<ConfirmPaymentResponse | ApiError>> {
   const secretKey = process.env.TOSS_SECRET_KEY;
@@ -65,7 +66,7 @@ export async function POST(request: Request): Promise<NextResponse<ConfirmPaymen
   const basicAuth = Buffer.from(`${secretKey}:`).toString("base64");
 
   const tossRes = await fetch(
-    "https://api.tosspayments.com/v1/payments/confirm",
+    API_URLS.TOSS_CONFIRM,
     {
       method: "POST",
       headers: {

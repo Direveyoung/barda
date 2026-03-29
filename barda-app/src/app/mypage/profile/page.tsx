@@ -6,26 +6,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 import { saveProfile, loadProfile, type ProfileData } from "@/lib/user-data-repository";
+import { SKIN_TYPE_LABEL, CONCERN_LABEL, UI_TIMING } from "@/lib/constants";
 
-const skinTypes = [
-  { value: "dry", label: "건성", icon: "desert" },
-  { value: "oily", label: "지성", icon: "drop" },
-  { value: "combination", label: "복합성", icon: "cycle" },
-  { value: "sensitive", label: "민감성", icon: "cherry-blossom" },
-  { value: "normal", label: "중성", icon: "sparkle" },
-];
+const SKIN_TYPE_ICONS: Record<string, string> = {
+  dry: "desert", oily: "drop", combination: "cycle",
+  sensitive: "cherry-blossom", normal: "sparkle",
+};
 
-const allConcerns = [
-  { value: "acne", label: "여드름" },
-  { value: "wrinkle", label: "주름" },
-  { value: "pigmentation", label: "색소침착" },
-  { value: "dryness", label: "건조" },
-  { value: "sensitivity", label: "민감" },
-  { value: "pore", label: "모공" },
-  { value: "blackhead", label: "블랙헤드" },
-  { value: "redness", label: "홍조" },
-  { value: "darkCircle", label: "다크서클" },
-];
+const skinTypes = Object.entries(SKIN_TYPE_LABEL).map(([value, label]) => ({
+  value, label, icon: SKIN_TYPE_ICONS[value] ?? "sparkle",
+}));
+
+const allConcerns = Object.entries(CONCERN_LABEL)
+  .filter(([key]) => key !== "pigment" && key !== "whitehead" && key !== "dullness")
+  .map(([value, label]) => ({ value, label }));
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
@@ -74,7 +68,7 @@ export default function ProfileSettingsPage() {
     const userId = user?.id ?? "anonymous";
     saveProfile(userId, profile).then(() => {
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => setSaved(false), UI_TIMING.SAVE_CONFIRM);
     });
   }, [profile, user]);
 
