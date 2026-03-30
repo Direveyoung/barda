@@ -25,7 +25,7 @@ export async function POST(request: Request): Promise<NextResponse<BatchEventsRe
   const rows = result.data.events.map((e) => ({
     event_name: e.event_name,
     session_id: e.session_id,
-    metadata: e.metadata ?? null,
+    event_data: e.metadata ?? null,
     created_at: e.created_at,
   }));
 
