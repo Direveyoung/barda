@@ -112,6 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const testLogin = () => {
     localStorage.setItem(TEST_USER_KEY, "true");
     localStorage.setItem(STORAGE_KEYS.DEV_UNLOCK, "true");
+    // Set cookie so server-side middleware can recognize test user
+    document.cookie = "barda_test_user=true; path=/; max-age=86400; SameSite=Lax";
     setUser(makeTestUser());
     setIsPaid(true);
     setIsLoading(false);
@@ -122,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
       localStorage.removeItem(TEST_USER_KEY);
       localStorage.removeItem(STORAGE_KEYS.DEV_UNLOCK);
+      document.cookie = "barda_test_user=; path=/; max-age=0";
       setUser(null);
       setSession(null);
       setIsPaid(false);
