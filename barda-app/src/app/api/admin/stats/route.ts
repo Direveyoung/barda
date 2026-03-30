@@ -7,69 +7,20 @@ export async function GET() {
   const { supabase } = auth;
 
   try {
-    // --- Total Users ---
-    // Try auth.admin first; fall back to distinct user_id from routine_posts
-    let totalUsers = 0;
-    try {
-      const { data: adminList } =
-        await supabase.auth.admin.listUsers({ perPage: 1 });
-      totalUsers = (adminList as { total?: number })?.total ?? 0;
-    } catch {
-      const { count } = await supabase
-        .from("routine_posts")
-        .select("user_id", { count: "exact", head: true });
-      totalUsers = count ?? 0;
+    // Use SECURITY DEFINER function — bypasses RLS, works with anon key
+    const { data: stats, error: rpcError } = await supabase.rpc("get_admin_stats");
+
+    if (rpcError) {
+      console.error("get_admin_stats RPC error:", rpcError);
+      return NextResponse.json(
+        { error: "Failed to aggregate admin stats", detail: rpcError.message },
+        { status: 500 },
+      );
     }
 
-    // --- Total Analyses ---
-    const { count: totalAnalyses } = await supabase
-      .from("user_routines")
-      .select("*", { count: "exact", head: true });
+    const s = stats as Record<string, unknown>;
 
-    // --- Payments (success only) ---
-    const { count: totalPayments } = await supabase
-      .from("payments")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "success");
-
-    const { data: revenueRow } = await supabase
-      .from("payments")
-      .select("amount")
-      .eq("status", "success");
-
-    const totalRevenue = (revenueRow ?? []).reduce(
-      (sum: number, r: { amount: number }) => sum + (r.amount ?? 0),
-      0,
-    );
-
-    // --- Total Posts ---
-    const { count: totalPosts } = await supabase
-      .from("routine_posts")
-      .select("*", { count: "exact", head: true });
-
-    // --- Total Feedback ---
-    const { count: totalFeedback } = await supabase
-      .from("report_feedback")
-      .select("*", { count: "exact", head: true });
-
-    // --- Search Stats ---
-    const { count: totalSearches } = await supabase
-      .from("search_logs")
-      .select("*", { count: "exact", head: true });
-
-    const { count: missedSearches } = await supabase
-      .from("search_logs")
-      .select("*", { count: "exact", head: true })
-      .eq("results_count", 0);
-
-    const searchHitRate =
-      (totalSearches ?? 0) > 0
-        ? Math.round(
-            ((1 - (missedSearches ?? 0) / (totalSearches ?? 1)) * 100) * 10
-          ) / 10
-        : 0;
-
-    // --- Recent Search Misses (top 10 queries with 0 results) ---
+    // --- Search miss details (still needs direct query, public read OK) ---
     const { data: searchMissesRaw } = await supabase
       .from("search_logs")
       .select("query")
@@ -85,21 +36,7 @@ export async function GET() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // --- Funnel Data (event_name → count) ---
-    const { data: funnelRaw } = await supabase
-      .from("funnel_events")
-      .select("event_name");
-
-    const funnelMap = new Map<string, number>();
-    for (const row of funnelRaw ?? []) {
-      const name = row.event_name as string;
-      if (name) funnelMap.set(name, (funnelMap.get(name) ?? 0) + 1);
-    }
-    const funnelData = Array.from(funnelMap.entries()).map(
-      ([event_name, count]) => ({ event_name, count }),
-    );
-
-    // --- Product Candidates (latest 30, sorted by submit_count) ---
+    // --- Product Candidates ---
     const { data: productCandidates } = await supabase
       .from("product_candidates")
       .select("*")
@@ -107,19 +44,30 @@ export async function GET() {
       .order("created_at", { ascending: false })
       .limit(30);
 
+    const totalSearches = Number(s.total_search_logs ?? 0);
+    const missedSearches = recentSearchMisses.reduce((sum, r) => sum + r.count, 0);
+    const searchHitRate =
+      totalSearches > 0
+        ? Math.round(((1 - missedSearches / totalSearches) * 100) * 10) / 10
+        : 0;
+
     return NextResponse.json({
-      totalUsers,
-      totalAnalyses: totalAnalyses ?? 0,
-      totalPayments: totalPayments ?? 0,
-      totalRevenue,
-      totalPosts: totalPosts ?? 0,
-      totalFeedback: totalFeedback ?? 0,
-      totalSearches: totalSearches ?? 0,
-      missedSearches: missedSearches ?? 0,
+      totalUsers: Number(s.total_users ?? 0),
+      totalAnalyses: Number(s.total_analyses ?? 0),
+      totalPayments: Number(s.total_payments ?? 0),
+      totalRevenue: Number(s.total_revenue ?? 0),
+      totalPosts: Number(s.total_posts ?? 0),
+      totalFeedback: 0,
+      totalSearches,
+      missedSearches,
       searchHitRate,
       recentSearchMisses,
-      funnelData,
+      funnelData: (s.top_searches as unknown[]) ?? [],
       productCandidates: productCandidates ?? [],
+      // Extra DB stats
+      totalProducts: Number(s.total_products ?? 0),
+      totalBrands: Number(s.total_brands ?? 0),
+      totalIngredients: Number(s.total_ingredients ?? 0),
     });
   } catch (err) {
     console.error("Admin stats error:", err);
