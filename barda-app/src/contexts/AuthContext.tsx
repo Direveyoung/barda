@@ -23,8 +23,6 @@ interface AuthState {
 }
 
 const TEST_USER_KEY = "barda_test_user";
-const IS_DEV = process.env.NODE_ENV === "development";
-
 function makeTestUser(): User {
   return {
     id: "test-user-00000000-0000-0000-0000-000000000000",
@@ -46,15 +44,15 @@ const AuthContext = createContext<AuthState>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const isTestUser = IS_DEV && typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true";
+  const isTestUser = typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true";
   const [user, setUser] = useState<User | null>(() => isTestUser ? makeTestUser() : null);
   const [session, setSession] = useState<Session | null>(null);
   const [isPaid, setIsPaid] = useState(() => isTestUser);
   const [isLoading, setIsLoading] = useState(() => !isTestUser);
 
   const checkPaidStatus = useCallback(async (userId: string) => {
-    // Dev override — only in development mode
-    if (IS_DEV && typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.DEV_UNLOCK) === "true") {
+    // Dev/test override
+    if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.DEV_UNLOCK) === "true") {
       setIsPaid(true);
       return;
     }
@@ -73,8 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Skip Supabase init if test user is active (development only)
-    if (IS_DEV && typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
+    // Skip Supabase init if test user is active
+    if (typeof window !== "undefined" && localStorage.getItem(TEST_USER_KEY) === "true") {
       return;
     }
 
@@ -112,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [checkPaidStatus]);
 
   const testLogin = () => {
-    if (!IS_DEV) return;
     localStorage.setItem(TEST_USER_KEY, "true");
     localStorage.setItem(STORAGE_KEYS.DEV_UNLOCK, "true");
     setUser(makeTestUser());
