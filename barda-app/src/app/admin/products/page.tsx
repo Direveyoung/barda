@@ -38,15 +38,20 @@ export default function AdminProductsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Filters
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [brandFilter, setBrandFilter] = useState("all");
   const [page] = useState(1);
+
+  // Selected for detail / edit / delete
   const [selected, setSelected] = useState<DBProduct | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Partial<DBProduct>>({});
   const [saving, setSaving] = useState(false);
 
+  // Derived unique brands from loaded data
   const brands = useMemo(
     () => [...new Set(products.map((p) => p.brand_name))].sort(),
     [products]
@@ -66,7 +71,10 @@ export default function AdminProductsPage() {
       const res = await fetch(`/api/admin/products?${params}`, {
         headers: { "x-admin-password": ADMIN_PW },
       });
-      if (!res.ok) { setError(`서버 오류: ${res.status}`); return; }
+      if (!res.ok) {
+        setError(`서버 오류: ${res.status}`);
+        return;
+      }
       const json = await res.json();
       setProducts(json.products ?? []);
       setTotal(json.total ?? 0);
@@ -82,6 +90,7 @@ export default function AdminProductsPage() {
     return () => clearTimeout(t);
   }, [fetchProducts, search]);
 
+  // Stats from loaded data
   const stats = useMemo(
     () => ({
       total,
@@ -92,19 +101,30 @@ export default function AdminProductsPage() {
     [products, total, brands]
   );
 
+  // Patch product
   async function handleSave() {
     if (!selected) return;
     setSaving(true);
     try {
       const res = await fetch("/api/admin/products", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "x-admin-password": ADMIN_PW },
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": ADMIN_PW,
+        },
         body: JSON.stringify({ id: selected.id, ...editData }),
       });
-      if (res.ok) { await fetchProducts(); setSelected(null); setEditMode(false); }
-    } finally { setSaving(false); }
+      if (res.ok) {
+        await fetchProducts();
+        setSelected(null);
+        setEditMode(false);
+      }
+    } finally {
+      setSaving(false);
+    }
   }
 
+  // Delete product
   async function handleDelete(id: string) {
     if (!confirm("이 제품을 삭제하시겠습니까?")) return;
     await fetch(`/api/admin/products?id=${id}`, {
@@ -198,6 +218,8 @@ export default function AdminProductsPage() {
         title="제품 관리"
         description={`Supabase DB · 총 ${total}개 제품 · ${stats.brands}개 브랜드`}
       />
+
+      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
           { label: "전체 제품", value: stats.total },
@@ -205,15 +227,24 @@ export default function AdminProductsPage() {
           { label: "브랜드", value: stats.brands },
           { label: "카테고리", value: stats.categories },
         ].map((s) => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 text-center">
+          <div
+            key={s.label}
+            className="bg-white rounded-xl border border-gray-100 p-3 text-center"
+          >
             <p className="text-lg font-bold text-gray-800">{s.value}</p>
             <p className="text-xs text-gray-400">{s.label}</p>
           </div>
         ))}
       </div>
+
+      {/* Filters */}
       <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <SearchInput value={search} onChange={setSearch} placeholder="브랜드 또는 제품명 검색..." />
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="브랜드 또는 제품명 검색..."
+          />
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
@@ -221,7 +252,9 @@ export default function AdminProductsPage() {
           >
             <option value="all">전체 카테고리</option>
             {ALL_CATEGORIES.map((c) => (
-              <option key={c.id} value={c.id}>{c.label}</option>
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
             ))}
           </select>
           <select
@@ -231,24 +264,32 @@ export default function AdminProductsPage() {
           >
             <option value="all">전체 브랜드</option>
             {brands.map((b) => (
-              <option key={b} value={b}>{b}</option>
+              <option key={b} value={b}>
+                {b}
+              </option>
             ))}
           </select>
         </div>
       </div>
+
+      {/* Error */}
       {error && (
         <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
           {error}
         </div>
       )}
+
+      {/* Table */}
       {loading ? (
         <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
           <div className="inline-block w-6 h-6 rounded-full border-2 border-gray-300 border-t-gray-700 animate-spin mb-2" />
           <p className="text-sm text-gray-500">Supabase에서 데이터 로딩 중...</p>
         </div>
       ) : (
-        <DataTable columns={columns} data={products} rowKey={(p) => p.id} />
+        <DataTable columns={columns} data={products} />
       )}
+
+      {/* Product Detail / Edit Modal */}
       {selected && (
         <div
           className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4"
@@ -299,6 +340,7 @@ export default function AdminProductsPage() {
                 </button>
               </div>
             </div>
+
             <div className="p-5 space-y-4">
               {editMode ? (
                 <>
@@ -377,13 +419,25 @@ export default function AdminProductsPage() {
                   <Row label="ID" value={selected.legacy_id} mono />
                   <Row label="카테고리" value={getCategoryLabel(selected.category_id)} />
                   <Row label="소스" value={selected.source} />
-                  <Row label="핵심 성분" value={selected.key_ingredients?.join(", ") ?? "—"} />
-                  <Row label="태그" value={selected.tags?.join(", ") ?? "—"} />
-                  <Row label="액티브 플래그" value={selected.active_flags?.join(", ") || "없음"} />
+                  <Row
+                    label="핵심 성분"
+                    value={selected.key_ingredients?.join(", ") ?? "—"}
+                  />
+                  <Row
+                    label="태그"
+                    value={selected.tags?.join(", ") ?? "—"}
+                  />
+                  <Row
+                    label="액티브 플래그"
+                    value={selected.active_flags?.join(", ") || "없음"}
+                  />
                   {selected.concentration_level && (
                     <Row label="농도 레벨" value={selected.concentration_level} />
                   )}
-                  <Row label="등록일" value={new Date(selected.created_at).toLocaleDateString("ko-KR")} />
+                  <Row
+                    label="등록일"
+                    value={new Date(selected.created_at).toLocaleDateString("ko-KR")}
+                  />
                 </>
               )}
             </div>
@@ -398,7 +452,9 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
   return (
     <div className="flex justify-between gap-4 py-1 border-b border-gray-50">
       <span className="text-xs text-gray-400 shrink-0">{label}</span>
-      <span className={`text-xs text-gray-700 text-right ${mono ? "font-mono" : ""}`}>{value}</span>
+      <span className={`text-xs text-gray-700 text-right ${mono ? "font-mono" : ""}`}>
+        {value}
+      </span>
     </div>
   );
 }
