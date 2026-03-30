@@ -117,19 +117,19 @@ TOSS_SECRET_KEY=                    # 토스 시크릿 키
 PUBLIC_DATA_SERVICE_KEY=            # 공공데이터포털 인증키 (식약처 + 성분사전 공용)
 ```
 
-## 현재 상태 (2026.02.25)
-- 버전: **v1.5.0**
-- MVP-1 ~ Phase 3 + 고도화 + UI 리디자인 **전체 구현 완료**
-- 제품 DB 502개, 성분 DB 30종, 테스트 71개
-- 이모지 → SVG 아이콘 전면 교체, Zod 입력 검증 완비
-- PC 데스크톱 셸 + 화해/파우더룸 스타일 랜딩 페이지
-- 테스트 계정 로그인 (test@barda.dev)
-- 외부 API 캐싱/재시도 프로덕션 레디
-- **남은 작업**: DB/API키 실제 연결, Vercel 배포, Supabase cron
+## 현재 상태 (2026.03.30)
+- 버전: **v1.7.0**
+- MVP-1 ~ Phase 4A 전체 구현 + **실제 DB/배포 연결 완료**
+- 제품 DB **660개** (115개 브랜드, 20개 카테고리), 성분 DB **63종**, 테스트 71개
+- **Supabase 실제 연결**: URL/ANON KEY 설정, Auth redirect URL, 9개 테이블 운영 중
+- **Vercel 배포**: `barda-red.vercel.app` READY (Seoul icn1)
+- **Edge Functions**: `collect-cosmetics` + `enrich-products` + pg_cron 2개
+- **관리자 인증**: HTTP-only 쿠키 기반 (Supabase session 의존 제거)
+- **남은 작업**: 토스페이먼츠 연결, 커스텀 도메인 (유저 직접)
 - 상세: `docs/features.md`, `TODO.md` 참고
 
 ## 상세 문서 링크
 - `docs/architecture.md` — 아키텍처 + 파일 맵 + 데이터 흐름
 - `docs/features.md` — 기능 인벤토리 + 구현 상태
 - `docs/api-routes.md` — API 라우트 명세 (16개 엔드포인트)
-- `docs/product-db.md` — 제품 DB 전략/구조 (502개)
+- `docs/product-db.md` — 제품 DB 전략/구조 (660개)
