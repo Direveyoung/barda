@@ -35,17 +35,35 @@ body {
   overflow-x: hidden;
 }
 
+/* Score reveal animation */
 @keyframes scoreReveal {
   from { stroke-dasharray: 0 314; }
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.animate-fade-up { animation: fadeUp 0.5s ease-out; }
-.animate-score { animation: scoreReveal 1.5s ease-out; }
+.animate-fade-up {
+  animation: fadeUp 0.5s ease-out;
+}
 
+.animate-score {
+  animation: scoreReveal 1.5s ease-out;
+}
+
+/* Scrollbar-hide utility */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── 카드 경계선 강화: border-gray-100 → 더 진한 톤 ── */
+[class~="border-gray-100"] {
+  border-color: #c9cdd4 !important;
+}
