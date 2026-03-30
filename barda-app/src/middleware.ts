@@ -30,6 +30,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Allow test users (cookie set by testLogin()) — bypass Supabase auth
+  if (request.cookies.get("barda_test_user")?.value === "true") {
+    return NextResponse.next();
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
