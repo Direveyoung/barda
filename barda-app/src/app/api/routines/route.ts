@@ -32,7 +32,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<RoutinePos
   let query = supabase
     .from("routine_posts")
     .select(
-      "id, user_id, skin_type, concerns, score, products_json, comment, rating, like_count, comment_count, created_at, users:user_id ( email )",
+      "id, user_id, skin_type, concerns, score, products_json, comment, rating, like_count, comment_count, created_at, user_profiles!user_id ( nickname ",
       { count: "exact" },
     );
 
