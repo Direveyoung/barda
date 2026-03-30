@@ -1,18 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Admin emails allowed to access admin API endpoints.
- * Configured via ADMIN_EMAILS environment variable (comma-separated).
- * Falls back to empty set (no admin access) if not configured.
+ * Admin session cookie name.
+ * Set by POST /api/admin/auth when password is verified client-side.
  */
-const ADMIN_EMAILS = new Set(
-  (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean),
-);
+const SESSION_COOKIE = "barda_admin_session";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "barda2026";
 
 interface AdminAuthResult {
   supabase: SupabaseClient;
@@ -20,12 +16,21 @@ interface AdminAuthResult {
 }
 
 /**
- * Verify that the current request is from an authenticated admin user.
- * Returns the supabase client and userId on success, or a NextResponse error on failure.
+ * Verify admin access via HTTP-only cookie (set at /api/admin/auth).
+ * Does NOT require Supabase user session — uses password-gate cookie instead.
  */
 export async function requireAdmin(): Promise<AdminAuthResult | NextResponse> {
-  const supabase = await createClient();
+  const cookieStore = await cookies();
+  const adminSession = cookieStore.get(SESSION_COOKIE)?.value;
 
+  if (!adminSession || adminSession !== ADMIN_PASSWORD) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 },
+    );
+  }
+
+  const supabase = await createClient();
   if (!supabase) {
     return NextResponse.json(
       { error: "Database connection unavailable" },
@@ -33,24 +38,5 @@ export async function requireAdmin(): Promise<AdminAuthResult | NextResponse> {
     );
   }
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json(
-      { error: "Authentication required" },
-      { status: 401 },
-    );
-  }
-
-  if (!user.email || !ADMIN_EMAILS.has(user.email.toLowerCase())) {
-    return NextResponse.json(
-      { error: "Admin access required" },
-      { status: 403 },
-    );
-  }
-
-  return { supabase, userId: user.id };
+  return { supabase, userId: "admin" };
 }
