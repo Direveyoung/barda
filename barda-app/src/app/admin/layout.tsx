@@ -12,9 +12,15 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
   const [error, setError] = useState(false);
   const [show, setShow] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (pw === ADMIN_PW) {
+      // Set HTTP-only cookie so server-side API routes can verify admin
+      await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw }),
+      }).catch(() => {});
       sessionStorage.setItem(STORAGE_KEY, "1");
       onSuccess();
     } else {
@@ -27,11 +33,13 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 w-full max-w-sm">
+        {/* Logo */}
         <div className="text-center mb-8">
           <span className="text-2xl font-bold text-gray-900">BARDA</span>
           <span className="ml-2 text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Admin</span>
           <p className="text-sm text-gray-500 mt-2">관리자 페이지입니다</p>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
@@ -41,19 +49,34 @@ function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
               placeholder="관리자 비밀번호"
               autoFocus
               className={`w-full px-4 py-3 rounded-xl border text-sm transition-colors outline-none pr-10
-                ${error ? "border-red-400 bg-red-50 text-red-700" : "border-gray-200 focus:border-gray-400 bg-gray-50"}`}
+                ${error
+                  ? "border-red-400 bg-red-50 text-red-700"
+                  : "border-gray-200 focus:border-gray-400 bg-gray-50"
+                }`}
             />
-            <button type="button" onClick={() => setShow(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
+            <button
+              type="button"
+              onClick={() => setShow(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+            >
               {show ? "숨김" : "표시"}
             </button>
           </div>
-          {error && <p className="text-xs text-red-500 text-center">비밀번호가 틀렸습니다</p>}
-          <button type="submit" disabled={!pw}
-            className="w-full py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+
+          {error && (
+            <p className="text-xs text-red-500 text-center">비밀번호가 틀렸습니다</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={!pw}
+            className="w-full py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold
+              hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
             로그인
           </button>
         </form>
+
         <p className="text-xs text-gray-400 text-center mt-6">
           관리자 계정이 필요하시면 pm.younga@gmail.com으로 문의해주세요
         </p>
@@ -70,6 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setAuthed(stored === "1");
   }, []);
 
+  // Loading state
   if (authed === null) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -84,15 +108,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-lg border-b border-gray-200">
         <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/admin" className="text-xl font-bold text-primary">BARDA</Link>
-            <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Admin</span>
+            <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              Admin
+            </span>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => { sessionStorage.removeItem(STORAGE_KEY); setAuthed(false); }}
-              className="text-xs text-gray-400 hover:text-red-500 transition-colors">
+            <button
+              onClick={() => {
+                fetch("/api/admin/auth", { method: "DELETE" }).catch(() => {});
+                sessionStorage.removeItem(STORAGE_KEY);
+                setAuthed(false);
+              }}
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            >
               로그아웃
             </button>
             <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
@@ -101,10 +134,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
       </header>
+
+      {/* Mobile nav */}
       <AdminMobileNav />
+
+      {/* Body: sidebar + content */}
       <div className="flex">
         <AdminNav />
-        <main className="flex-1 min-w-0 p-4 sm:p-6 max-w-6xl">{children}</main>
+        <main className="flex-1 min-w-0 p-4 sm:p-6 max-w-6xl">
+          {children}
+        </main>
       </div>
     </div>
   );
