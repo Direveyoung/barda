@@ -31,7 +31,7 @@ function LoginForm() {
 
   function handleTestLogin() {
     testLogin();
-    router.push(next);
+    router.push("/");
     router.refresh();
   }
 
