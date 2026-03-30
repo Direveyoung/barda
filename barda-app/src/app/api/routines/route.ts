@@ -32,7 +32,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<RoutinePos
   let query = supabase
     .from("routine_posts")
     .select(
-      "id, user_id, skin_type, concerns, score, products_json, comment, rating, like_count, comment_count, created_at, user_profiles!user_id ( nickname ",
+      "id, user_id, skin_type, concerns, score, products_json, comment, rating, like_count, comment_count, created_at, user_profiles!user_id ( nickname )",
       { count: "exact" },
     );
 
@@ -74,9 +74,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<RoutinePos
 
   const posts: RoutinePostResponse[] = (data ?? []).map((post) => {
     const raw = post as Record<string, unknown>;
-    const users = raw.users as { email?: string } | null;
-    const email = users?.email ?? "";
-    const displayName = email.split("@")[0] || "anonymous";
+        const profile = raw.user_profiles as { nickname?: string } | null;
+    const displayName = profile?.nickname || (raw.user_id as string)?.slice(0, 8) || "anonymous";
 
     return {
       id: raw.id as string,
