@@ -8,6 +8,31 @@ import { findCategory } from "@/lib/analysis";
 import type { RoutineProduct } from "@/lib/analysis";
 import Icon from "@/components/Icon";
 
+// Supabase에서 제품 검색 (로컬 fallback)
+async function fetchProductsFromDB(q: string): Promise<Product[]> {
+  try {
+    const params = q ? `?q=${encodeURIComponent(q)}&limit=15` : `?limit=50`;
+    const res = await fetch(`/api/products${params}`, { signal: AbortSignal.timeout(2000) });
+    if (!res.ok) throw new Error("api error");
+    const json = await res.json();
+    return json.products ?? [];
+  } catch {
+    // Fallback to local search
+    return searchProducts(q, ALL_PRODUCTS, 15);
+  }
+}
+
+async function fetchCategoryProducts(categoryId: string): Promise<Product[]> {
+  try {
+    const res = await fetch(`/api/products?category=${encodeURIComponent(categoryId)}&limit=100`, { signal: AbortSignal.timeout(2000) });
+    if (!res.ok) throw new Error("api error");
+    const json = await res.json();
+    return json.products ?? [];
+  } catch {
+    return ALL_PRODUCTS.filter((p) => p.categoryId === categoryId);
+  }
+}
+
 interface Props {
   products: RoutineProduct[];
   onAdd: (product: RoutineProduct) => void;
@@ -56,15 +81,18 @@ export default function ProductStep({
       setShowDirectInput(false);
       setDirectSubmitted(false);
       if (value.trim().length >= 1) {
-        const found = searchProducts(value, ALL_PRODUCTS);
-        setResults(found);
+        // Immediate local search for responsiveness
+        const localFound = searchProducts(value, ALL_PRODUCTS);
+        setResults(localFound);
         setShowResults(true);
 
-        // Debounced search log (logs after 1.5s of inactivity)
+        // Async Supabase search (overrides local if successful)
         if (searchLogTimer.current) clearTimeout(searchLogTimer.current);
-        searchLogTimer.current = setTimeout(() => {
-          logSearch(value.trim(), found.length);
-        }, 1500);
+        searchLogTimer.current = setTimeout(async () => {
+          const dbFound = await fetchProductsFromDB(value.trim());
+          setResults(dbFound);
+          logSearch(value.trim(), dbFound.length);
+        }, 400);
       } else {
         setResults([]);
         setShowResults(false);
@@ -140,10 +168,13 @@ export default function ProductStep({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Filter products by category for browsing
-  const categoryProducts = selectedCategory
-    ? ALL_PRODUCTS.filter((p) => p.categoryId === selectedCategory)
-    : [];
+  // Filter products by category for browsing (Supabase with local fallback)
+  const [categoryProducts, setCategoryProducts] = useState<Product[]>([]);
+  useEffect(() => {
+    if (!selectedCategory) { setCategoryProducts([]); return; }
+    setCategoryProducts(ALL_PRODUCTS.filter((p) => p.categoryId === selectedCategory)); // immediate local
+    fetchCategoryProducts(selectedCategory).then(setCategoryProducts).catch(() => {});
+  }, [selectedCategory]);
 
   return (
     <div className="animate-fade-up">
