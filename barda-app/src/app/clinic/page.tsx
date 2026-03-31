@@ -35,7 +35,7 @@ export default function ClinicPage() {
           </div>
         )}
         <iframe
-          src="https://clinic-list.vercel.app"
+          src="/api/clinic-proxy"
           className="w-full h-full border-none"
           title="전국 피부과 전문의 병원 리스트"
           onLoad={() => setIsLoading(false)}
