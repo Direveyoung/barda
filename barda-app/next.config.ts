@@ -13,6 +13,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "connect-src 'self' https://*.supabase.co https://api.open-meteo.com https://air-quality-api.open-meteo.com https://apis.data.go.kr https://world.openbeautyfacts.org https://api.tosspayments.com",
+      "frame-src https://clinic-list.vercel.app",
       "frame-ancestors 'none'",
     ].join("; "),
   },
@@ -26,7 +27,17 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      // clinic-proxy는 iframe에서 로드되어야 하므로 X-Frame-Options 오버라이드
+      {
+        source: "/api/clinic-proxy",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+        ],
+      },
+    ];
   },
 };
 
